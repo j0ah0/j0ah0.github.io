@@ -23,12 +23,14 @@ permalink: /board/
 </div>
 
 <style>
-  .gb-auth { text-align: right; font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+  .gb-auth { text-align: right; font-size: 13px; color: var(--muted); margin-bottom: 10px; min-height: 26px; }
   .gb-auth button {
     font-size: 13px; padding: 5px 12px; border: 1px solid var(--border); border-radius: 4px;
     background: #fff; cursor: pointer; color: var(--text);
   }
   .gb-auth button:hover { background: #f2f2f2; }
+  #gb-login { opacity: 0; border-color: transparent; background: transparent; }
+  #gb-login:hover { background: transparent; }
   .gb-form { border: 1px solid var(--border); border-radius: 6px; overflow: hidden; margin-bottom: 30px; }
   .gb-row { display: flex; }
   .gb-row input[type="text"], .gb-row input[type="password"] {
