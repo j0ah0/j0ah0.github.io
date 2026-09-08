@@ -107,6 +107,23 @@ permalink: /board/
     return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
   }
 
+  // ---- 비밀글 비밀번호 시도 횟수 제한 (이 브라우저 기준) ----
+  const MAX_TRIES = 5;
+  function getFailCount(entryId) {
+    try {
+      return parseInt(localStorage.getItem("gb_fail_" + entryId) || "0", 10);
+    } catch (e) {
+      return 0;
+    }
+  }
+  function incrementFailCount(entryId) {
+    const next = getFailCount(entryId) + 1;
+    try {
+      localStorage.setItem("gb_fail_" + entryId, String(next));
+    } catch (e) { /* localStorage 사용 불가 시 이번 시도만 카운트 안 됨 */ }
+    return next;
+  }
+
   // ---- 관리자 로그인 (구글) ----
   let isOwner = false;
   const authBar = document.getElementById("gb-auth");
@@ -296,20 +313,29 @@ permalink: /board/
       if (d.secret) {
         const row = document.createElement("div");
         row.className = "gb-secret-row";
-        row.innerHTML = '🔒 비밀글입니다 <input type="password" maxlength="4" inputmode="numeric" placeholder="비밀번호"> <button type="button">확인</button>';
-        const input = row.querySelector("input");
-        const btn = row.querySelector("button");
-        const reveal = async () => {
-          const hash = await sha256(input.value.trim());
-          if (hash === d.passwordHash || hash === MASTER_HASH) {
-            row.remove();
-            renderOpen(li, entryId, d.content);
-          } else {
-            alert("비밀번호가 틀렸습니다.");
-          }
-        };
-        btn.addEventListener("click", reveal);
-        input.addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); reveal(); } });
+        if (getFailCount(entryId) >= MAX_TRIES) {
+          row.textContent = "🔒 비밀번호를 5회 이상 틀려서 더 이상 열람할 수 없습니다.";
+        } else {
+          row.innerHTML = '🔒 비밀글입니다 <input type="password" maxlength="4" inputmode="numeric" placeholder="비밀번호"> <button type="button">확인</button>';
+          const input = row.querySelector("input");
+          const btn = row.querySelector("button");
+          const reveal = async () => {
+            const hash = await sha256(input.value.trim());
+            if (hash === d.passwordHash || hash === MASTER_HASH) {
+              row.remove();
+              renderOpen(li, entryId, d.content);
+            } else {
+              const fails = incrementFailCount(entryId);
+              if (fails >= MAX_TRIES) {
+                row.textContent = "🔒 비밀번호를 5회 이상 틀려서 더 이상 열람할 수 없습니다.";
+              } else {
+                alert("비밀번호가 틀렸습니다. (남은 시도: " + (MAX_TRIES - fails) + "회)");
+              }
+            }
+          };
+          btn.addEventListener("click", reveal);
+          input.addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); reveal(); } });
+        }
         li.appendChild(row);
       } else {
         renderOpen(li, entryId, d.content);
