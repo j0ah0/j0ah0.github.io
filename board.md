@@ -4,6 +4,8 @@ title: Board
 permalink: /board/
 ---
 
+<div id="gb-auth" class="gb-auth"></div>
+
 <div id="gb-app">
   <form id="gb-form" class="gb-form">
     <div class="gb-row">
@@ -21,6 +23,12 @@ permalink: /board/
 </div>
 
 <style>
+  .gb-auth { text-align: right; font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+  .gb-auth button {
+    font-size: 13px; padding: 5px 12px; border: 1px solid var(--border); border-radius: 4px;
+    background: #fff; cursor: pointer; color: var(--text);
+  }
+  .gb-auth button:hover { background: #f2f2f2; }
   .gb-form { border: 1px solid var(--border); border-radius: 6px; overflow: hidden; margin-bottom: 30px; }
   .gb-row { display: flex; }
   .gb-row input[type="text"], .gb-row input[type="password"] {
@@ -44,7 +52,8 @@ permalink: /board/
   .gb-item-head { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
   .gb-item-head-left { display: flex; align-items: baseline; gap: 8px; }
   .gb-item-name { font-weight: 600; color: var(--text); }
-  .gb-del-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 15px; line-height: 1; padding: 2px 4px; }
+  .gb-del-btn { display: none; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 15px; line-height: 1; padding: 2px 4px; }
+  body.gb-is-owner .gb-del-btn { display: inline-block; }
   .gb-del-btn:hover { color: #c0392b; }
   .gb-item-body { font-size: 15px; white-space: pre-wrap; word-break: break-word; }
   .gb-secret-row { display: flex; gap: 8px; align-items: center; color: var(--muted); font-size: 14px; }
@@ -70,6 +79,9 @@ permalink: /board/
     getFirestore, collection, addDoc, doc, deleteDoc,
     query, orderBy, onSnapshot, serverTimestamp
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import {
+    getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyAhTbvjRr06MX21Tau2X1o1OQvqHV9xWvI",
@@ -80,16 +92,50 @@ permalink: /board/
     appId: "1:204873249546:web:92941490d06fea41c0c0f3"
   };
 
+  const OWNER_EMAIL = "hayoungjo.work@gmail.com";
+  // 비밀글 열람용 (삭제와는 무관, 참고용 보조 비밀번호)
   const MASTER_HASH = "939331a7a3c0eaef4a7490e6ce1bf375893e179b60b688411373676c39bc2bc0";
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+  const auth = getAuth(app);
   const gbRef = collection(db, "guestbook");
 
   async function sha256(text) {
     const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
     return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
   }
+
+  // ---- 관리자 로그인 (구글) ----
+  let isOwner = false;
+  const authBar = document.getElementById("gb-auth");
+
+  function renderAuthBar(user) {
+    if (user && user.email === OWNER_EMAIL) {
+      authBar.innerHTML = '관리자로 로그인됨 · <button type="button" id="gb-logout">로그아웃</button>';
+    } else if (user) {
+      authBar.innerHTML = user.email + ' (관리자 아님) · <button type="button" id="gb-logout">로그아웃</button>';
+    } else {
+      authBar.innerHTML = '<button type="button" id="gb-login">관리자 로그인</button>';
+    }
+    const loginBtn = document.getElementById("gb-login");
+    const logoutBtn = document.getElementById("gb-logout");
+    if (loginBtn) loginBtn.addEventListener("click", async () => {
+      try {
+        await signInWithPopup(auth, new GoogleAuthProvider());
+      } catch (err) {
+        alert("로그인 실패: " + err.message);
+      }
+    });
+    if (logoutBtn) logoutBtn.addEventListener("click", () => signOut(auth));
+  }
+  renderAuthBar(null);
+
+  onAuthStateChanged(auth, (user) => {
+    isOwner = !!(user && user.email === OWNER_EMAIL);
+    document.body.classList.toggle("gb-is-owner", isOwner);
+    renderAuthBar(user);
+  });
 
   // ---- 새 글 등록 ----
   const form = document.getElementById("gb-form");
@@ -116,21 +162,14 @@ permalink: /board/
     }
   });
 
-  // ---- 글 삭제 (본인 비밀번호 또는 마스터 비밀번호) ----
-  async function handleDelete(entryId, passwordHash) {
-    const pw = prompt("비밀번호를 입력하세요");
-    if (pw === null) return;
-    const hash = await sha256(pw.trim());
-    if (hash !== passwordHash && hash !== MASTER_HASH) {
-      alert("비밀번호가 틀렸습니다.");
-      return;
-    }
-    if (confirm("삭제하시겠습니까?")) {
-      try {
-        await deleteDoc(doc(db, "guestbook", entryId));
-      } catch (err) {
-        alert("삭제에 실패했어요: " + err.message);
-      }
+  // ---- 글 삭제 (관리자 로그인 상태에서만 버튼이 보임 + Firestore 규칙에서도 이중 확인) ----
+  async function handleDelete(entryId) {
+    if (!isOwner) return;
+    if (!confirm("삭제하시겠습니까?")) return;
+    try {
+      await deleteDoc(doc(db, "guestbook", entryId));
+    } catch (err) {
+      alert("삭제에 실패했어요: " + err.message);
     }
   }
 
@@ -234,7 +273,7 @@ permalink: /board/
         '<button type="button" class="gb-del-btn" title="삭제">✕</button>';
       head.querySelector(".gb-item-name").textContent = d.name;
       head.querySelector(".gb-item-date").textContent = date;
-      head.querySelector(".gb-del-btn").addEventListener("click", () => handleDelete(entryId, d.passwordHash));
+      head.querySelector(".gb-del-btn").addEventListener("click", () => handleDelete(entryId));
       li.appendChild(head);
 
       if (d.secret) {
