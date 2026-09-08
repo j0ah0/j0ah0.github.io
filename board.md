@@ -200,15 +200,14 @@ permalink: /board/
     });
   }
 
-  // ---- 답글 작성 폼 ----
+  // ---- 답글 작성 폼 (이름은 항상 j0ah0로 고정) ----
+  const REPLY_NAME = "j0ah0";
   function buildReplyForm(entryId) {
     const wrap = document.createElement("div");
     wrap.className = "gb-reply-form";
     wrap.innerHTML =
-      '<input type="text" class="gb-reply-name" placeholder="이름" maxlength="20">' +
       '<input type="text" class="gb-reply-content" placeholder="답글을 입력해주세요.">' +
       '<button type="button">답글 등록</button>';
-    const nameInput = wrap.querySelector(".gb-reply-name");
     const contentInput = wrap.querySelector(".gb-reply-content");
     const btn = wrap.querySelector("button");
     const submit = async () => {
@@ -216,18 +215,16 @@ permalink: /board/
         alert("답글은 관리자만 작성할 수 있어요.");
         return;
       }
-      const name = nameInput.value.trim();
       const content = contentInput.value.trim();
-      if (!name || !content) {
-        alert("이름과 답글 내용을 입력해주세요.");
+      if (!content) {
+        alert("답글 내용을 입력해주세요.");
         return;
       }
       btn.disabled = true;
       try {
         await addDoc(collection(db, "guestbook", entryId, "replies"), {
-          name, content, createdAt: serverTimestamp()
+          name: REPLY_NAME, content, createdAt: serverTimestamp()
         });
-        nameInput.value = "";
         contentInput.value = "";
       } catch (err) {
         alert("답글 등록에 실패했어요: " + err.message);
