@@ -63,7 +63,7 @@ permalink: /board/
 
   .gb-replies { list-style: none; margin: 10px 0 0 20px; padding: 0; border-left: 2px solid var(--border); }
   .gb-reply { padding: 8px 0 8px 12px; }
-  .gb-reply-head { font-size: 12px; color: var(--muted); margin-bottom: 3px; }
+  .gb-reply-head { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--muted); margin-bottom: 3px; }
   .gb-reply-name { font-weight: 600; color: var(--text); margin-right: 6px; }
   .gb-reply-body { font-size: 14px; white-space: pre-wrap; word-break: break-word; }
   .gb-reply-form { display: none; gap: 6px; margin: 10px 0 0 20px; }
@@ -174,6 +174,17 @@ permalink: /board/
     }
   }
 
+  // ---- 답글 삭제 (관리자만) ----
+  async function handleDeleteReply(entryId, replyId) {
+    if (!isOwner) return;
+    if (!confirm("답글을 삭제하시겠습니까?")) return;
+    try {
+      await deleteDoc(doc(db, "guestbook", entryId, "replies", replyId));
+    } catch (err) {
+      alert("답글 삭제에 실패했어요: " + err.message);
+    }
+  }
+
   // ---- 답글 목록 실시간 렌더링 ----
   function attachReplies(entryId, container) {
     const repliesRef = collection(db, "guestbook", entryId, "replies");
@@ -182,14 +193,18 @@ permalink: /board/
       container.innerHTML = "";
       snap.forEach((r) => {
         const d = r.data();
+        const replyId = r.id;
         const date = d.createdAt && d.createdAt.toDate ? d.createdAt.toDate().toLocaleString("ko-KR") : "";
         const li = document.createElement("li");
         li.className = "gb-reply";
         const head = document.createElement("div");
         head.className = "gb-reply-head";
-        head.innerHTML = '<span class="gb-reply-name"></span><span></span>';
+        head.innerHTML =
+          '<span><span class="gb-reply-name"></span><span class="gb-reply-date"></span></span>' +
+          '<button type="button" class="gb-del-btn" title="삭제">✕</button>';
         head.querySelector(".gb-reply-name").textContent = d.name;
-        head.lastElementChild.textContent = date;
+        head.querySelector(".gb-reply-date").textContent = date;
+        head.querySelector(".gb-del-btn").addEventListener("click", () => handleDeleteReply(entryId, replyId));
         const body = document.createElement("div");
         body.className = "gb-reply-body";
         body.textContent = d.content;
