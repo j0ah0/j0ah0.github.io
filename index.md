@@ -2,7 +2,7 @@
 layout: default
 title: Main
 ---
-<h1>Hayoung</h1>
+<h1>Main</h1>
 <p>생각과 기록을 남기는 공간입니다.</p>
 <p>
   <a href="{{ "/log/" | relative_url }}">Log</a>에서 글을 읽고,
