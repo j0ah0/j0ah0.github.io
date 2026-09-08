@@ -1,15 +1,7 @@
 title: Hayoung
 description: 생각과 기록을 남기는 공간
-url: "https://hayoung.work"
-theme: minima
-minima:
-  skin: classic
-  date_format: "%Y-%m-%d"
-header_pages:
-  - about.md
-plugins:
-  - jekyll-feed
+url: "https://j0ah0.github.io"
+email: hayoung.work@gmail.com
 
 permalink: /:year/:month/:day/:title/
-
 markdown: kramdown

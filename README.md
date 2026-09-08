@@ -1,6 +1,14 @@
-# hayoung.work
+# j0ah0.github.io
 
-GitHub Pages(Jekyll) 기반 블로그.
+GitHub Pages(Jekyll) 기반 개인 블로그. https://j0ah0.github.io
+
+## 메뉴 구조
+
+- **Main** (`index.md`) — 첫 페이지
+- **I am** (`i-am.md`) — 자기소개
+- **Log** (`log.md`) — 글 목록 (자동으로 `_posts/` 글이 나열됨)
+- **Board** (`board.md`) — 방명록 (giscus, GitHub Discussions 기반 무료 댓글)
+- **Mail to** — `mailto:` 링크 (헤더 nav, 별도 페이지 없음)
 
 ## 새 글 쓰는 법
 
@@ -14,21 +22,10 @@ GitHub Pages(Jekyll) 기반 블로그.
    ---
    ```
 3. 그 아래에 마크다운으로 본문 작성
-4. `git add`, `git commit`, `git push` 하면 몇 분 안에 https://hayoung.work 에 자동 반영됨
+4. `git add`, `git commit`, `git push` 하면 몇 분 안에 https://j0ah0.github.io 에 자동 반영됨
 
-## 처음 설정 (한 번만)
+## Board(방명록) 최초 설정 (한 번만)
 
-1. GitHub 저장소(`j0ah0-work/hayoung.work`)를 Public으로 전환 (또는 Private 유지 시 GitHub Pages는 Private 저장소에서도 동작함)
-2. 이 폴더 내용을 저장소에 push
-3. 저장소 **Settings → Pages**
-   - Source: `Deploy from a branch`
-   - Branch: `main` / `(root)`
-4. 같은 Pages 설정 화면의 **Custom domain**에 `hayoung.work` 입력 후 저장
-5. 도메인 등록업체(가비아/후이즈 등)의 DNS 설정에서 A 레코드 4개 추가 (apex 도메인용):
-   ```
-   185.199.108.153
-   185.199.109.153
-   185.199.110.153
-   185.199.111.153
-   ```
-6. DNS 전파 후(수분~수시간) Pages 설정에서 **Enforce HTTPS** 체크
+1. https://github.com/apps/giscus/installations/new 접속
+2. `j0ah0.github.io` 저장소 선택 후 설치 승인
+3. 이후 `/board/` 페이지에서 GitHub 로그인한 사람이면 누구나 댓글(방명록) 작성 가능
