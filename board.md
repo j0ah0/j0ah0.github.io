@@ -41,19 +41,34 @@ permalink: /board/
   #gb-submit:hover { background: #000; }
   .gb-list { list-style: none; padding: 0; margin: 0; }
   .gb-item { border-bottom: 1px solid var(--border); padding: 14px 0; }
-  .gb-item-head { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
-  .gb-item-name { font-weight: 600; color: var(--text); margin-right: 8px; }
+  .gb-item-head { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .gb-item-head-left { display: flex; align-items: baseline; gap: 8px; }
+  .gb-item-name { font-weight: 600; color: var(--text); }
+  .gb-del-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 15px; line-height: 1; padding: 2px 4px; }
+  .gb-del-btn:hover { color: #c0392b; }
   .gb-item-body { font-size: 15px; white-space: pre-wrap; word-break: break-word; }
   .gb-secret-row { display: flex; gap: 8px; align-items: center; color: var(--muted); font-size: 14px; }
   .gb-secret-row input { width: 70px; padding: 4px 8px; font-size: 13px; }
   .gb-secret-row button { font-size: 13px; padding: 4px 10px; cursor: pointer; }
   .gb-empty { color: var(--muted); font-size: 14px; padding: 10px 0; }
+
+  .gb-replies { list-style: none; margin: 10px 0 0 20px; padding: 0; border-left: 2px solid var(--border); }
+  .gb-reply { padding: 8px 0 8px 12px; }
+  .gb-reply-head { font-size: 12px; color: var(--muted); margin-bottom: 3px; }
+  .gb-reply-name { font-weight: 600; color: var(--text); margin-right: 6px; }
+  .gb-reply-body { font-size: 14px; white-space: pre-wrap; word-break: break-word; }
+  .gb-reply-form { display: flex; gap: 6px; margin: 10px 0 0 20px; }
+  .gb-reply-form input[type="text"] { width: 90px; font-size: 13px; padding: 6px 8px; border: 1px solid var(--border); border-radius: 4px; }
+  .gb-reply-form input[type="text"].gb-reply-content { flex: 1; width: auto; }
+  .gb-reply-form button { font-size: 13px; padding: 6px 12px; border: 1px solid var(--border); border-radius: 4px; background: #fff; cursor: pointer; }
+  .gb-reply-form button:hover { background: #f2f2f2; }
 </style>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import {
-    getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp
+    getFirestore, collection, addDoc, doc, deleteDoc,
+    query, orderBy, onSnapshot, serverTimestamp
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -65,6 +80,8 @@ permalink: /board/
     appId: "1:204873249546:web:92941490d06fea41c0c0f3"
   };
 
+  const MASTER_HASH = "939331a7a3c0eaef4a7490e6ce1bf375893e179b60b688411373676c39bc2bc0";
+
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const gbRef = collection(db, "guestbook");
@@ -74,6 +91,7 @@ permalink: /board/
     return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
   }
 
+  // ---- 새 글 등록 ----
   const form = document.getElementById("gb-form");
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -98,6 +116,102 @@ permalink: /board/
     }
   });
 
+  // ---- 글 삭제 (본인 비밀번호 또는 마스터 비밀번호) ----
+  async function handleDelete(entryId, passwordHash) {
+    const pw = prompt("비밀번호를 입력하세요");
+    if (pw === null) return;
+    const hash = await sha256(pw.trim());
+    if (hash !== passwordHash && hash !== MASTER_HASH) {
+      alert("비밀번호가 틀렸습니다.");
+      return;
+    }
+    if (confirm("삭제하시겠습니까?")) {
+      try {
+        await deleteDoc(doc(db, "guestbook", entryId));
+      } catch (err) {
+        alert("삭제에 실패했어요: " + err.message);
+      }
+    }
+  }
+
+  // ---- 답글 목록 실시간 렌더링 ----
+  function attachReplies(entryId, container) {
+    const repliesRef = collection(db, "guestbook", entryId, "replies");
+    const rq = query(repliesRef, orderBy("createdAt", "asc"));
+    onSnapshot(rq, (snap) => {
+      container.innerHTML = "";
+      snap.forEach((r) => {
+        const d = r.data();
+        const date = d.createdAt && d.createdAt.toDate ? d.createdAt.toDate().toLocaleString("ko-KR") : "";
+        const li = document.createElement("li");
+        li.className = "gb-reply";
+        const head = document.createElement("div");
+        head.className = "gb-reply-head";
+        head.innerHTML = '<span class="gb-reply-name"></span><span></span>';
+        head.querySelector(".gb-reply-name").textContent = d.name;
+        head.lastElementChild.textContent = date;
+        const body = document.createElement("div");
+        body.className = "gb-reply-body";
+        body.textContent = d.content;
+        li.appendChild(head);
+        li.appendChild(body);
+        container.appendChild(li);
+      });
+    });
+  }
+
+  // ---- 답글 작성 폼 ----
+  function buildReplyForm(entryId) {
+    const wrap = document.createElement("div");
+    wrap.className = "gb-reply-form";
+    wrap.innerHTML =
+      '<input type="text" class="gb-reply-name" placeholder="이름" maxlength="20">' +
+      '<input type="text" class="gb-reply-content" placeholder="답글을 입력해주세요.">' +
+      '<button type="button">답글 등록</button>';
+    const nameInput = wrap.querySelector(".gb-reply-name");
+    const contentInput = wrap.querySelector(".gb-reply-content");
+    const btn = wrap.querySelector("button");
+    const submit = async () => {
+      const name = nameInput.value.trim();
+      const content = contentInput.value.trim();
+      if (!name || !content) {
+        alert("이름과 답글 내용을 입력해주세요.");
+        return;
+      }
+      btn.disabled = true;
+      try {
+        await addDoc(collection(db, "guestbook", entryId, "replies"), {
+          name, content, createdAt: serverTimestamp()
+        });
+        nameInput.value = "";
+        contentInput.value = "";
+      } catch (err) {
+        alert("답글 등록에 실패했어요: " + err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    };
+    btn.addEventListener("click", submit);
+    contentInput.addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); submit(); } });
+    return wrap;
+  }
+
+  // ---- 비밀글이 아닌 글: 본문 + 답글 목록 + 답글 폼 붙이기 ----
+  function renderOpen(li, entryId, content) {
+    const body = document.createElement("div");
+    body.className = "gb-item-body";
+    body.textContent = content;
+    li.appendChild(body);
+
+    const repliesEl = document.createElement("ul");
+    repliesEl.className = "gb-replies";
+    li.appendChild(repliesEl);
+    attachReplies(entryId, repliesEl);
+
+    li.appendChild(buildReplyForm(entryId));
+  }
+
+  // ---- 목록 렌더링 ----
   const list = document.getElementById("gb-list");
   const q = query(gbRef, orderBy("createdAt", "desc"));
   onSnapshot(q, (snapshot) => {
@@ -108,14 +222,19 @@ permalink: /board/
     list.innerHTML = "";
     snapshot.forEach((docSnap) => {
       const d = docSnap.data();
+      const entryId = docSnap.id;
       const li = document.createElement("li");
       li.className = "gb-item";
       const date = d.createdAt && d.createdAt.toDate ? d.createdAt.toDate().toLocaleString("ko-KR") : "";
+
       const head = document.createElement("div");
       head.className = "gb-item-head";
-      head.innerHTML = '<span><span class="gb-item-name"></span></span><span></span>';
+      head.innerHTML =
+        '<span class="gb-item-head-left"><span class="gb-item-name"></span><span class="gb-item-date"></span></span>' +
+        '<button type="button" class="gb-del-btn" title="삭제">✕</button>';
       head.querySelector(".gb-item-name").textContent = d.name;
-      head.lastElementChild.textContent = date;
+      head.querySelector(".gb-item-date").textContent = date;
+      head.querySelector(".gb-del-btn").addEventListener("click", () => handleDelete(entryId, d.passwordHash));
       li.appendChild(head);
 
       if (d.secret) {
@@ -126,11 +245,9 @@ permalink: /board/
         const btn = row.querySelector("button");
         const reveal = async () => {
           const hash = await sha256(input.value.trim());
-          if (hash === d.passwordHash) {
-            const body = document.createElement("div");
-            body.className = "gb-item-body";
-            body.textContent = d.content;
-            row.replaceWith(body);
+          if (hash === d.passwordHash || hash === MASTER_HASH) {
+            row.remove();
+            renderOpen(li, entryId, d.content);
           } else {
             alert("비밀번호가 틀렸습니다.");
           }
@@ -139,10 +256,7 @@ permalink: /board/
         input.addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); reveal(); } });
         li.appendChild(row);
       } else {
-        const body = document.createElement("div");
-        body.className = "gb-item-body";
-        body.textContent = d.content;
-        li.appendChild(body);
+        renderOpen(li, entryId, d.content);
       }
       list.appendChild(li);
     });
