@@ -1,6 +1,7 @@
 ---
 layout: default
 title: Main
+permalink: /
 ---
 <h1>Main</h1>
 
