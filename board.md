@@ -66,7 +66,8 @@ permalink: /board/
   .gb-reply-head { font-size: 12px; color: var(--muted); margin-bottom: 3px; }
   .gb-reply-name { font-weight: 600; color: var(--text); margin-right: 6px; }
   .gb-reply-body { font-size: 14px; white-space: pre-wrap; word-break: break-word; }
-  .gb-reply-form { display: flex; gap: 6px; margin: 10px 0 0 20px; }
+  .gb-reply-form { display: none; gap: 6px; margin: 10px 0 0 20px; }
+  body.gb-is-owner .gb-reply-form { display: flex; }
   .gb-reply-form input[type="text"] { width: 90px; font-size: 13px; padding: 6px 8px; border: 1px solid var(--border); border-radius: 4px; }
   .gb-reply-form input[type="text"].gb-reply-content { flex: 1; width: auto; }
   .gb-reply-form button { font-size: 13px; padding: 6px 12px; border: 1px solid var(--border); border-radius: 4px; background: #fff; cursor: pointer; }
@@ -211,6 +212,10 @@ permalink: /board/
     const contentInput = wrap.querySelector(".gb-reply-content");
     const btn = wrap.querySelector("button");
     const submit = async () => {
+      if (!isOwner) {
+        alert("답글은 관리자만 작성할 수 있어요.");
+        return;
+      }
       const name = nameInput.value.trim();
       const content = contentInput.value.trim();
       if (!name || !content) {
