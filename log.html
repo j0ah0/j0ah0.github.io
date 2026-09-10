@@ -69,12 +69,22 @@ permalink: /log/
     const stage = document.getElementById('stage');
     const rail = document.getElementById('rail');
 
-    const TILT = 20; // degrees — how much the ring is tipped back from facing the camera
-
     const N = items.length;
     const cardW = 128;
     const step = N > 0 ? 360 / N : 0;
     const radius = N > 1 ? Math.round((cardW / 2) / Math.tan(Math.PI / N)) + 40 : 0;
+
+    // perspective must stay well above the radius, or near-side cards sit
+    // behind the camera and vanish once there are enough posts to matter
+    stage.style.perspective = Math.max(1400, radius * 2.6) + 'px';
+
+    // tilting the ring shifts near/far cards up and down on screen by
+    // roughly radius*sin(TILT) — hold that shift constant (~180px) instead
+    // of a fixed angle, so the carousel stays framed as the post count grows
+    const TARGET_VERTICAL_SHIFT = 180;
+    const TILT = radius > 0
+      ? Math.min(20, Math.asin(Math.min(1, TARGET_VERTICAL_SHIFT / radius)) * 180 / Math.PI)
+      : 20;
 
     items.forEach((item, i) => {
       const el = document.createElement('a');
