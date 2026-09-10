@@ -21,6 +21,13 @@ permalink: /log/
     .hint{ position:absolute; top:28px; left:64px; font-size:13px; letter-spacing:.02em; color:var(--muted); z-index:2; }
     .fallback{ position:absolute; inset:0; display:none; align-items:center; justify-content:center;
       padding:0 40px; text-align:center; color:var(--muted); font-size:14px; }
+    .preview{ position:absolute; top:50%; right:48px; transform:translateY(-50%) translateX(12px);
+      width:320px; opacity:0; pointer-events:none; transition:opacity .25s ease, transform .25s ease; z-index:2; }
+    .preview.visible{ opacity:1; transform:translateY(-50%) translateX(0); }
+    .preview img{ width:100%; aspect-ratio:1.618/1; object-fit:cover; border-radius:6px; box-shadow:0 12px 30px rgba(0,0,0,.16); display:block; }
+    .preview .title{ margin-top:12px; font-size:15px; font-weight:600; }
+    .preview .date{ margin-top:4px; font-size:12px; color:var(--muted); }
+    @media (max-width: 760px){ .preview{ display:none; } }
   </style>
 </head>
 <body>
@@ -28,6 +35,11 @@ permalink: /log/
     <a class="back-link" href="{{ "/" | relative_url }}">&larr;</a>
     <div class="hint">scroll up/down, or drag ...</div>
     <div class="fallback" id="fallback">이 브라우저에서는 WebGL을 사용할 수 없어요.<br />크롬 설정에서 하드웨어 가속을 켜보세요.</div>
+    <div class="preview" id="preview">
+      <img id="previewImg" src="" alt="" />
+      <div class="title" id="previewTitle"></div>
+      <div class="date" id="previewDate"></div>
+    </div>
   </div>
 
   <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
@@ -37,7 +49,9 @@ permalink: /log/
         {% for post in site.posts %}
         {
           slug: {{ post.slug | jsonify }},
-          thumbnail: {% if post.thumbnail %}{{ post.thumbnail | relative_url | jsonify }}{% else %}{{ "https://picsum.photos/seed/" | append: post.slug | append: "/240/160" | jsonify }}{% endif %},
+          title: {{ post.title | default: post.slug | jsonify }},
+          date: {{ post.date | date: "%Y-%m-%d" | jsonify }},
+          thumbnail: {% if post.thumbnail %}{{ post.thumbnail | relative_url | jsonify }}{% else %}{{ "https://picsum.photos/seed/" | append: post.slug | append: "/320/198" | jsonify }}{% endif %},
           season: {{ post.season | default: "" | jsonify }},
           href: {{ post.url | relative_url | jsonify }}
         }{% unless forloop.last %},{% endunless %}
@@ -46,8 +60,10 @@ permalink: /log/
         {% for i in (0..23) %}
         {
           slug: "dummy-{{ i }}",
-          thumbnail: "https://picsum.photos/seed/log{{ i }}/240/160",
-          season: {% if i < 12 %}"spring"{% else %}"autumn"{% endif %},
+          title: "더미 글 {{ i }}",
+          date: "",
+          thumbnail: "https://picsum.photos/seed/log{{ i }}/320/198",
+          season: {% if i < 6 %}"spring"{% elsif i < 12 %}"summer"{% elsif i < 18 %}"autumn"{% else %}"winter"{% endif %},
           href: "#"
         }{% unless forloop.last %},{% endunless %}
         {% endfor %}
@@ -98,34 +114,31 @@ permalink: /log/
       tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
     }
 
+    function damp(current, target, lambda, dt) {
+      return current + (target - current) * (1 - Math.exp(-lambda * dt));
+    }
+    function damp3(vec3, target, lambda, dt) {
+      vec3.x = damp(vec3.x, target[0], lambda, dt);
+      vec3.y = damp(vec3.y, target[1], lambda, dt);
+      vec3.z = damp(vec3.z, target[2], lambda, dt);
+    }
+
     function initScene() {
-      // thin standing "domino" cards, arranged in a ring split into two
-      // arcs by season — a text panel marks where each arc begins, so
-      // rotating the ring surfaces "spring"/"autumn" as you pass into it
-      const cardW = 0.5, cardH = 1.65;
-      const labelW = 2.4, labelH = 1.2;
+      const SEASONS = ['spring', 'summer', 'autumn', 'winter'];
+      const cardW = 1.618, cardH = 1;
+      const radius = 5.25;
 
-      const springItems = items.filter((it) => it.season !== 'autumn');
-      const autumnItems = items.filter((it) => it.season === 'autumn');
-      const cards = [...springItems, ...autumnItems];
-
-      const N = cards.length;
-      const step = N > 0 ? (2 * Math.PI) / N : 0;
-      // dominoes packed tight on their own ring; season labels are placed
-      // separately at the seam angles, a bit further out, so a wide label
-      // doesn't force the whole ring to space out to fit it
-      const radius = N > 1 ? (cardW / 2) / Math.tan(Math.PI / N) + 0.4 : 0;
-      const labelRadius = radius + 1.1;
-
-      // seam before springItems[0] (i.e. just after the last autumn card)
-      // and seam before autumnItems[0] (just after the last spring card)
-      const labels = [];
-      if (springItems.length) labels.push({ text: 'spring', angle: -step / 2 });
-      if (autumnItems.length) labels.push({ text: 'autumn', angle: (springItems.length - 0.5) * step });
+      const bySeason = {};
+      SEASONS.forEach((s) => (bySeason[s] = []));
+      items.forEach((it) => {
+        const s = SEASONS.includes(it.season) ? it.season : 'spring';
+        bySeason[s].push(it);
+      });
+      const activeSeasons = SEASONS.filter((s) => bySeason[s].length);
 
       const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, radius * 5 + 50);
-      camera.position.set(0, 1.3, radius * 1.35 + 3);
+      const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, radius * 6 + 50);
+      camera.position.set(0, 4.5, 9);
       camera.lookAt(0, 0, 0);
 
       const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -137,39 +150,86 @@ permalink: /log/
       scene.add(new THREE.AmbientLight(0xffffff, 1.0));
 
       const ring = new THREE.Group();
+      ring.position.set(0, 1.5, 0);
       scene.add(ring);
 
       const loader = new THREE.TextureLoader();
       loader.crossOrigin = 'anonymous';
 
-      const meshes = [];
-      cards.forEach((item, i) => {
-        const angle = i * step;
-        const geo = new THREE.PlaneGeometry(cardW, cardH);
-        const mat = new THREE.MeshBasicMaterial({ color: 0xdddddd, side: THREE.FrontSide, transparent: true });
-        const mesh = new THREE.Mesh(geo, mat);
-        mesh.userData = item;
-        mesh.position.set(Math.sin(angle) * radius, 0, Math.cos(angle) * radius);
-        mesh.rotation.y = angle;
-        ring.add(mesh);
-        meshes.push(mesh);
+      const cardMeshes = [];
+      const cardGroups = [];
 
-        loader.load(item.thumbnail, (tex) => {
-          coverTexture(tex, cardW / cardH);
-          mat.map = tex;
-          mat.color.set(0xffffff);
-          mat.needsUpdate = true;
+      let from = 0;
+      activeSeasons.forEach((season) => {
+        const list = bySeason[season];
+        const len = (Math.PI * 2 * list.length) / items.length;
+        buildCategory(season, list, from, len);
+        from += len;
+      });
+
+      function buildCategory(season, list, from, len) {
+        const n = list.length;
+        if (!n) return;
+
+        // billboard season label above the middle of this arc
+        const midAngle = from + len / 2;
+        const labelGeo = new THREE.PlaneGeometry(2, 1);
+        const labelMat = new THREE.MeshBasicMaterial({ map: makeLabelTexture(season), transparent: true, side: THREE.DoubleSide, depthWrite: false });
+        const label = new THREE.Mesh(labelGeo, labelMat);
+        label.position.set(Math.sin(midAngle) * radius * 1.4, 0.5, Math.cos(midAngle) * radius * 1.4);
+        label.userData.billboard = true;
+        ring.add(label);
+
+        list.forEach((item, i) => {
+          const angle = from + (i / n) * len;
+          const group = new THREE.Group();
+          group.position.set(Math.sin(angle) * radius, 0, Math.cos(angle) * radius);
+          group.rotation.y = angle;
+          ring.add(group);
+
+          const geo = new THREE.PlaneGeometry(cardW, cardH);
+          const mat = new THREE.MeshBasicMaterial({ color: 0xdddddd, side: THREE.DoubleSide, transparent: true });
+          const mesh = new THREE.Mesh(geo, mat);
+          group.add(mesh);
+
+          mesh.userData = { item, season, baseScale: 1 };
+          cardMeshes.push(mesh);
+          cardGroups.push({ mesh, group });
+
+          loader.load(item.thumbnail, (tex) => {
+            coverTexture(tex, cardW / cardH);
+            mat.map = tex;
+            mat.color.set(0xffffff);
+            mat.needsUpdate = true;
+          });
         });
-      });
+      }
 
-      labels.forEach((label) => {
-        const geo = new THREE.PlaneGeometry(labelW, labelH);
-        const mat = new THREE.MeshBasicMaterial({ map: makeLabelTexture(label.text), transparent: true, side: THREE.FrontSide });
-        const mesh = new THREE.Mesh(geo, mat);
-        mesh.position.set(Math.sin(label.angle) * labelRadius, 0, Math.cos(label.angle) * labelRadius);
-        mesh.rotation.y = label.angle;
-        ring.add(mesh);
-      });
+      // --- active-card DOM preview -------------------------------------
+      const previewEl = document.getElementById('preview');
+      const previewImg = document.getElementById('previewImg');
+      const previewTitle = document.getElementById('previewTitle');
+      const previewDate = document.getElementById('previewDate');
+      let hoveredMesh = null;
+
+      function setHovered(mesh) {
+        if (hoveredMesh === mesh) return;
+        hoveredMesh = mesh;
+        if (mesh) {
+          const item = mesh.userData.item;
+          previewImg.src = item.thumbnail;
+          previewTitle.textContent = item.title || '';
+          previewDate.textContent = item.date || '';
+          previewEl.classList.add('visible');
+        } else {
+          previewEl.classList.remove('visible');
+        }
+      }
+
+      // --- camera parallax + render loop --------------------------------
+      const pointer = { x: 0, y: 0 };
+      const raycaster = new THREE.Raycaster();
+      const clock = new THREE.Clock();
 
       function onResize() {
         camera.aspect = window.innerWidth / window.innerHeight;
@@ -182,11 +242,46 @@ permalink: /log/
       const damping = 0.92;
 
       function tick() {
+        const dt = Math.min(clock.getDelta(), 0.1);
+
         if (Math.abs(velocity) > 0.0001) {
           rotation += velocity;
           velocity *= damping;
-          ring.rotation.y = rotation;
         }
+        ring.rotation.y = rotation;
+
+        // billboards always face the camera. Labels are children of the
+        // rotating `ring` group, so use lookAt (which accounts for the
+        // parent's transform automatically) rather than copying the
+        // camera's world quaternion directly — that only stayed correct
+        // while the ring sat at rotation 0.
+        ring.children.forEach((child) => {
+          if (child.userData.billboard) {
+            child.lookAt(camera.position);
+          }
+        });
+
+        // hover test
+        raycaster.setFromCamera(pointer, camera);
+        const hit = raycaster.intersectObjects(cardMeshes)[0];
+        setHovered(hit ? hit.object : null);
+
+        // per-card hover animation: the hovered card rises + grows more,
+        // the rest of its season's shelf grows a little, everyone else rests
+        cardGroups.forEach(({ mesh, group }) => {
+          const isHovered = mesh === hoveredMesh;
+          const isActiveSeason = hoveredMesh && mesh.userData.season === hoveredMesh.userData.season;
+          const targetScale = isHovered ? 1.25 : isActiveSeason ? 1.08 : 1;
+          const targetY = isHovered ? 0.35 : 0;
+          const s = damp(mesh.scale.x, targetScale, 6, dt);
+          mesh.scale.set(s, s, 1);
+          mesh.position.y = damp(mesh.position.y, targetY, 8, dt);
+        });
+
+        // gentle camera drift toward the pointer
+        damp3(camera.position, [-pointer.x * 2, pointer.y * 2 + 4.5, 9], 4, dt);
+        camera.lookAt(0, 0, 0);
+
         renderer.render(scene, camera);
         requestAnimationFrame(tick);
       }
@@ -198,23 +293,18 @@ permalink: /log/
       stage.addEventListener('pointerdown', (e) => { dragging = true; dragMoved = false; lastX = e.clientX; });
       window.addEventListener('pointerup', () => dragging = false);
       window.addEventListener('pointermove', (e) => {
+        pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
+        pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
         if (!dragging) return;
         const dx = e.clientX - lastX; lastX = e.clientX;
         if (Math.abs(dx) > 1) dragMoved = true;
         velocity += dx * 0.004;
       });
 
-      stage.addEventListener('click', (e) => {
+      stage.addEventListener('click', () => {
         if (dragMoved) return;
-        const raycaster = new THREE.Raycaster();
-        const mouse = new THREE.Vector2(
-          (e.clientX / window.innerWidth) * 2 - 1,
-          -(e.clientY / window.innerHeight) * 2 + 1
-        );
-        raycaster.setFromCamera(mouse, camera);
-        const hit = raycaster.intersectObjects(meshes)[0];
-        if (hit && hit.object.userData.href && hit.object.userData.href !== '#') {
-          window.location.href = hit.object.userData.href;
+        if (hoveredMesh && hoveredMesh.userData.item.href && hoveredMesh.userData.item.href !== '#') {
+          window.location.href = hoveredMesh.userData.item.href;
         }
       });
     }
