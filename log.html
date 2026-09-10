@@ -9,27 +9,21 @@ permalink: /log/
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Log - {{ site.title }}</title>
   <style>
-    :root{ --bg:#fdfdfc; --ink:#141414; --muted:#8a8a86; --card-w:128px; --card-h:84px; }
+    :root{ --bg:#fdfdfc; --ink:#141414; --muted:#8a8a86; }
     *{ box-sizing:border-box; }
     html,body{ margin:0; padding:0; height:100%; background:var(--bg); color:var(--ink);
       font-family:-apple-system,"Pretendard","Helvetica Neue",Arial,sans-serif; overflow:hidden; }
-    .stage{ position:relative; width:100%; height:100vh; perspective:1400px; overflow:hidden; }
-    .ring{ position:absolute; top:58%; left:50%; width:0; height:0; transform-style:preserve-3d; will-change:transform; }
-    .card{ position:absolute; top:calc(var(--card-h) / -2); left:calc(var(--card-w) / -2);
-      width:var(--card-w); height:var(--card-h); background-size:cover; background-position:center;
-      border-radius:3px; box-shadow:0 6px 18px rgba(0,0,0,.14); backface-visibility:hidden; cursor:pointer;
-      transition:box-shadow .25s ease, filter .25s ease; display:block; text-decoration:none; }
-    .card:hover{ box-shadow:0 10px 26px rgba(0,0,0,.22); filter:brightness(1.03); }
+    .stage{ position:relative; width:100%; height:100vh; }
+    canvas{ display:block; cursor:grab; }
+    canvas:active{ cursor:grabbing; }
     .back-link{ position:absolute; top:24px; left:28px; font-size:20px; color:var(--ink); text-decoration:none; z-index:2; }
     .back-link:hover{ color:var(--muted); }
-    .hint{ position:absolute; top:28px; left:64px; font-size:13px; letter-spacing:.02em; color:var(--muted); }
+    .hint{ position:absolute; top:28px; left:64px; font-size:13px; letter-spacing:.02em; color:var(--muted); z-index:2; }
     .season{ position:absolute; left:50%; transform:translateX(-50%); font-size:22px; font-style:italic;
-      color:var(--ink); pointer-events:none; user-select:none; opacity:.92; }
+      color:var(--ink); pointer-events:none; user-select:none; opacity:.92; z-index:2; }
     .season.top{ top:9%; } .season.bottom{ bottom:9%; }
-    .rail{ position:absolute; right:32px; top:50%; transform:translateY(-50%); width:2px; height:160px;
-      background:rgba(0,0,0,.08); }
-    .rail::after{ content:""; position:absolute; left:50%; top:var(--pos,50%); width:6px; height:6px;
-      margin-left:-3px; margin-top:-3px; border-radius:50%; background:var(--ink); transition:top .05s linear; }
+    .fallback{ position:absolute; inset:0; display:none; align-items:center; justify-content:center;
+      padding:0 40px; text-align:center; color:var(--muted); font-size:14px; }
   </style>
 </head>
 <body>
@@ -37,11 +31,11 @@ permalink: /log/
     <a class="back-link" href="{{ "/" | relative_url }}">&larr;</a>
     <div class="hint">scroll up/down, or drag ...</div>
     <div class="season top">autumn</div>
-    <div class="ring" id="ring"></div>
     <div class="season bottom">spring</div>
-    <div class="rail" id="rail"></div>
+    <div class="fallback" id="fallback">이 브라우저에서는 WebGL을 사용할 수 없어요.<br />크롬 설정에서 하드웨어 가속을 켜보세요.</div>
   </div>
 
+  <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
   <script>
     const items = [
       {% if site.posts.size > 0 %}
@@ -65,62 +59,111 @@ permalink: /log/
       {% endif %}
     ];
 
-    const ring = document.getElementById('ring');
     const stage = document.getElementById('stage');
-    const rail = document.getElementById('rail');
-
+    const fallback = document.getElementById('fallback');
     const N = items.length;
-    const cardW = 128;
-    const step = N > 0 ? 360 / N : 0;
-    const radius = N > 1 ? Math.round((cardW / 2) / Math.tan(Math.PI / N)) + 40 : 0;
 
-    // perspective must stay well above the radius, or near-side cards sit
-    // behind the camera and vanish once there are enough posts to matter
-    stage.style.perspective = Math.max(1400, radius * 2.6) + 'px';
-
-    // tilting the ring shifts near/far cards up and down on screen by
-    // roughly radius*sin(TILT) — hold that shift constant (~180px) instead
-    // of a fixed angle, so the carousel stays framed as the post count grows
-    const TARGET_VERTICAL_SHIFT = 180;
-    const TILT = radius > 0
-      ? Math.min(20, Math.asin(Math.min(1, TARGET_VERTICAL_SHIFT / radius)) * 180 / Math.PI)
-      : 20;
-
-    items.forEach((item, i) => {
-      const el = document.createElement('a');
-      el.className = 'card';
-      el.href = item.href;
-      el.style.backgroundImage = `url(${item.thumbnail})`;
-      el.style.transform = `rotateY(${i * step}deg) translateZ(${radius}px)`;
-      ring.appendChild(el);
-    });
-
-    let rotation = 0, velocity = 0;
-    const damping = 0.92;
-
-    function render() {
-      ring.style.transform = `rotateX(${TILT}deg) rotateY(${rotation}deg)`;
-      const pos = ((rotation % 360) + 360) % 360;
-      rail.style.setProperty('--pos', (pos / 360 * 100) + '%');
+    if (!window.WebGLRenderingContext) {
+      fallback.style.display = 'flex';
+    } else {
+      try {
+        initScene();
+      } catch (err) {
+        console.error(err);
+        fallback.style.display = 'flex';
+      }
     }
-    render();
 
-    function tick() {
-      if (Math.abs(velocity) > 0.01) { rotation += velocity; velocity *= damping; render(); }
-      requestAnimationFrame(tick);
+    function initScene() {
+      const cardW = 1.6, cardH = cardW * (84 / 128);
+      const step = N > 0 ? (2 * Math.PI) / N : 0;
+      const radius = N > 1 ? (cardW / 2) / Math.tan(Math.PI / N) + 0.7 : 0;
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, radius * 5 + 50);
+      camera.position.set(0, 1.1, radius * 1.35 + 3);
+      camera.lookAt(0, 0, 0);
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      if (!renderer.getContext()) throw new Error('no webgl context');
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      stage.appendChild(renderer.domElement);
+
+      scene.add(new THREE.AmbientLight(0xffffff, 1.0));
+
+      const ring = new THREE.Group();
+      scene.add(ring);
+
+      const loader = new THREE.TextureLoader();
+      loader.crossOrigin = 'anonymous';
+
+      const meshes = [];
+      items.forEach((item, i) => {
+        const geo = new THREE.PlaneGeometry(cardW, cardH);
+        const mat = new THREE.MeshBasicMaterial({ color: 0xdddddd, side: THREE.FrontSide, transparent: true });
+        const mesh = new THREE.Mesh(geo, mat);
+        const angle = i * step;
+        mesh.position.set(Math.sin(angle) * radius, 0, Math.cos(angle) * radius);
+        mesh.rotation.y = angle;
+        mesh.userData = item;
+        ring.add(mesh);
+        meshes.push(mesh);
+
+        loader.load(item.thumbnail, (tex) => {
+          mat.map = tex;
+          mat.color.set(0xffffff);
+          mat.needsUpdate = true;
+        });
+      });
+
+      function onResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      }
+      window.addEventListener('resize', onResize);
+
+      let rotation = 0, velocity = 0;
+      const damping = 0.92;
+
+      function tick() {
+        if (Math.abs(velocity) > 0.0001) {
+          rotation += velocity;
+          velocity *= damping;
+          ring.rotation.y = rotation;
+        }
+        renderer.render(scene, camera);
+        requestAnimationFrame(tick);
+      }
+      tick();
+
+      stage.addEventListener('wheel', (e) => { e.preventDefault(); velocity += e.deltaY * 0.0006; }, { passive: false });
+
+      let dragging = false, lastX = 0, dragMoved = false;
+      stage.addEventListener('pointerdown', (e) => { dragging = true; dragMoved = false; lastX = e.clientX; });
+      window.addEventListener('pointerup', () => dragging = false);
+      window.addEventListener('pointermove', (e) => {
+        if (!dragging) return;
+        const dx = e.clientX - lastX; lastX = e.clientX;
+        if (Math.abs(dx) > 1) dragMoved = true;
+        velocity += dx * 0.004;
+      });
+
+      stage.addEventListener('click', (e) => {
+        if (dragMoved) return;
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2(
+          (e.clientX / window.innerWidth) * 2 - 1,
+          -(e.clientY / window.innerHeight) * 2 + 1
+        );
+        raycaster.setFromCamera(mouse, camera);
+        const hit = raycaster.intersectObjects(meshes)[0];
+        if (hit && hit.object.userData.href && hit.object.userData.href !== '#') {
+          window.location.href = hit.object.userData.href;
+        }
+      });
     }
-    tick();
-
-    stage.addEventListener('wheel', (e) => { e.preventDefault(); velocity += e.deltaY * 0.05; }, { passive:false });
-
-    let dragging = false, lastX = 0;
-    stage.addEventListener('pointerdown', (e) => { dragging = true; lastX = e.clientX; });
-    window.addEventListener('pointerup', () => dragging = false);
-    window.addEventListener('pointermove', (e) => {
-      if (!dragging) return;
-      const dx = e.clientX - lastX; lastX = e.clientX;
-      velocity += -dx * 0.3;
-    });
   </script>
 </body>
 </html>
