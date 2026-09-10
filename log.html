@@ -1,0 +1,116 @@
+---
+layout: null
+permalink: /log/
+---
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Log - {{ site.title }}</title>
+  <style>
+    :root{ --bg:#fdfdfc; --ink:#141414; --muted:#8a8a86; --card-w:128px; --card-h:84px; }
+    *{ box-sizing:border-box; }
+    html,body{ margin:0; padding:0; height:100%; background:var(--bg); color:var(--ink);
+      font-family:-apple-system,"Pretendard","Helvetica Neue",Arial,sans-serif; overflow:hidden; }
+    .stage{ position:relative; width:100%; height:100vh; perspective:1400px; overflow:hidden; }
+    .ring{ position:absolute; top:58%; left:50%; width:0; height:0; transform-style:preserve-3d; will-change:transform; }
+    .card{ position:absolute; top:calc(var(--card-h) / -2); left:calc(var(--card-w) / -2);
+      width:var(--card-w); height:var(--card-h); background-size:cover; background-position:center;
+      border-radius:3px; box-shadow:0 6px 18px rgba(0,0,0,.14); backface-visibility:hidden; cursor:pointer;
+      transition:box-shadow .25s ease, filter .25s ease; display:block; text-decoration:none; }
+    .card:hover{ box-shadow:0 10px 26px rgba(0,0,0,.22); filter:brightness(1.03); }
+    .back-link{ position:absolute; top:24px; left:28px; font-size:20px; color:var(--ink); text-decoration:none; z-index:2; }
+    .back-link:hover{ color:var(--muted); }
+    .hint{ position:absolute; top:28px; left:64px; font-size:13px; letter-spacing:.02em; color:var(--muted); }
+    .season{ position:absolute; left:50%; transform:translateX(-50%); font-size:22px; font-style:italic;
+      color:var(--ink); pointer-events:none; user-select:none; opacity:.92; }
+    .season.top{ top:9%; } .season.bottom{ bottom:9%; }
+    .rail{ position:absolute; right:32px; top:50%; transform:translateY(-50%); width:2px; height:160px;
+      background:rgba(0,0,0,.08); }
+    .rail::after{ content:""; position:absolute; left:50%; top:var(--pos,50%); width:6px; height:6px;
+      margin-left:-3px; margin-top:-3px; border-radius:50%; background:var(--ink); transition:top .05s linear; }
+  </style>
+</head>
+<body>
+  <div class="stage" id="stage">
+    <a class="back-link" href="{{ "/" | relative_url }}">&larr;</a>
+    <div class="hint">scroll up/down, or drag ...</div>
+    <div class="season top">autumn</div>
+    <div class="ring" id="ring"></div>
+    <div class="season bottom">spring</div>
+    <div class="rail" id="rail"></div>
+  </div>
+
+  <script>
+    const items = [
+      {% if site.posts.size > 0 %}
+        {% for post in site.posts %}
+        {
+          slug: {{ post.slug | jsonify }},
+          thumbnail: {% if post.thumbnail %}{{ post.thumbnail | relative_url | jsonify }}{% else %}{{ "https://picsum.photos/seed/" | append: post.slug | append: "/240/160" | jsonify }}{% endif %},
+          season: {{ post.season | default: "" | jsonify }},
+          href: {{ post.url | relative_url | jsonify }}
+        }{% unless forloop.last %},{% endunless %}
+        {% endfor %}
+      {% else %}
+        {% for i in (0..23) %}
+        {
+          slug: "dummy-{{ i }}",
+          thumbnail: "https://picsum.photos/seed/log{{ i }}/240/160",
+          season: {% if i < 12 %}"spring"{% else %}"autumn"{% endif %},
+          href: "#"
+        }{% unless forloop.last %},{% endunless %}
+        {% endfor %}
+      {% endif %}
+    ];
+
+    const ring = document.getElementById('ring');
+    const stage = document.getElementById('stage');
+    const rail = document.getElementById('rail');
+
+    const TILT = 20; // degrees — how much the ring is tipped back from facing the camera
+
+    const N = items.length;
+    const cardW = 128;
+    const step = 360 / N;
+    const radius = Math.round((cardW / 2) / Math.tan(Math.PI / N)) + 40;
+
+    items.forEach((item, i) => {
+      const el = document.createElement('a');
+      el.className = 'card';
+      el.href = item.href;
+      el.style.backgroundImage = `url(${item.thumbnail})`;
+      el.style.transform = `rotateY(${i * step}deg) translateZ(${radius}px)`;
+      ring.appendChild(el);
+    });
+
+    let rotation = 0, velocity = 0;
+    const damping = 0.92;
+
+    function render() {
+      ring.style.transform = `rotateX(${TILT}deg) rotateY(${rotation}deg)`;
+      const pos = ((rotation % 360) + 360) % 360;
+      rail.style.setProperty('--pos', (pos / 360 * 100) + '%');
+    }
+    render();
+
+    function tick() {
+      if (Math.abs(velocity) > 0.01) { rotation += velocity; velocity *= damping; render(); }
+      requestAnimationFrame(tick);
+    }
+    tick();
+
+    stage.addEventListener('wheel', (e) => { e.preventDefault(); velocity += e.deltaY * 0.05; }, { passive:false });
+
+    let dragging = false, lastX = 0;
+    stage.addEventListener('pointerdown', (e) => { dragging = true; lastX = e.clientX; });
+    window.addEventListener('pointerup', () => dragging = false);
+    window.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      const dx = e.clientX - lastX; lastX = e.clientX;
+      velocity += -dx * 0.3;
+    });
+  </script>
+</body>
+</html>
