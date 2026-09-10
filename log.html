@@ -73,8 +73,8 @@ permalink: /log/
 
     const N = items.length;
     const cardW = 128;
-    const step = 360 / N;
-    const radius = Math.round((cardW / 2) / Math.tan(Math.PI / N)) + 40;
+    const step = N > 0 ? 360 / N : 0;
+    const radius = N > 1 ? Math.round((cardW / 2) / Math.tan(Math.PI / N)) + 40 : 0;
 
     items.forEach((item, i) => {
       const el = document.createElement('a');
