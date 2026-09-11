@@ -15,12 +15,8 @@ const ITEMS = window.__LOG_ITEMS__ || []
 
 const SEASON_ORDER = ['spring', 'summer', 'autumn', 'winter']
 
-// Vertical step between consecutive season groups, giving the ring a staircase look.
-const SEASON_STEP = 0.25
-const SEASON_OFFSET = SEASON_ORDER.reduce((acc, season, i) => {
-  acc[season] = (i - (SEASON_ORDER.length - 1) / 2) * SEASON_STEP
-  return acc
-}, {})
+// Vertical offset per season group, giving the ring a staircase look.
+const SEASON_OFFSET = { spring: 0, summer: 0.4, autumn: 0, winter: -0.4 }
 
 // Camera pulled back ~2x so the scene reads smaller/less "zoomed in" on screen.
 const VIEW_SCALE = 2
