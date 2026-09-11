@@ -63,6 +63,15 @@
     text-align: center;
   }
 
+  /* ---- 코너 고정 브랜드/네비게이션 (모든 페이지 공통) ---- */
+  .corner-brand { position: fixed; bottom: 24px; left: 28px; font-size: 14px; letter-spacing: 0.02em;
+    color: #141414; z-index: 1000; font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; }
+  .corner-nav { position: fixed; bottom: 24px; right: 28px; z-index: 1000;
+    font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; }
+  .corner-nav a { color: #141414; text-decoration: none; font-size: 14px; margin-left: 18px; }
+  .corner-nav a:first-child { margin-left: 0; }
+  .corner-nav a:hover { color: #8a8a86; }
+
   /* ---- 커스텀 커서 ---- */
   html.has-custom-cursor,
   html.has-custom-cursor * {
@@ -159,6 +168,8 @@
   <footer>
     <div class="wrap">&copy; 2026 {{ site.title }}</div>
   </footer>
+
+  {% include corner-nav.html %}
 
   <div class="js-cursor-outer" aria-hidden="true">
     <div class="js-cursor-dot"></div>
