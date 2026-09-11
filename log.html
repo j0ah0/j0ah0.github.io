@@ -10,10 +10,7 @@ permalink: /log/
   <title>Log - {{ site.title }}</title>
   <style>
     html, body { margin: 0; height: 100%; overflow: hidden; background: #fdfdfc; }
-    .back-link { position: absolute; top: 24px; left: 28px; font-size: 20px; color: #141414;
-      text-decoration: none; z-index: 2; font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; }
-    .back-link:hover { color: #8a8a86; }
-    .scroll-hint { position: absolute; top: 56px; left: 28px; font-size: 11px; letter-spacing: 0.02em;
+    .scroll-hint { position: absolute; top: 24px; left: 28px; font-size: 14px;
       color: #141414; z-index: 2; pointer-events: none;
       font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; }
     .corner-brand { position: fixed; bottom: 24px; left: 28px; font-size: 14px; letter-spacing: 0.02em;
@@ -29,7 +26,6 @@ permalink: /log/
   </style>
 </head>
 <body>
-  <a class="back-link" href="{{ "/" | relative_url }}">&larr;</a>
   <div class="scroll-hint">scroll up / down</div>
   {% include corner-nav.html %}
   <div class="fallback" id="fallback">이 브라우저에서는 WebGL을 사용할 수 없어요.<br />크롬 설정에서 하드웨어 가속을 켜보세요.</div>
