@@ -150,7 +150,7 @@ function ActiveCard({ hovered, ...props }) {
   })
   return (
     <Billboard {...props}>
-      <Text font={FONT_URL} fontSize={0.5} position={[2.15, 3.85, 0]} anchorX="left" color="black">
+      <Text font={FONT_URL} fontSize={0.25} position={[2.15, 3.85, 0]} anchorX="left" color="black">
         {hovered !== null && `${hovered.title}\n${hovered.date || ''}`}
       </Text>
       <Image
