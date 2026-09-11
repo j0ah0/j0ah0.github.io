@@ -41,80 +41,6 @@
   .corner-nav a { color: #141414; text-decoration: none; font-size: 14px; margin-left: 18px; }
   .corner-nav a:first-child { margin-left: 0; }
   .corner-nav a:hover { color: #8a8a86; }
-
-  /* ---- 커스텀 커서 ---- */
-  html.has-custom-cursor,
-  html.has-custom-cursor * {
-    cursor: none !important;
-  }
-  .js-cursor-outer {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 0;
-    height: 0;
-    pointer-events: none;
-    z-index: 99999;
-    transform: translate(-50%, -50%);
-    will-change: transform;
-  }
-  .js-cursor-dot {
-    position: relative;
-    width: 8px;
-    height: 8px;
-    background: #000;
-    border-radius: 50%;
-    transition:
-      width 0.15s ease,
-      height 0.15s ease,
-      border-width 0.15s ease,
-      border-radius 0.15s ease,
-      background-color 0.15s ease,
-      opacity 0.15s ease;
-  }
-  .js-cursor-outer.is-pointer .js-cursor-dot {
-    width: 16px;
-    height: 16px;
-  }
-  .js-cursor-outer.is-text .js-cursor-dot {
-    width: 2px;
-    height: 20px;
-    border-radius: 1px;
-  }
-  .js-cursor-outer.is-wait .js-cursor-dot {
-    width: 16px;
-    height: 16px;
-    background: transparent;
-    border: 2px solid #000;
-    border-radius: 50%;
-    animation: cursor-spin 0.7s linear infinite;
-  }
-  @keyframes cursor-spin {
-    to { transform: rotate(360deg); }
-  }
-  .js-cursor-outer.is-crosshair .js-cursor-dot {
-    width: 0;
-    height: 0;
-    background: transparent;
-  }
-  .js-cursor-outer.is-crosshair .js-cursor-dot::before,
-  .js-cursor-outer.is-crosshair .js-cursor-dot::after {
-    content: "";
-    position: absolute;
-    background: #000;
-  }
-  .js-cursor-outer.is-crosshair .js-cursor-dot::before {
-    width: 16px;
-    height: 2px;
-    top: -1px;
-    left: -8px;
-  }
-  .js-cursor-outer.is-crosshair .js-cursor-dot::after {
-    width: 2px;
-    height: 16px;
-    top: -8px;
-    left: -1px;
-  }
 </style>
 </head>
 <body>
@@ -124,52 +50,6 @@
 
   {% include corner-nav.html %}
 
-  <div class="js-cursor-outer" aria-hidden="true">
-    <div class="js-cursor-dot"></div>
-  </div>
-  <script>
-    (function () {
-      if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
-
-      var outer = document.querySelector(".js-cursor-outer");
-      if (!outer) return;
-
-      document.documentElement.classList.add("has-custom-cursor");
-
-      window.addEventListener("mousemove", function (e) {
-        outer.style.transform = "translate(" + e.clientX + "px, " + e.clientY + "px) translate(-50%, -50%)";
-      });
-
-      var POINTER_SELECTOR = 'a, button, [role="button"], input[type="submit"], input[type="button"], summary, .cursor-pointer';
-      var TEXT_SELECTOR = 'input:not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]), textarea, [contenteditable="true"]';
-      var CROSSHAIR_SELECTOR = '[data-cursor="crosshair"]';
-
-      function setState(state) {
-        outer.classList.remove("is-pointer", "is-text", "is-wait", "is-crosshair");
-        if (state) outer.classList.add(state);
-      }
-
-      document.addEventListener("mouseover", function (e) {
-        var target = e.target;
-        if (target.closest && target.closest(CROSSHAIR_SELECTOR)) setState("is-crosshair");
-        else if (target.closest && target.closest(TEXT_SELECTOR)) setState("is-text");
-        else if (target.closest && target.closest(POINTER_SELECTOR)) setState("is-pointer");
-      });
-
-      document.addEventListener("mouseout", function (e) {
-        var related = e.relatedTarget;
-        var stillInside = related && related.closest && (
-          related.closest(CROSSHAIR_SELECTOR) ||
-          related.closest(TEXT_SELECTOR) ||
-          related.closest(POINTER_SELECTOR)
-        );
-        if (!stillInside) setState(null);
-      });
-
-      window.setCursorWaiting = function (isWaiting) {
-        outer.classList.toggle("is-wait", !!isWaiting);
-      };
-    })();
-  </script>
+  {% include custom-cursor.html %}
 </body>
 </html>
