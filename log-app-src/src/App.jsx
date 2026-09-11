@@ -115,7 +115,10 @@ function Card({ item, active, hovered, onPointerOver, onPointerOut, ...props }) 
   const ref = useRef()
   useFrame((state, delta) => {
     const f = hovered ? 1.4 : active ? 1.25 : 1
-    easing.damp3(ref.current.position, [0, hovered ? 0.25 : 0, 0], 0.1, delta)
+    // Local -X is the group's outward radial direction (the group is already
+    // rotated to face the ring center), so this pops the card away from the
+    // center on hover instead of lifting it straight up.
+    easing.damp3(ref.current.position, [hovered ? -1 : 0, 0, 0], 0.1, delta)
     easing.damp3(ref.current.scale, [1.618 * f, 1 * f, 1], 0.15, delta)
   })
   return (
