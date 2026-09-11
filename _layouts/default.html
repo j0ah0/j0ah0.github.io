@@ -32,13 +32,6 @@
   .post-list .post-date { margin-right: 10px; }
   .post-link { font-size: 17px; color: var(--accent); text-decoration: none; }
   .post-link:hover { text-decoration: underline; }
-  footer {
-    border-top: 1px solid var(--border);
-    padding: 24px 0;
-    color: var(--muted);
-    font-size: 13px;
-    text-align: center;
-  }
 
   /* ---- 코너 고정 브랜드/네비게이션 (모든 페이지 공통) ---- */
   .corner-brand { position: fixed; bottom: 24px; left: 28px; font-size: 14px; letter-spacing: 0.02em;
@@ -128,10 +121,6 @@
   <main class="wrap">
     {{ content }}
   </main>
-
-  <footer>
-    <div class="wrap">&copy; 2026 {{ site.title }}</div>
-  </footer>
 
   {% include corner-nav.html %}
 
