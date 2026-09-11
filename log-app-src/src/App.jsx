@@ -95,8 +95,8 @@ function Cards({ category, data, from = 0, len = Math.PI * 2, radius = 5.25, onP
   const textPosition = from + len / 2
   return (
     <group {...props}>
-      <Billboard position={[Math.sin(textPosition) * radius * 1.4, 0.65, Math.cos(textPosition) * radius * 1.4]}>
-        <Text font={FONT_URL} fontSize={0.42} letterSpacing={0.05} anchorX="center" color="#141414">
+      <Billboard position={[Math.sin(textPosition) * radius * 1.4, 0.5, Math.cos(textPosition) * radius * 1.4]}>
+        <Text font={FONT_URL} fontSize={0.25} anchorX="center" color="black">
           {category}
         </Text>
       </Billboard>
@@ -149,7 +149,7 @@ function ActiveCard({ hovered, ...props }) {
   })
   return (
     <Billboard {...props}>
-      <Text font={FONT_URL} fontSize={0.4} position={[2.15, 3.85, 0]} anchorX="left" color="black">
+      <Text font={FONT_URL} fontSize={0.5} position={[2.15, 3.85, 0]} anchorX="left" color="black">
         {hovered !== null && `${hovered.title}\n${hovered.date || ''}`}
       </Text>
       <Image
