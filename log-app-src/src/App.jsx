@@ -83,11 +83,17 @@ function Scene({ children, ...props }) {
 
 function Cards({ category, data, from = 0, len = Math.PI * 2, radius = 5.25, onPointerOver, onPointerOut, ...props }) {
   const [hovered, hover] = useState(null)
+  const textRef = useRef()
   const amount = data.length
   const textPosition = from + len / 2
+
+  useFrame((state, delta) => {
+    easing.damp(textRef.current.position, 'y', hovered !== null ? -0.5 : 0.5, 0.2, delta)
+  })
+
   return (
     <group {...props}>
-      <Billboard position={[Math.sin(textPosition) * radius * 1.55, -0.5, Math.cos(textPosition) * radius * 1.55]}>
+      <Billboard ref={textRef} position={[Math.sin(textPosition) * radius * 1.55, 0.5, Math.cos(textPosition) * radius * 1.55]}>
         <Text font={FONT_URL} fontSize={0.25} anchorX="center" color="black">
           {category}
         </Text>
