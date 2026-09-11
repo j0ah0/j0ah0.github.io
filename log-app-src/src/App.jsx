@@ -49,7 +49,7 @@ function Scene({ children, ...props }) {
   useFrame((state, delta) => {
     ref.current.rotation.y = -scroll.offset * (Math.PI * 2) // Rotate contents
     state.events.update() // Raycasts every frame rather than on pointer-move
-    easing.damp3(state.camera.position, [-state.pointer.x * 3.5, state.pointer.y * 3.5 + 4.5, 9], 0.15, delta)
+    easing.damp3(state.camera.position, [-state.pointer.x * 3.5, state.pointer.y * 3.5 + 4.5, 15], 0.15, delta)
     state.camera.lookAt(0, 0, 0)
   })
 
