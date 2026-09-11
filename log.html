@@ -35,12 +35,14 @@ permalink: /log/
     window.__LOG_ITEMS__ = [
       {% if site.posts.size > 0 %}
         {% for post in site.posts %}
+        {% assign post_month = post.date | date: "%-m" | plus: 0 %}
+        {% capture post_season %}{% if post.season %}{{ post.season }}{% elsif post_month >= 3 and post_month <= 5 %}spring{% elsif post_month >= 6 and post_month <= 8 %}summer{% elsif post_month >= 9 and post_month <= 11 %}autumn{% else %}winter{% endif %}{% endcapture %}
         {
           slug: {{ post.slug | jsonify }},
           title: {{ post.title | default: post.slug | jsonify }},
           date: {{ post.date | date: "%Y-%m-%d" | jsonify }},
           thumbnail: {% if post.thumbnail %}{{ post.thumbnail | relative_url | jsonify }}{% else %}{{ "https://picsum.photos/seed/" | append: post.slug | append: "/320/198" | jsonify }}{% endif %},
-          season: {{ post.season | default: "" | jsonify }},
+          season: {{ post_season | strip | jsonify }},
           href: {{ post.url | relative_url | jsonify }}
         }{% unless forloop.last %},{% endunless %}
         {% endfor %}
