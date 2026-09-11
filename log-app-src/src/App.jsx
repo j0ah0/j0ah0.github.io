@@ -1,8 +1,7 @@
 import * as THREE from 'three'
-import { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, extend, useFrame } from '@react-three/fiber'
 import { Image, ScrollControls, useScroll, Billboard, Text } from '@react-three/drei'
-import { suspend } from 'suspend-react'
 import { easing, geometry } from 'maath'
 
 extend(geometry)
@@ -27,18 +26,73 @@ function groupBySeason(items) {
   return buckets
 }
 
-export const App = () => (
-  <Canvas dpr={[1, 1.5]} camera={{ position: [0, 4.5, 9], fov: 45 }}>
-    <ScrollControls pages={4} infinite>
-      <Scene position={[0, 1.5, 0]} />
-    </ScrollControls>
-  </Canvas>
-)
+export const App = () => {
+  const [hovered, setHovered] = useState(null)
+  return (
+    <>
+      <Canvas dpr={[1, 1.5]} camera={{ position: [0, 4.5, 9], fov: 45 }}>
+        <ScrollControls pages={4} infinite>
+          <Scene position={[0, 1.5, 0]} onHover={setHovered} />
+        </ScrollControls>
+      </Canvas>
+      <HoverPreview item={hovered} />
+    </>
+  )
+}
 
-function Scene({ children, ...props }) {
+// Fixed top-right overlay (plain DOM, outside the WebGL canvas) showing the
+// hovered post's photo/title — replaces the old in-scene ActiveCard. Cross-
+// fades to the new item instead of swapping instantly.
+function HoverPreview({ item }) {
+  const [displayItem, setDisplayItem] = useState(item)
+  const [visible, setVisible] = useState(!!item)
+
+  useEffect(() => {
+    if (item === displayItem) return
+    setVisible(false)
+    const t = setTimeout(() => {
+      setDisplayItem(item)
+      setVisible(!!item)
+    }, 200)
+    return () => clearTimeout(t)
+  }, [item, displayItem])
+
+  if (!displayItem) return null
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        top: 60,
+        right: 28,
+        zIndex: 500,
+        pointerEvents: 'none',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 12,
+        fontFamily: '-apple-system, "Helvetica Neue", Arial, sans-serif',
+        opacity: visible ? 1 : 0,
+        transition: 'opacity 0.2s ease',
+      }}
+    >
+      <div style={{ width: 112, height: 80, overflow: 'hidden', background: '#f3f4f6', boxShadow: '0 1px 2px rgba(0,0,0,0.08)' }}>
+        <img
+          src={displayItem.thumbnail}
+          alt={displayItem.title}
+          referrerPolicy="no-referrer"
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+        />
+      </div>
+      <p style={{ margin: 0, fontSize: 12, fontWeight: 500, letterSpacing: '-0.01em', color: '#1f2937' }}>
+        {displayItem.title}
+      </p>
+    </div>
+  )
+}
+
+function Scene({ children, onHover, ...props }) {
   const ref = useRef()
   const scroll = useScroll()
-  const [hovered, hover] = useState(null)
 
   const buckets = useMemo(() => groupBySeason(ITEMS), [])
   // Every season gets at least a sliver of the ring, so its label always shows
@@ -65,8 +119,8 @@ function Scene({ children, ...props }) {
         from={from}
         len={len}
         position={[0, SEASON_OFFSET[season], 0]}
-        onPointerOver={hover}
-        onPointerOut={hover}
+        onPointerOver={onHover}
+        onPointerOut={onHover}
       />
     )
     from += len
@@ -76,7 +130,6 @@ function Scene({ children, ...props }) {
   return (
     <group ref={ref} {...props}>
       {groups}
-      <ActiveCard hovered={hovered} />
     </group>
   )
 }
@@ -136,31 +189,5 @@ function Card({ item, active, hovered, onPointerOver, onPointerOut, ...props }) 
     >
       <Image ref={ref} transparent radius={0.075} url={item.thumbnail} scale={[1.618, 1, 1]} side={THREE.DoubleSide} />
     </group>
-  )
-}
-
-function ActiveCard({ hovered, ...props }) {
-  const ref = useRef()
-  // Starts invisible so no thumbnail flashes on load before anything is hovered.
-  useLayoutEffect(() => void (ref.current.material.opacity = 0), [])
-  useLayoutEffect(() => void (ref.current.material.zoom = 0.8), [hovered])
-  useFrame((state, delta) => {
-    easing.damp(ref.current.material, 'zoom', 1, 0.5, delta)
-    easing.damp(ref.current.material, 'opacity', hovered !== null, 0.3, delta)
-  })
-  return (
-    <Billboard {...props}>
-      <Text font={FONT_URL} fontSize={0.25} position={[2.15, 3.85, 0]} anchorX="left" color="black">
-        {hovered !== null && `${hovered.title}\n${hovered.date || ''}`}
-      </Text>
-      <Image
-        ref={ref}
-        transparent
-        radius={0.3}
-        position={[0, 1.5, 0]}
-        scale={[3.5, 1.618 * 3.5, 0.2, 1]}
-        url={hovered ? hovered.thumbnail : ITEMS[0]?.thumbnail}
-      />
-    </Billboard>
   )
 }
