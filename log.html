@@ -9,42 +9,22 @@ permalink: /log/
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Log - {{ site.title }}</title>
   <style>
-    :root{ --bg:#fdfdfc; --ink:#141414; --muted:#8a8a86; }
-    *{ box-sizing:border-box; }
-    html,body{ margin:0; padding:0; height:100%; background:var(--bg); color:var(--ink);
-      font-family:-apple-system,"Pretendard","Helvetica Neue",Arial,sans-serif; overflow:hidden; }
-    .stage{ position:relative; width:100%; height:100vh; }
-    canvas{ display:block; cursor:grab; }
-    canvas:active{ cursor:grabbing; }
-    .back-link{ position:absolute; top:24px; left:28px; font-size:20px; color:var(--ink); text-decoration:none; z-index:2; }
-    .back-link:hover{ color:var(--muted); }
-    .hint{ position:absolute; top:28px; left:64px; font-size:13px; letter-spacing:.02em; color:var(--muted); z-index:2; }
-    .fallback{ position:absolute; inset:0; display:none; align-items:center; justify-content:center;
-      padding:0 40px; text-align:center; color:var(--muted); font-size:14px; }
-    .preview{ position:absolute; top:50%; right:48px; transform:translateY(-50%) translateX(12px);
-      width:320px; opacity:0; pointer-events:none; transition:opacity .25s ease, transform .25s ease; z-index:2; }
-    .preview.visible{ opacity:1; transform:translateY(-50%) translateX(0); }
-    .preview img{ width:100%; aspect-ratio:1.618/1; object-fit:cover; border-radius:6px; box-shadow:0 12px 30px rgba(0,0,0,.16); display:block; }
-    .preview .title{ margin-top:12px; font-size:15px; font-weight:600; }
-    .preview .date{ margin-top:4px; font-size:12px; color:var(--muted); }
-    @media (max-width: 760px){ .preview{ display:none; } }
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #fdfdfc; }
+    .back-link { position: absolute; top: 24px; left: 28px; font-size: 20px; color: #141414;
+      text-decoration: none; z-index: 2; font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; }
+    .back-link:hover { color: #8a8a86; }
+    .fallback { position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
+      padding: 0 40px; text-align: center; color: #8a8a86; font-size: 14px;
+      font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; }
   </style>
 </head>
 <body>
-  <div class="stage" id="stage">
-    <a class="back-link" href="{{ "/" | relative_url }}">&larr;</a>
-    <div class="hint">scroll up/down, or drag ...</div>
-    <div class="fallback" id="fallback">이 브라우저에서는 WebGL을 사용할 수 없어요.<br />크롬 설정에서 하드웨어 가속을 켜보세요.</div>
-    <div class="preview" id="preview">
-      <img id="previewImg" src="" alt="" />
-      <div class="title" id="previewTitle"></div>
-      <div class="date" id="previewDate"></div>
-    </div>
-  </div>
+  <a class="back-link" href="{{ "/" | relative_url }}">&larr;</a>
+  <div class="fallback" id="fallback">이 브라우저에서는 WebGL을 사용할 수 없어요.<br />크롬 설정에서 하드웨어 가속을 켜보세요.</div>
+  <div id="root" style="height:100vh;"></div>
 
-  <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
   <script>
-    const items = [
+    window.__LOG_ITEMS__ = [
       {% if site.posts.size > 0 %}
         {% for post in site.posts %}
         {
@@ -70,244 +50,10 @@ permalink: /log/
       {% endif %}
     ];
 
-    const stage = document.getElementById('stage');
-    const fallback = document.getElementById('fallback');
-
     if (!window.WebGLRenderingContext) {
-      fallback.style.display = 'flex';
-    } else {
-      try {
-        initScene();
-      } catch (err) {
-        console.error(err);
-        fallback.style.display = 'flex';
-      }
-    }
-
-    function makeLabelTexture(text) {
-      const canvas = document.createElement('canvas');
-      canvas.width = 640; canvas.height = 320;
-      const ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#141414';
-      ctx.font = 'italic 700 120px -apple-system, "Helvetica Neue", Arial, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(text, canvas.width / 2, canvas.height / 2);
-      const tex = new THREE.CanvasTexture(canvas);
-      tex.needsUpdate = true;
-      return tex;
-    }
-
-    // crop a texture to CSS background-size:cover behavior for a given plane aspect
-    function coverTexture(tex, planeAspect) {
-      const imgAspect = tex.image.width / tex.image.height;
-      if (imgAspect > planeAspect) {
-        const scale = planeAspect / imgAspect;
-        tex.repeat.set(scale, 1);
-        tex.offset.set((1 - scale) / 2, 0);
-      } else {
-        const scale = imgAspect / planeAspect;
-        tex.repeat.set(1, scale);
-        tex.offset.set(0, (1 - scale) / 2);
-      }
-      tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
-    }
-
-    function damp(current, target, lambda, dt) {
-      return current + (target - current) * (1 - Math.exp(-lambda * dt));
-    }
-    function damp3(vec3, target, lambda, dt) {
-      vec3.x = damp(vec3.x, target[0], lambda, dt);
-      vec3.y = damp(vec3.y, target[1], lambda, dt);
-      vec3.z = damp(vec3.z, target[2], lambda, dt);
-    }
-
-    function initScene() {
-      const SEASONS = ['spring', 'summer', 'autumn', 'winter'];
-      const cardW = 1.618, cardH = 1;
-      const radius = 5.25;
-
-      const bySeason = {};
-      SEASONS.forEach((s) => (bySeason[s] = []));
-      items.forEach((it) => {
-        const s = SEASONS.includes(it.season) ? it.season : 'spring';
-        bySeason[s].push(it);
-      });
-      const activeSeasons = SEASONS.filter((s) => bySeason[s].length);
-
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, radius * 6 + 50);
-      camera.position.set(0, 4.5, 9);
-      camera.lookAt(0, 0, 0);
-
-      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-      if (!renderer.getContext()) throw new Error('no webgl context');
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      stage.appendChild(renderer.domElement);
-
-      scene.add(new THREE.AmbientLight(0xffffff, 1.0));
-
-      const ring = new THREE.Group();
-      ring.position.set(0, 1.5, 0);
-      scene.add(ring);
-
-      const loader = new THREE.TextureLoader();
-      loader.crossOrigin = 'anonymous';
-
-      const cardMeshes = [];
-      const cardGroups = [];
-
-      let from = 0;
-      activeSeasons.forEach((season) => {
-        const list = bySeason[season];
-        const len = (Math.PI * 2 * list.length) / items.length;
-        buildCategory(season, list, from, len);
-        from += len;
-      });
-
-      function buildCategory(season, list, from, len) {
-        const n = list.length;
-        if (!n) return;
-
-        // billboard season label above the middle of this arc
-        const midAngle = from + len / 2;
-        const labelGeo = new THREE.PlaneGeometry(2, 1);
-        const labelMat = new THREE.MeshBasicMaterial({ map: makeLabelTexture(season), transparent: true, side: THREE.DoubleSide, depthWrite: false });
-        const label = new THREE.Mesh(labelGeo, labelMat);
-        label.position.set(Math.sin(midAngle) * radius * 1.4, 0.5, Math.cos(midAngle) * radius * 1.4);
-        label.userData.billboard = true;
-        ring.add(label);
-
-        list.forEach((item, i) => {
-          const angle = from + (i / n) * len;
-          const group = new THREE.Group();
-          group.position.set(Math.sin(angle) * radius, 0, Math.cos(angle) * radius);
-          group.rotation.y = angle;
-          ring.add(group);
-
-          const geo = new THREE.PlaneGeometry(cardW, cardH);
-          const mat = new THREE.MeshBasicMaterial({ color: 0xdddddd, side: THREE.DoubleSide, transparent: true });
-          const mesh = new THREE.Mesh(geo, mat);
-          group.add(mesh);
-
-          mesh.userData = { item, season, baseScale: 1 };
-          cardMeshes.push(mesh);
-          cardGroups.push({ mesh, group });
-
-          loader.load(item.thumbnail, (tex) => {
-            coverTexture(tex, cardW / cardH);
-            mat.map = tex;
-            mat.color.set(0xffffff);
-            mat.needsUpdate = true;
-          });
-        });
-      }
-
-      // --- active-card DOM preview -------------------------------------
-      const previewEl = document.getElementById('preview');
-      const previewImg = document.getElementById('previewImg');
-      const previewTitle = document.getElementById('previewTitle');
-      const previewDate = document.getElementById('previewDate');
-      let hoveredMesh = null;
-
-      function setHovered(mesh) {
-        if (hoveredMesh === mesh) return;
-        hoveredMesh = mesh;
-        if (mesh) {
-          const item = mesh.userData.item;
-          previewImg.src = item.thumbnail;
-          previewTitle.textContent = item.title || '';
-          previewDate.textContent = item.date || '';
-          previewEl.classList.add('visible');
-        } else {
-          previewEl.classList.remove('visible');
-        }
-      }
-
-      // --- camera parallax + render loop --------------------------------
-      const pointer = { x: 0, y: 0 };
-      const raycaster = new THREE.Raycaster();
-      const clock = new THREE.Clock();
-
-      function onResize() {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-      }
-      window.addEventListener('resize', onResize);
-
-      let rotation = 0, velocity = 0;
-      const damping = 0.92;
-
-      function tick() {
-        const dt = Math.min(clock.getDelta(), 0.1);
-
-        if (Math.abs(velocity) > 0.0001) {
-          rotation += velocity;
-          velocity *= damping;
-        }
-        ring.rotation.y = rotation;
-
-        // billboards always face the camera. Labels are children of the
-        // rotating `ring` group, so use lookAt (which accounts for the
-        // parent's transform automatically) rather than copying the
-        // camera's world quaternion directly — that only stayed correct
-        // while the ring sat at rotation 0.
-        ring.children.forEach((child) => {
-          if (child.userData.billboard) {
-            child.lookAt(camera.position);
-          }
-        });
-
-        // hover test
-        raycaster.setFromCamera(pointer, camera);
-        const hit = raycaster.intersectObjects(cardMeshes)[0];
-        setHovered(hit ? hit.object : null);
-
-        // per-card hover animation: the hovered card rises + grows more,
-        // the rest of its season's shelf grows a little, everyone else rests
-        cardGroups.forEach(({ mesh, group }) => {
-          const isHovered = mesh === hoveredMesh;
-          const isActiveSeason = hoveredMesh && mesh.userData.season === hoveredMesh.userData.season;
-          const targetScale = isHovered ? 1.25 : isActiveSeason ? 1.08 : 1;
-          const targetY = isHovered ? 0.35 : 0;
-          const s = damp(mesh.scale.x, targetScale, 6, dt);
-          mesh.scale.set(s, s, 1);
-          mesh.position.y = damp(mesh.position.y, targetY, 8, dt);
-        });
-
-        // gentle camera drift toward the pointer
-        damp3(camera.position, [-pointer.x * 2, pointer.y * 2 + 4.5, 9], 4, dt);
-        camera.lookAt(0, 0, 0);
-
-        renderer.render(scene, camera);
-        requestAnimationFrame(tick);
-      }
-      tick();
-
-      stage.addEventListener('wheel', (e) => { e.preventDefault(); velocity += e.deltaY * 0.0006; }, { passive: false });
-
-      let dragging = false, lastX = 0, dragMoved = false;
-      stage.addEventListener('pointerdown', (e) => { dragging = true; dragMoved = false; lastX = e.clientX; });
-      window.addEventListener('pointerup', () => dragging = false);
-      window.addEventListener('pointermove', (e) => {
-        pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
-        pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
-        if (!dragging) return;
-        const dx = e.clientX - lastX; lastX = e.clientX;
-        if (Math.abs(dx) > 1) dragMoved = true;
-        velocity += dx * 0.004;
-      });
-
-      stage.addEventListener('click', () => {
-        if (dragMoved) return;
-        if (hoveredMesh && hoveredMesh.userData.item.href && hoveredMesh.userData.item.href !== '#') {
-          window.location.href = hoveredMesh.userData.item.href;
-        }
-      });
+      document.getElementById('fallback').style.display = 'flex';
     }
   </script>
+  <script type="module" src="{{ "/assets/log-app.js" | relative_url }}"></script>
 </body>
 </html>

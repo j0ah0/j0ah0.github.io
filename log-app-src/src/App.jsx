@@ -1,0 +1,140 @@
+import * as THREE from 'three'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { Canvas, extend, useFrame } from '@react-three/fiber'
+import { Image, ScrollControls, useScroll, Billboard, Text } from '@react-three/drei'
+import { suspend } from 'suspend-react'
+import { easing, geometry } from 'maath'
+
+extend(geometry)
+
+const FONT_URL = 'https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-400-normal.woff'
+
+// Real post data, injected by the Jekyll page before this bundle loads.
+// Shape: { slug, title, date, thumbnail, season, href }[]
+const ITEMS = window.__LOG_ITEMS__ || []
+
+const SEASON_ORDER = ['spring', 'summer', 'autumn', 'winter']
+
+function groupBySeason(items) {
+  const buckets = { spring: [], summer: [], autumn: [], winter: [] }
+  items.forEach((it) => {
+    const s = SEASON_ORDER.includes(it.season) ? it.season : 'spring'
+    buckets[s].push(it)
+  })
+  return buckets
+}
+
+export const App = () => (
+  <Canvas dpr={[1, 1.5]} camera={{ position: [0, 4.5, 9], fov: 45 }}>
+    <ScrollControls pages={4} infinite>
+      <Scene position={[0, 1.5, 0]} />
+    </ScrollControls>
+  </Canvas>
+)
+
+function Scene({ children, ...props }) {
+  const ref = useRef()
+  const scroll = useScroll()
+  const [hovered, hover] = useState(null)
+
+  const buckets = useMemo(() => groupBySeason(ITEMS), [])
+  const total = ITEMS.length || 1
+
+  useFrame((state, delta) => {
+    ref.current.rotation.y = -scroll.offset * (Math.PI * 2) // Rotate contents
+    state.events.update() // Raycasts every frame rather than on pointer-move
+    easing.damp3(state.camera.position, [-state.pointer.x * 2, state.pointer.y * 2 + 4.5, 9], 0.3, delta)
+    state.camera.lookAt(0, 0, 0)
+  })
+
+  let from = 0
+  const groups = SEASON_ORDER.map((season) => {
+    const data = buckets[season]
+    const len = (data.length / total) * Math.PI * 2
+    const el = data.length ? (
+      <Cards key={season} category={season} data={data} from={from} len={len} onPointerOver={hover} onPointerOut={hover} />
+    ) : null
+    from += len
+    return el
+  })
+
+  return (
+    <group ref={ref} {...props}>
+      {groups}
+      <ActiveCard hovered={hovered} />
+    </group>
+  )
+}
+
+function Cards({ category, data, from = 0, len = Math.PI * 2, radius = 5.25, onPointerOver, onPointerOut, ...props }) {
+  const [hovered, hover] = useState(null)
+  const amount = data.length
+  const textPosition = from + len / 2
+  return (
+    <group {...props}>
+      <Billboard position={[Math.sin(textPosition) * radius * 1.4, 0.5, Math.cos(textPosition) * radius * 1.4]}>
+        <Text font={FONT_URL} fontSize={0.25} anchorX="center" color="black">
+          {category}
+        </Text>
+      </Billboard>
+      {data.map((item, i) => {
+        const angle = from + (i / amount) * len
+        return (
+          <Card
+            key={item.slug}
+            item={item}
+            onPointerOver={(e) => (e.stopPropagation(), hover(i), onPointerOver(item))}
+            onPointerOut={() => (hover(null), onPointerOut(null))}
+            position={[Math.sin(angle) * radius, 0, Math.cos(angle) * radius]}
+            rotation={[0, Math.PI / 2 + angle, 0]}
+            active={hovered !== null}
+            hovered={hovered === i}
+          />
+        )
+      })}
+    </group>
+  )
+}
+
+function Card({ item, active, hovered, onPointerOver, onPointerOut, ...props }) {
+  const ref = useRef()
+  useFrame((state, delta) => {
+    const f = hovered ? 1.4 : active ? 1.25 : 1
+    easing.damp3(ref.current.position, [0, hovered ? 0.25 : 0, 0], 0.1, delta)
+    easing.damp3(ref.current.scale, [1.618 * f, 1 * f, 1], 0.15, delta)
+  })
+  return (
+    <group
+      {...props}
+      onPointerOver={onPointerOver}
+      onPointerOut={onPointerOut}
+      onClick={(e) => (e.stopPropagation(), item.href && item.href !== '#' && (window.location.href = item.href))}
+    >
+      <Image ref={ref} transparent radius={0.075} url={item.thumbnail} scale={[1.618, 1, 1]} side={THREE.DoubleSide} />
+    </group>
+  )
+}
+
+function ActiveCard({ hovered, ...props }) {
+  const ref = useRef()
+  useLayoutEffect(() => void (ref.current.material.zoom = 0.8), [hovered])
+  useFrame((state, delta) => {
+    easing.damp(ref.current.material, 'zoom', 1, 0.5, delta)
+    easing.damp(ref.current.material, 'opacity', hovered !== null, 0.3, delta)
+  })
+  return (
+    <Billboard {...props}>
+      <Text font={FONT_URL} fontSize={0.4} position={[2.15, 3.85, 0]} anchorX="left" color="black">
+        {hovered !== null && `${hovered.title}\n${hovered.date || ''}`}
+      </Text>
+      <Image
+        ref={ref}
+        transparent
+        radius={0.3}
+        position={[0, 1.5, 0]}
+        scale={[3.5, 1.618 * 3.5, 0.2, 1]}
+        url={hovered ? hovered.thumbnail : ITEMS[0]?.thumbnail}
+      />
+    </Billboard>
+  )
+}

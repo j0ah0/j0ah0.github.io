@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>log-app</title>
+  </head>
+  <body style="margin:0;height:100vh;overflow:hidden;background:#fdfdfc;">
+    <script>
+      window.__LOG_ITEMS__ = Array.from({ length: 40 }, (_, i) => ({
+        slug: 'dummy-' + i,
+        title: '테스트 글 ' + i,
+        date: '2026-0' + ((i % 9) + 1) + '-01',
+        thumbnail: 'https://picsum.photos/seed/log' + i + '/320/198',
+        season: i < 10 ? 'spring' : i < 20 ? 'summer' : i < 30 ? 'autumn' : 'winter',
+        href: '#',
+      }))
+    </script>
+    <div id="root" style="height:100vh;"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
