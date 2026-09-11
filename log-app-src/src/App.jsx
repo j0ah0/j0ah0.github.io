@@ -87,7 +87,7 @@ function Cards({ category, data, from = 0, len = Math.PI * 2, radius = 5.25, onP
   const textPosition = from + len / 2
   return (
     <group {...props}>
-      <Billboard position={[Math.sin(textPosition) * radius * 1.15, 0.1, Math.cos(textPosition) * radius * 1.15]}>
+      <Billboard position={[Math.sin(textPosition) * radius * 1.7, 0.1, Math.cos(textPosition) * radius * 1.7]}>
         <Text font={FONT_URL} fontSize={0.25} anchorX="center" color="black">
           {category}
         </Text>
