@@ -4,3 +4,5 @@ _site/
 .jekyll-metadata
 vendor/
 preview.html
+log-app-src/node_modules/
+log-app-src/dist/

@@ -15,6 +15,16 @@ const ITEMS = window.__LOG_ITEMS__ || []
 
 const SEASON_ORDER = ['spring', 'summer', 'autumn', 'winter']
 
+// Vertical step between consecutive season groups, giving the ring a staircase look.
+const SEASON_STEP = 0.45
+const SEASON_OFFSET = SEASON_ORDER.reduce((acc, season, i) => {
+  acc[season] = (i - (SEASON_ORDER.length - 1) / 2) * SEASON_STEP
+  return acc
+}, {})
+
+// Camera pulled back ~1.5x so the scene reads smaller/less "zoomed in" on screen.
+const VIEW_SCALE = 1.5
+
 function groupBySeason(items) {
   const buckets = { spring: [], summer: [], autumn: [], winter: [] }
   items.forEach((it) => {
@@ -25,7 +35,7 @@ function groupBySeason(items) {
 }
 
 export const App = () => (
-  <Canvas dpr={[1, 1.5]} camera={{ position: [0, 4.5, 9], fov: 45 }}>
+  <Canvas dpr={[1, 1.5]} camera={{ position: [0, 4.5 * VIEW_SCALE, 9 * VIEW_SCALE], fov: 45 }}>
     <ScrollControls pages={4} infinite>
       <Scene position={[0, 1.5, 0]} />
     </ScrollControls>
@@ -43,7 +53,12 @@ function Scene({ children, ...props }) {
   useFrame((state, delta) => {
     ref.current.rotation.y = -scroll.offset * (Math.PI * 2) // Rotate contents
     state.events.update() // Raycasts every frame rather than on pointer-move
-    easing.damp3(state.camera.position, [-state.pointer.x * 2, state.pointer.y * 2 + 4.5, 9], 0.3, delta)
+    easing.damp3(
+      state.camera.position,
+      [-state.pointer.x * 2 * VIEW_SCALE, (state.pointer.y * 2 + 4.5) * VIEW_SCALE, 9 * VIEW_SCALE],
+      0.3,
+      delta
+    )
     state.camera.lookAt(0, 0, 0)
   })
 
@@ -52,7 +67,16 @@ function Scene({ children, ...props }) {
     const data = buckets[season]
     const len = (data.length / total) * Math.PI * 2
     const el = data.length ? (
-      <Cards key={season} category={season} data={data} from={from} len={len} onPointerOver={hover} onPointerOut={hover} />
+      <Cards
+        key={season}
+        category={season}
+        data={data}
+        from={from}
+        len={len}
+        position={[0, SEASON_OFFSET[season], 0]}
+        onPointerOver={hover}
+        onPointerOut={hover}
+      />
     ) : null
     from += len
     return el
@@ -72,9 +96,9 @@ function Cards({ category, data, from = 0, len = Math.PI * 2, radius = 5.25, onP
   const textPosition = from + len / 2
   return (
     <group {...props}>
-      <Billboard position={[Math.sin(textPosition) * radius * 1.4, 0.5, Math.cos(textPosition) * radius * 1.4]}>
-        <Text font={FONT_URL} fontSize={0.25} anchorX="center" color="black">
-          {category}
+      <Billboard position={[Math.sin(textPosition) * radius * 1.4, 0.65, Math.cos(textPosition) * radius * 1.4]}>
+        <Text font={FONT_URL} fontSize={0.42} letterSpacing={0.05} anchorX="center" color="#141414">
+          {category.toUpperCase()}
         </Text>
       </Billboard>
       {data.map((item, i) => {

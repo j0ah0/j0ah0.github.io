@@ -13,6 +13,16 @@ permalink: /log/
     .back-link { position: absolute; top: 24px; left: 28px; font-size: 20px; color: #141414;
       text-decoration: none; z-index: 2; font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; }
     .back-link:hover { color: #8a8a86; }
+    .scroll-hint { position: absolute; top: 56px; left: 28px; font-size: 11px; letter-spacing: 0.08em;
+      color: #a3a39d; text-transform: uppercase; z-index: 2; pointer-events: none;
+      font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; }
+    .brand { position: absolute; bottom: 24px; left: 28px; font-size: 14px; letter-spacing: 0.02em;
+      color: #141414; z-index: 2; font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; }
+    .log-nav { position: absolute; bottom: 24px; right: 28px; z-index: 2;
+      font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; }
+    .log-nav a { color: #141414; text-decoration: none; font-size: 14px; margin-left: 18px; }
+    .log-nav a:first-child { margin-left: 0; }
+    .log-nav a:hover { color: #8a8a86; }
     .fallback { position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
       padding: 0 40px; text-align: center; color: #8a8a86; font-size: 14px;
       font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; }
@@ -20,6 +30,15 @@ permalink: /log/
 </head>
 <body>
   <a class="back-link" href="{{ "/" | relative_url }}">&larr;</a>
+  <div class="scroll-hint">Scroll up / down</div>
+  <div class="brand">{{ site.title }}</div>
+  <nav class="log-nav">
+    <a href="{{ "/" | relative_url }}">Main</a>
+    <a href="{{ "/i-am/" | relative_url }}">I am</a>
+    <a href="{{ "/log/" | relative_url }}">Log</a>
+    <a href="{{ "/board/" | relative_url }}">Board</a>
+    <a href="mailto:{{ site.email }}">Mail to</a>
+  </nav>
   <div class="fallback" id="fallback">이 브라우저에서는 WebGL을 사용할 수 없어요.<br />크롬 설정에서 하드웨어 가속을 켜보세요.</div>
   <div id="root" style="height:100vh;"></div>
 
