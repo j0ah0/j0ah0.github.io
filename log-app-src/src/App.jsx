@@ -98,7 +98,7 @@ function Cards({ category, data, from = 0, len = Math.PI * 2, radius = 5.25, onP
     <group {...props}>
       <Billboard position={[Math.sin(textPosition) * radius * 1.4, 0.65, Math.cos(textPosition) * radius * 1.4]}>
         <Text font={FONT_URL} fontSize={0.42} letterSpacing={0.05} anchorX="center" color="#141414">
-          {category.toUpperCase()}
+          {category}
         </Text>
       </Billboard>
       {data.map((item, i) => {
