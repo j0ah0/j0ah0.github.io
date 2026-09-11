@@ -144,6 +144,8 @@ function Card({ item, active, hovered, onPointerOver, onPointerOut, ...props }) 
 
 function ActiveCard({ hovered, ...props }) {
   const ref = useRef()
+  // Starts invisible so no thumbnail flashes on load before anything is hovered.
+  useLayoutEffect(() => void (ref.current.material.opacity = 0), [])
   useLayoutEffect(() => void (ref.current.material.zoom = 0.8), [hovered])
   useFrame((state, delta) => {
     easing.damp(ref.current.material, 'zoom', 1, 0.5, delta)
