@@ -18,9 +18,6 @@ const SEASON_ORDER = ['spring', 'summer', 'autumn', 'winter']
 // Vertical offset per season group, giving the ring a staircase look.
 const SEASON_OFFSET = { spring: 0, summer: 0.4, autumn: 0, winter: -0.4 }
 
-// Camera pulled back ~2x so the scene reads smaller/less "zoomed in" on screen.
-const VIEW_SCALE = 2
-
 function groupBySeason(items) {
   const buckets = { spring: [], summer: [], autumn: [], winter: [] }
   items.forEach((it) => {
@@ -31,7 +28,7 @@ function groupBySeason(items) {
 }
 
 export const App = () => (
-  <Canvas dpr={[1, 1.5]} camera={{ position: [0, 4.5 * VIEW_SCALE, 9 * VIEW_SCALE], fov: 45 }}>
+  <Canvas dpr={[1, 1.5]} camera={{ position: [0, 4.5, 9], fov: 45 }}>
     <ScrollControls pages={4} infinite>
       <Scene position={[0, 1.5, 0]} />
     </ScrollControls>
@@ -52,12 +49,7 @@ function Scene({ children, ...props }) {
   useFrame((state, delta) => {
     ref.current.rotation.y = -scroll.offset * (Math.PI * 2) // Rotate contents
     state.events.update() // Raycasts every frame rather than on pointer-move
-    easing.damp3(
-      state.camera.position,
-      [-state.pointer.x * 2 * VIEW_SCALE, (state.pointer.y * 2 + 4.5) * VIEW_SCALE, 9 * VIEW_SCALE],
-      0.3,
-      delta
-    )
+    easing.damp3(state.camera.position, [-state.pointer.x * 2, state.pointer.y * 2 + 4.5, 9], 0.3, delta)
     state.camera.lookAt(0, 0, 0)
   })
 
