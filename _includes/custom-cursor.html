@@ -117,5 +117,11 @@
     window.setCursorWaiting = function (isWaiting) {
       outer.classList.toggle("is-wait", !!isWaiting);
     };
+
+    // For canvas-rendered content (e.g. the /log/ WebGL cards) where there's
+    // no real DOM element under the pointer for mouseover/out to catch.
+    window.setCursorPointer = function (isPointer) {
+      outer.classList.toggle("is-pointer", !!isPointer);
+    };
   })();
 </script>

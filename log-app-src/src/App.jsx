@@ -98,8 +98,8 @@ function Cards({ category, data, from = 0, len = Math.PI * 2, radius = 5.25, onP
           <Card
             key={item.slug}
             item={item}
-            onPointerOver={(e) => (e.stopPropagation(), hover(i), onPointerOver(item))}
-            onPointerOut={() => (hover(null), onPointerOut(null))}
+            onPointerOver={(e) => (e.stopPropagation(), hover(i), onPointerOver(item), window.setCursorPointer && window.setCursorPointer(true))}
+            onPointerOut={() => (hover(null), onPointerOut(null), window.setCursorPointer && window.setCursorPointer(false))}
             position={[Math.sin(angle) * radius, 0, Math.cos(angle) * radius]}
             rotation={[0, Math.PI / 2 + angle, 0]}
             active={hovered !== null}
