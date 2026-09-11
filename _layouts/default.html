@@ -23,29 +23,6 @@
     line-height: 1.6;
   }
   .wrap { max-width: 720px; margin: 0 auto; padding: 0 20px; }
-  .site-header { border-bottom: 1px solid var(--border); padding: 20px 0; }
-  .site-header-inner {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  .site-title {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--text);
-    text-decoration: none;
-    letter-spacing: -0.3px;
-  }
-  nav a {
-    color: var(--text);
-    text-decoration: none;
-    margin-left: 18px;
-    font-size: 15px;
-  }
-  nav a:first-child { margin-left: 0; }
-  nav a:hover { color: var(--accent); }
   main { padding: 40px 0; min-height: 60vh; }
   h1 { font-size: 26px; letter-spacing: -0.3px; }
   .post-date { color: var(--muted); font-size: 13px; }
@@ -148,19 +125,6 @@
 </style>
 </head>
 <body>
-  <header class="site-header">
-    <div class="wrap site-header-inner">
-      <a class="site-title" href="{{ "/" | relative_url }}">{{ site.title }}</a>
-      <nav>
-        <a href="{{ "/" | relative_url }}">Main</a>
-        <a href="{{ "/i-am/" | relative_url }}">I am</a>
-        <a href="{{ "/log/" | relative_url }}">Log</a>
-        <a href="{{ "/board/" | relative_url }}">Board</a>
-        <a href="mailto:{{ site.email }}">Mail to</a>
-      </nav>
-    </div>
-  </header>
-
   <main class="wrap">
     {{ content }}
   </main>

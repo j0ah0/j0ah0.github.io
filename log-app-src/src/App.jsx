@@ -16,14 +16,14 @@ const ITEMS = window.__LOG_ITEMS__ || []
 const SEASON_ORDER = ['spring', 'summer', 'autumn', 'winter']
 
 // Vertical step between consecutive season groups, giving the ring a staircase look.
-const SEASON_STEP = 0.45
+const SEASON_STEP = 0.25
 const SEASON_OFFSET = SEASON_ORDER.reduce((acc, season, i) => {
   acc[season] = (i - (SEASON_ORDER.length - 1) / 2) * SEASON_STEP
   return acc
 }, {})
 
-// Camera pulled back ~1.5x so the scene reads smaller/less "zoomed in" on screen.
-const VIEW_SCALE = 1.5
+// Camera pulled back ~2x so the scene reads smaller/less "zoomed in" on screen.
+const VIEW_SCALE = 2
 
 function groupBySeason(items) {
   const buckets = { spring: [], summer: [], autumn: [], winter: [] }
@@ -48,7 +48,10 @@ function Scene({ children, ...props }) {
   const [hovered, hover] = useState(null)
 
   const buckets = useMemo(() => groupBySeason(ITEMS), [])
-  const total = ITEMS.length || 1
+  // Every season gets at least a sliver of the ring, so its label always shows
+  // even before any posts are tagged with it.
+  const weights = SEASON_ORDER.map((season) => Math.max(buckets[season].length, 1))
+  const weightTotal = weights.reduce((a, b) => a + b, 0)
 
   useFrame((state, delta) => {
     ref.current.rotation.y = -scroll.offset * (Math.PI * 2) // Rotate contents
@@ -63,10 +66,10 @@ function Scene({ children, ...props }) {
   })
 
   let from = 0
-  const groups = SEASON_ORDER.map((season) => {
+  const groups = SEASON_ORDER.map((season, i) => {
     const data = buckets[season]
-    const len = (data.length / total) * Math.PI * 2
-    const el = data.length ? (
+    const len = (weights[i] / weightTotal) * Math.PI * 2
+    const el = (
       <Cards
         key={season}
         category={season}
@@ -77,7 +80,7 @@ function Scene({ children, ...props }) {
         onPointerOver={hover}
         onPointerOut={hover}
       />
-    ) : null
+    )
     from += len
     return el
   })
