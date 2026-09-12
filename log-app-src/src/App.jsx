@@ -31,7 +31,7 @@ export const App = () => {
   return (
     <>
       <Canvas dpr={[1, 1.5]} camera={{ position: [0, 4.5, 9], fov: 45 }}>
-        <ScrollControls pages={4} infinite damping={0.3}>
+        <ScrollControls pages={4} infinite damping={0.1}>
           <Scene position={[0, 1.5, 0]} onHover={setHovered} />
         </ScrollControls>
       </Canvas>
