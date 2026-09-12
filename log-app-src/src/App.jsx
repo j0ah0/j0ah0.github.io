@@ -31,7 +31,7 @@ export const App = () => {
   return (
     <>
       <Canvas dpr={[1, 1.5]} camera={{ position: [0, 4.5, 9], fov: 45 }}>
-        <ScrollControls pages={4} damping={0.1}>
+        <ScrollControls pages={4} infinite damping={0.1}>
           <Scene position={[0, 1.5, 0]} onHover={setHovered} />
         </ScrollControls>
       </Canvas>
@@ -93,6 +93,23 @@ function HoverPreview({ item }) {
 function Scene({ children, onHover, ...props }) {
   const ref = useRef()
   const scroll = useScroll()
+
+  // ScrollControls' infinite wrap starts 1px from the edge, so a single
+  // scroll-up right after load instantly triggers the wrap-to-the-other-end
+  // logic (looks like scrolling does nothing). Recenter it once mounted so
+  // there's room to scroll either way before that kicks in. Deferred to the
+  // next frame because ScrollControls (the parent) sets up `el` — appends it
+  // to the DOM, sizes its scrollable content, sets its own initial scrollTop
+  // — in its own effect, which fires *after* this one (child effects run
+  // before parent effects), so el.scrollHeight is still 0 here otherwise.
+  useEffect(() => {
+    const el = scroll.el
+    if (!el) return
+    const raf = requestAnimationFrame(() => {
+      el.scrollTop = el.scrollHeight / 2
+    })
+    return () => cancelAnimationFrame(raf)
+  }, [scroll.el])
 
   const buckets = useMemo(() => groupBySeason(ITEMS), [])
   // Every season gets at least a sliver of the ring, so its label always shows
