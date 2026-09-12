@@ -12,7 +12,7 @@ permalink: /log/
     html, body { margin: 0; height: 100%; overflow: hidden; background: #fdfdfc; }
     /* drei's ScrollControls creates a scrollable div to capture wheel/touch
        input; hide its native scrollbar since scroll-hint already explains it. */
-    * { scrollbar-width: none; -ms-overflow-style: none; }
+    * { scrollbar-width: none; -ms-overflow-style: none; scroll-snap-type: none !important; }
     *::-webkit-scrollbar { display: none; width: 0; height: 0; }
     .scroll-hint { position: absolute; top: 24px; left: 28px; font-size: 14px;
       color: #141414; z-index: 2; pointer-events: none;
