@@ -109,6 +109,7 @@ function Scene({ children, onHover, ...props }) {
   // part of a lap. `laps` banks the difference so the actual displayed
   // rotation (offset + laps) doesn't change at all at the moment of reset.
   const laps = useRef(0)
+  const frameCount = useRef(0)
 
   const buckets = useMemo(() => groupBySeason(ITEMS), [])
   // Every season gets at least a sliver of the ring, so its label always shows
@@ -129,7 +130,10 @@ function Scene({ children, onHover, ...props }) {
       }
     }
     ref.current.rotation.y = -(scroll.offset + laps.current) * (Math.PI * 2) // Rotate contents
-    state.events.update() // Raycasts every frame rather than on pointer-move
+    // Raycasting all ~80 cards is real per-frame cost; every other frame is
+    // still responsive enough for hover-while-rotating and halves that cost.
+    frameCount.current++
+    if (frameCount.current % 2 === 0) state.events.update()
     easing.damp3(state.camera.position, [-state.pointer.x * 3.5, state.pointer.y * 3.5 + 4.5, 15], 0.15, delta)
     state.camera.lookAt(0, 0, 0)
   })
@@ -188,7 +192,6 @@ function Cards({ category, data, from = 0, len = Math.PI * 2, radius = 5.25, onP
             onPointerOut={() => (hover(null), onPointerOut(null), window.setCursorPointer && window.setCursorPointer(false))}
             position={[Math.sin(angle) * radius, 0, Math.cos(angle) * radius]}
             rotation={[0, Math.PI / 2 + angle, 0]}
-            active={hovered !== null}
             hovered={hovered === i}
           />
         )
@@ -197,10 +200,10 @@ function Cards({ category, data, from = 0, len = Math.PI * 2, radius = 5.25, onP
   )
 }
 
-function Card({ item, active, hovered, onPointerOver, onPointerOut, ...props }) {
+function Card({ item, hovered, onPointerOver, onPointerOut, ...props }) {
   const ref = useRef()
   useFrame((state, delta) => {
-    const f = hovered ? 1.4 : active ? 1.25 : 1
+    const f = hovered ? 1.4 : 1
     // Local -X is the group's outward radial direction (the group is already
     // rotated to face the ring center), so this pops the card away from the
     // center on hover instead of lifting it straight up.
