@@ -31,7 +31,7 @@ export const App = () => {
   return (
     <>
       <Canvas dpr={[1, 1.5]} camera={{ position: [0, 4.5, 9], fov: 45 }}>
-        <ScrollControls pages={4} infinite damping={0.1}>
+        <ScrollControls pages={4} damping={0.1}>
           <Scene position={[0, 1.5, 0]} onHover={setHovered} />
         </ScrollControls>
       </Canvas>
@@ -94,22 +94,21 @@ function Scene({ children, onHover, ...props }) {
   const ref = useRef()
   const scroll = useScroll()
 
-  // ScrollControls' infinite wrap starts 1px from the edge, so a single
-  // scroll-up right after load instantly triggers the wrap-to-the-other-end
-  // logic (looks like scrolling does nothing). Recenter it once mounted so
-  // there's room to scroll either way before that kicks in. Deferred to the
-  // next frame because ScrollControls (the parent) sets up `el` — appends it
-  // to the DOM, sizes its scrollable content, sets its own initial scrollTop
-  // — in its own effect, which fires *after* this one (child effects run
-  // before parent effects), so el.scrollHeight is still 0 here otherwise.
-  useEffect(() => {
-    const el = scroll.el
-    if (!el) return
-    const raf = requestAnimationFrame(() => {
-      el.scrollTop = el.scrollHeight / 2
-    })
-    return () => cancelAnimationFrame(raf)
-  }, [scroll.el])
+  // Own infinite-loop implementation instead of ScrollControls' built-in
+  // `infinite` prop: that one resets the scroll div's scrollTop on its native
+  // 'scroll' event with a 40ms cooldown between resets, which a fast/momentum
+  // scroll (e.g. trackpad) can outrun right at the wrap point (reported as
+  // "gets stuck going from winter back to spring") and can also fire right at
+  // mount before there's room to scroll either way. Checking every frame
+  // instead of only on 'scroll' events, with no cooldown, avoids both.
+  //
+  // When we hit an edge we recenter scrollTop AND snap state.offset/scroll.el
+  // scroll ref to match it *synchronously*, the same way ScrollControls' own
+  // infinite mode does — otherwise offset would ease from the old value
+  // toward the new one over `damping` seconds, i.e. visibly spin through
+  // part of a lap. `laps` banks the difference so the actual displayed
+  // rotation (offset + laps) doesn't change at all at the moment of reset.
+  const laps = useRef(0)
 
   const buckets = useMemo(() => groupBySeason(ITEMS), [])
   // Every season gets at least a sliver of the ring, so its label always shows
@@ -118,7 +117,18 @@ function Scene({ children, onHover, ...props }) {
   const weightTotal = weights.reduce((a, b) => a + b, 0)
 
   useFrame((state, delta) => {
-    ref.current.rotation.y = -scroll.offset * (Math.PI * 2) // Rotate contents
+    const el = scroll.el
+    if (el) {
+      const max = el.scrollHeight - el.clientHeight
+      if (max > 0 && (el.scrollTop <= 2 || el.scrollTop >= max - 2)) {
+        const oldOffset = scroll.offset
+        el.scrollTop = max / 2
+        scroll.scroll.current = 0.5
+        scroll.offset = 0.5
+        laps.current += oldOffset - 0.5
+      }
+    }
+    ref.current.rotation.y = -(scroll.offset + laps.current) * (Math.PI * 2) // Rotate contents
     state.events.update() // Raycasts every frame rather than on pointer-move
     easing.damp3(state.camera.position, [-state.pointer.x * 3.5, state.pointer.y * 3.5 + 4.5, 15], 0.15, delta)
     state.camera.lookAt(0, 0, 0)
