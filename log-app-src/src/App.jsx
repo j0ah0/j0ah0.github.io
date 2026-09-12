@@ -63,7 +63,7 @@ function HoverPreview({ item }) {
     <div
       style={{
         position: 'fixed',
-        top: 60,
+        top: 24,
         right: 28,
         zIndex: 500,
         pointerEvents: 'none',
