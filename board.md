@@ -83,7 +83,7 @@ permalink: /board/
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import {
-    getFirestore, collection, addDoc, doc, deleteDoc,
+    getFirestore, collection, addDoc, doc, updateDoc,
     query, orderBy, onSnapshot, serverTimestamp
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
   import {
@@ -186,23 +186,24 @@ permalink: /board/
     }
   });
 
-  // ---- 글 삭제 (관리자 로그인 상태에서만 버튼이 보임 + Firestore 규칙에서도 이중 확인) ----
+  // ---- 글 삭제 (실제로는 지우지 않고 deleted 플래그만 세움 — 실수로 지워도
+  //      Firebase 콘솔에서 deleted 필드를 false로 되돌리면 복구 가능) ----
   async function handleDelete(entryId) {
     if (!isOwner) return;
     if (!confirm("삭제하시겠습니까?")) return;
     try {
-      await deleteDoc(doc(db, "guestbook", entryId));
+      await updateDoc(doc(db, "guestbook", entryId), { deleted: true, deletedAt: serverTimestamp() });
     } catch (err) {
       alert("삭제에 실패했어요: " + err.message);
     }
   }
 
-  // ---- 답글 삭제 (관리자만) ----
+  // ---- 답글 삭제 (관리자만, 마찬가지로 soft delete) ----
   async function handleDeleteReply(entryId, replyId) {
     if (!isOwner) return;
     if (!confirm("답글을 삭제하시겠습니까?")) return;
     try {
-      await deleteDoc(doc(db, "guestbook", entryId, "replies", replyId));
+      await updateDoc(doc(db, "guestbook", entryId, "replies", replyId), { deleted: true, deletedAt: serverTimestamp() });
     } catch (err) {
       alert("답글 삭제에 실패했어요: " + err.message);
     }
@@ -216,6 +217,7 @@ permalink: /board/
       container.innerHTML = "";
       snap.forEach((r) => {
         const d = r.data();
+        if (d.deleted) return;
         const replyId = r.id;
         const date = d.createdAt && d.createdAt.toDate ? d.createdAt.toDate().toLocaleString("ko-KR") : "";
         const li = document.createElement("li");
@@ -301,12 +303,13 @@ permalink: /board/
   const list = document.getElementById("gb-list");
   const q = query(gbRef, orderBy("createdAt", "desc"));
   onSnapshot(q, (snapshot) => {
-    if (snapshot.empty) {
+    const docs = snapshot.docs.filter((docSnap) => !docSnap.data().deleted);
+    if (docs.length === 0) {
       list.innerHTML = '<li class="gb-empty">아직 남긴 글이 없어요. 첫 방명록을 남겨보세요!</li>';
       return;
     }
     list.innerHTML = "";
-    snapshot.forEach((docSnap) => {
+    docs.forEach((docSnap) => {
       const d = docSnap.data();
       const entryId = docSnap.id;
       const li = document.createElement("li");
