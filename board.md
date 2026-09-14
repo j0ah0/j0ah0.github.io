@@ -71,7 +71,11 @@ permalink: /board/
   .gb-reply-form { display: none; gap: 6px; margin: 10px 0 0 20px; }
   body.gb-is-owner .gb-reply-form { display: flex; }
   .gb-reply-form input[type="text"] { width: 90px; font-size: 13px; padding: 6px 8px; border: 1px solid var(--border); border-radius: 4px; }
-  .gb-reply-form input[type="text"].gb-reply-content { flex: 1; width: auto; }
+  .gb-reply-form textarea.gb-reply-content {
+    flex: 1; width: auto; font-family: inherit; font-size: 13px; padding: 6px 8px;
+    border: 1px solid var(--border); border-radius: 4px; resize: none; overflow: hidden;
+    line-height: 1.4; max-height: 160px;
+  }
   .gb-reply-form button { font-size: 13px; padding: 6px 12px; border: 1px solid var(--border); border-radius: 4px; background: #fff; cursor: pointer; }
   .gb-reply-form button:hover { background: #f2f2f2; }
 </style>
@@ -240,7 +244,7 @@ permalink: /board/
     const wrap = document.createElement("div");
     wrap.className = "gb-reply-form";
     wrap.innerHTML =
-      '<input type="text" class="gb-reply-content" placeholder="답글을 입력해주세요.">' +
+      '<textarea class="gb-reply-content" placeholder="답글을 입력해주세요. (줄바꿈: Shift+Enter)" rows="1"></textarea>' +
       '<button type="button">답글 등록</button>';
     const contentInput = wrap.querySelector(".gb-reply-content");
     const btn = wrap.querySelector("button");
@@ -260,6 +264,7 @@ permalink: /board/
           name: REPLY_NAME, content, createdAt: serverTimestamp()
         });
         contentInput.value = "";
+        contentInput.style.height = "";
       } catch (err) {
         alert("답글 등록에 실패했어요: " + err.message);
       } finally {
@@ -267,7 +272,13 @@ permalink: /board/
       }
     };
     btn.addEventListener("click", submit);
-    contentInput.addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); submit(); } });
+    contentInput.addEventListener("keydown", (ev) => {
+      if (ev.key === "Enter" && !ev.shiftKey) { ev.preventDefault(); submit(); }
+    });
+    contentInput.addEventListener("input", () => {
+      contentInput.style.height = "";
+      contentInput.style.height = contentInput.scrollHeight + "px";
+    });
     return wrap;
   }
 
