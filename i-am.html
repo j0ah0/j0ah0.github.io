@@ -11,17 +11,37 @@ permalink: /i-am/
 <link rel="icon" type="image/png" href="{{ "/assets/favicon.png" | relative_url }}">
 <link rel="apple-touch-icon" href="{{ "/assets/favicon.png" | relative_url }}">
 <style>
+  /* Same font the /log/ page's 3D carousel renders its text in
+     (see log-app-src/src/App.jsx FONT_URL), loaded here so /i-am/
+     uses identical typography instead of the system font stack. */
+  @font-face {
+    font-family: 'Inter';
+    src: url('https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-400-normal.woff') format('woff');
+    font-weight: 400; font-display: swap;
+  }
+  @font-face {
+    font-family: 'Inter';
+    src: url('https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-500-normal.woff') format('woff');
+    font-weight: 500; font-display: swap;
+  }
+  @font-face {
+    font-family: 'Inter';
+    src: url('https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-700-normal.woff') format('woff');
+    font-weight: 700; font-display: swap;
+  }
+
   :root {
     --ink: #111;
     --bg: #ffffff;
     --muted: #b7b0a3;
     --num: #2a2a26;
     --accent: #F15A5A;
+    --font: 'Inter', -apple-system, "Helvetica Neue", Arial, sans-serif;
   }
   * { box-sizing: border-box; }
   html, body {
     margin: 0; min-height: 100%; background: var(--bg); color: var(--ink);
-    font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+    font-family: var(--font);
   }
   body { overflow-x: hidden; }
 
@@ -30,7 +50,9 @@ permalink: /i-am/
     width: 100%;
     min-height: 100vh;
     padding: 96px 48px 120px;
+    transition: opacity .25s ease;
   }
+  .archive.is-focused { opacity: 0; pointer-events: none; }
   .archive-hint {
     position: fixed; top: 28px; left: 28px; font-size: 13px; color: var(--muted);
     z-index: 20; transition: opacity .3s ease;
@@ -57,7 +79,8 @@ permalink: /i-am/
 
   .archive-num {
     display: block;
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-family: var(--font);
+    font-weight: 500;
     font-size: 12px;
     letter-spacing: 0.04em;
     color: var(--num);
@@ -174,7 +197,7 @@ permalink: /i-am/
 const ITEMS = [
   {
     idx: '01',
-    img: '{{ "/assets/archive-01-olive.jpg" | relative_url }}',
+    img: '{{ "/assets/archive-01-olive.png" | relative_url }}',
     alt: '올리브',
     title: '올리브를 싫어하는 이유',
     paras: [
@@ -193,6 +216,7 @@ const ITEMS = [
   }
 ];
 
+const archiveEl = document.querySelector('.archive');
 const grid = document.getElementById('archiveGrid');
 const hint = document.getElementById('archiveHint');
 const detail = document.getElementById('archiveDetail');
@@ -221,6 +245,7 @@ function openItem(item, sourceEl) {
   const first = photo.getBoundingClientRect();
 
   sourceEl.classList.add('is-source');
+  archiveEl.classList.add('is-focused');
 
   // Build a fixed-position ghost that starts exactly where the real photo was.
   const ghost = document.createElement('div');
@@ -270,6 +295,7 @@ function closeDetail() {
   const first = sourceEl.querySelector('.archive-photo').getBoundingClientRect();
 
   detail.classList.remove('is-visible');
+  archiveEl.classList.remove('is-focused');
   ghost.style.transform = `translate(${first.left}px, ${first.top}px)`;
   ghost.style.width = first.width + 'px';
 
