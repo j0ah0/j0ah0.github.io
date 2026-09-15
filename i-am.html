@@ -250,7 +250,10 @@ ITEMS.forEach((item, i) => {
       <img class="archive-photo" src="${item.img}" alt="${item.alt}" />
     </button>
   `;
-  el.querySelector('.archive-photo-btn').addEventListener('click', () => openItem(item, el));
+  el.querySelector('.archive-photo-btn').addEventListener('click', (e) => {
+    e.stopPropagation(); // don't let this same click reach the document-level closer below
+    openItem(item, el);
+  });
   grid.appendChild(el);
 });
 
@@ -270,7 +273,6 @@ function openItem(item, sourceEl) {
     <img class="archive-photo" src="${item.img}" alt="${item.alt}" style="aspect-ratio:${first.width}/${first.height};" />
   `;
   document.body.appendChild(ghost);
-  const ghostImg = ghost.querySelector('.archive-photo');
 
   ghost.style.width = first.width + 'px';
   ghost.style.transform = `translate(${first.left}px, ${first.top}px)`;
@@ -298,12 +300,6 @@ function openItem(item, sourceEl) {
   detailTitle.textContent = item.title;
   detailBody.innerHTML = item.paras.map(p => `<p>${p}</p>`).join('');
 
-  // The ghost sits outside #archiveDetail (it's appended to <body> so its
-  // FLIP transform isn't relative to a transformed ancestor), so clicking it
-  // needs its own listener; clicking anywhere else in the overlay is handled
-  // by the single listener on `detail` set up below.
-  ghostImg.addEventListener('click', closeDetail);
-
   openState = { item, sourceEl, ghost };
 }
 
@@ -326,10 +322,15 @@ function closeDetail() {
   setTimeout(cleanup, 650); // safety net if transitionend doesn't fire
 }
 
-// Clicking anywhere in the open detail view (not just precisely on the
-// photo) goes back — some photos are mostly transparent padding, so
-// requiring an exact hit on the drawn pixels felt broken.
-detail.addEventListener('click', closeDetail);
+// Clicking anywhere while a detail is open goes back — including on the
+// ghost photo (which lives outside #archiveDetail, appended to <body>),
+// its number label, or empty space. Only the corner nav links are exempt
+// so they still navigate normally instead of just closing the detail.
+document.addEventListener('click', (e) => {
+  if (!openState) return;
+  if (e.target.closest('.corner-nav, .corner-brand')) return;
+  closeDetail();
+});
 
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeDetail();
