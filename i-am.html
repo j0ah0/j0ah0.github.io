@@ -139,6 +139,18 @@ permalink: /i-am/
     transition: opacity .3s ease;
   }
   .archive-detail.is-visible { opacity: 1; pointer-events: auto; }
+  .archive-detail-close {
+    /* A tap here always works even when a scroll gesture ate the click
+       elsewhere (mobile suppresses `click` when the touch moved at all,
+       which happens easily once the detail view scrolls). */
+    position: fixed; top: 20px; left: 20px; z-index: 50;
+    width: 40px; height: 40px; border: none; background: none;
+    font-size: 28px; line-height: 1; color: var(--ink); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0; pointer-events: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .archive-detail.is-visible .archive-detail-close { pointer-events: auto; }
   .archive-detail-spacer { flex: 0 0 clamp(180px, 24vw, 280px); }
   .archive-detail-text {
     max-width: 46ch;
@@ -170,10 +182,18 @@ permalink: /i-am/
     .archive-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 56px 24px; }
   }
   @media (max-width: 560px) {
+    /* Shrink everything so a detail fits in one screen without scrolling
+       where possible, rather than just reducing the scroll distance. */
     .archive-detail { flex-direction: column; align-items: flex-start; justify-content: flex-start;
-      padding: 96px 28px 40px; overflow-y: auto; }
-    .archive-detail-spacer { flex: 0 0 min(62vw, 300px); }
-    .archive-detail-text { margin-left: 0; margin-top: 28px; max-width: 100%; }
+      padding: 52px 20px 28px; overflow-y: auto; }
+    /* flex-basis (the "0 0 <n>" part) sets the flex item's size along the
+       main axis, which flex-direction: column just switched to vertical —
+       so it now sizes height, not width. Width needs its own value or the
+       spacer (and the ghost photo sized from it) collapses to 0 wide. */
+    .archive-detail-spacer { flex: 0 0 min(34vw, 150px); width: min(34vw, 150px); }
+    .archive-detail-text { margin-left: 0; margin-top: 14px; max-width: 100%; }
+    .archive-detail-text h2 { font-size: 14px; margin-bottom: 10px; }
+    .archive-detail-text p { font-size: 13px; line-height: 1.6; margin-bottom: 10px; }
   }
 
   /* ---- 코너 고정 브랜드/네비게이션 (모든 페이지 공통) ---- */
@@ -199,6 +219,7 @@ permalink: /i-am/
 </div>
 
 <div class="archive-detail" id="archiveDetail">
+  <button type="button" class="archive-detail-close" id="detailClose" aria-label="닫기">×</button>
   <div class="archive-detail-spacer"></div>
   <div class="archive-detail-text">
     <h2 id="detailTitle"></h2>
@@ -256,6 +277,7 @@ const ITEMS = [
 const archiveEl = document.querySelector('.archive');
 const grid = document.getElementById('archiveGrid');
 const detail = document.getElementById('archiveDetail');
+const detailClose = document.getElementById('detailClose');
 const detailTitle = document.getElementById('detailTitle');
 const detailBody = document.getElementById('detailBody');
 
@@ -355,6 +377,14 @@ function closeDetail() {
 document.addEventListener('click', (e) => {
   if (!openState) return;
   if (e.target.closest('.corner-nav, .corner-brand')) return;
+  closeDetail();
+});
+
+// A dedicated close button as a fallback: mobile browsers suppress the
+// `click` event whenever a touch moved even a little (easy to trigger once
+// the detail view is scrollable), so tapping "anywhere" can silently fail.
+detailClose.addEventListener('click', (e) => {
+  e.stopPropagation();
   closeDetail();
 });
 
