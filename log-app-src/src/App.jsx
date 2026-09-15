@@ -134,7 +134,18 @@ function Scene({ children, onHover, ...props }) {
     // still responsive enough for hover-while-rotating and halves that cost.
     frameCount.current++
     if (frameCount.current % 2 === 0) state.events.update()
-    easing.damp3(state.camera.position, [-state.pointer.x * 3.5, state.pointer.y * 3.5 + 4.5, 15], 0.15, delta)
+    // On a narrow/portrait viewport the same vertical FOV shows a much
+    // narrower horizontal slice, so the wide ring gets clipped on the sides.
+    // Pull the camera back proportionally when the viewport is taller than
+    // it is wide to keep the whole ring in frame.
+    const aspect = state.size.width / state.size.height
+    const distScale = aspect < 1 ? 1 / aspect : 1
+    easing.damp3(
+      state.camera.position,
+      [-state.pointer.x * 3.5 * distScale, (state.pointer.y * 3.5 + 4.5) * distScale, 15 * distScale],
+      0.15,
+      delta
+    )
     state.camera.lookAt(0, 0, 0)
   })
 
