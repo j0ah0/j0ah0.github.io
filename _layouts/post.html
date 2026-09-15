@@ -8,11 +8,11 @@ layout: default
   .post-nav-prev { left: 28px; }
   .post-nav-next { right: 28px; }
 </style>
-{% if page.next %}
-  <a class="post-nav-arrow post-nav-prev" href="{{ page.next.url | relative_url }}">&larr;</a>
-{% endif %}
 {% if page.previous %}
-  <a class="post-nav-arrow post-nav-next" href="{{ page.previous.url | relative_url }}">&rarr;</a>
+  <a class="post-nav-arrow post-nav-prev" href="{{ page.previous.url | relative_url }}">&larr;</a>
+{% endif %}
+{% if page.next %}
+  <a class="post-nav-arrow post-nav-next" href="{{ page.next.url | relative_url }}">&rarr;</a>
 {% endif %}
 <article>
   <h1>{{ page.title }}</h1>
