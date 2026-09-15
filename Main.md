@@ -3,6 +3,7 @@ layout: default
 title: Main
 permalink: /
 ---
+<div class="main-page">
 <h1>Main</h1>
 
 
@@ -16,5 +17,10 @@ permalink: /
 <p>Board - 방명록</p>
 
 <p>Mail to - 메일을 자주 확인하는 건 아니지만 할 말이 있으면 보내주세요</p>
+</div>
 
-
+<style>
+  .main-page { margin-top: 22vh; }
+  .main-page h1 { font-size: 18px; font-weight: 400; margin: 0 0 18px; }
+  .main-page p { font-size: 14px; }
+</style>
