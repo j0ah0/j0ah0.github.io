@@ -2,17 +2,21 @@
 layout: default
 ---
 <style>
-  .post-nav-arrow { position: fixed; top: 24px; font-size: 20px; color: #141414;
-    text-decoration: none; z-index: 900; font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; }
+  .post-nav-arrow { position: fixed; top: 26px; color: #141414;
+    text-decoration: none; z-index: 900; display: flex; align-items: center; }
   .post-nav-arrow:hover { color: #8a8a86; }
   .post-nav-prev { left: 28px; }
   .post-nav-next { right: 28px; }
 </style>
 {% if page.previous %}
-  <a class="post-nav-arrow post-nav-prev" href="{{ page.previous.url | relative_url }}">&larr;</a>
+  <a class="post-nav-arrow post-nav-prev" href="{{ page.previous.url | relative_url }}">
+    <svg width="22" height="14" viewBox="0 0 22 14" fill="none"><line x1="22" y1="7" x2="1.5" y2="7" stroke="currentColor" stroke-width="1.4"/><polyline points="8,1 1.5,7 8,13" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </a>
 {% endif %}
 {% if page.next %}
-  <a class="post-nav-arrow post-nav-next" href="{{ page.next.url | relative_url }}">&rarr;</a>
+  <a class="post-nav-arrow post-nav-next" href="{{ page.next.url | relative_url }}">
+    <svg width="22" height="14" viewBox="0 0 22 14" fill="none"><line x1="0" y1="7" x2="20.5" y2="7" stroke="currentColor" stroke-width="1.4"/><polyline points="14,1 20.5,7 14,13" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </a>
 {% endif %}
 <article>
   <h1>{{ page.title }}</h1>
