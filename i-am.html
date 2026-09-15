@@ -205,6 +205,7 @@ const ITEMS = [
     idx: '02',
     img: '{{ "/assets/archive-02-coffee.png" | relative_url }}',
     alt: '커피',
+    scale: 0.72,
     title: '행복 공식',
     paras: [
       '커피를 마시거나 술을 마시고 훌륭한 음악을 들으면 충분하다.'
@@ -240,6 +241,8 @@ const detailBody = document.getElementById('detailBody');
 
 let openState = null; // { item, sourceEl, ghostEl }
 
+const BASE_PHOTO_HEIGHT = 170; // px, matches .archive-photo's default height
+
 ITEMS.forEach((item, i) => {
   const el = document.createElement('div');
   el.className = 'archive-item';
@@ -250,6 +253,9 @@ ITEMS.forEach((item, i) => {
       <img class="archive-photo" src="${item.img}" alt="${item.alt}" />
     </button>
   `;
+  if (item.scale) {
+    el.querySelector('.archive-photo').style.height = (BASE_PHOTO_HEIGHT * item.scale) + 'px';
+  }
   el.querySelector('.archive-photo-btn').addEventListener('click', (e) => {
     e.stopPropagation(); // don't let this same click reach the document-level closer below
     openItem(item, el);
