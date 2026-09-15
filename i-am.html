@@ -33,9 +33,7 @@ permalink: /i-am/
   :root {
     --ink: #111;
     --bg: #ffffff;
-    --muted: #b7b0a3;
     --num: #2a2a26;
-    --accent: #F15A5A;
     --font: 'Inter', -apple-system, "Helvetica Neue", Arial, sans-serif;
   }
   * { box-sizing: border-box; }
@@ -53,10 +51,6 @@ permalink: /i-am/
     transition: opacity .25s ease;
   }
   .archive.is-focused { opacity: 0; pointer-events: none; }
-  .archive-hint {
-    position: fixed; top: 28px; left: 28px; font-size: 13px; color: var(--muted);
-    z-index: 20; transition: opacity .3s ease;
-  }
 
   .archive-grid {
     display: grid;
@@ -88,15 +82,14 @@ permalink: /i-am/
   }
 
   .archive-photo-btn {
-    display: block; width: 100%; padding: 0; border: none; background: none;
+    display: inline-block; width: auto; max-width: 100%; padding: 0; border: none; background: none;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
   }
   .archive-photo {
-    /* Keep each photo's own aspect ratio (per-item sizes are meant to vary
-       slightly) rather than force-cropping everything to one shape. The
-       max-height is only a safety net for unusually tall/narrow photos. */
-    width: 100%; height: auto; max-height: 78vh; object-fit: contain; display: block;
+    /* Match every item's HEIGHT (not width) so the row reads evenly, while
+       each photo still keeps its own aspect ratio rather than being cropped. */
+    height: 260px; width: auto; max-width: 100%; object-fit: contain; display: block;
     background: transparent;
     transition: transform .6s cubic-bezier(.22,.61,.36,1);
     will-change: transform;
@@ -115,7 +108,13 @@ permalink: /i-am/
     will-change: transform;
     pointer-events: none;
   }
-  .archive-ghost .archive-photo { transition: none; cursor: pointer; pointer-events: auto; }
+  .archive-ghost .archive-photo {
+    /* The grid gives every photo a fixed height; the ghost overrides that
+       back to aspect-ratio-driven sizing so the FLIP width animation (see
+       openItem/closeDetail) isn't fighting a fixed height. */
+    height: auto; width: 100%; max-width: none;
+    transition: none; cursor: pointer; pointer-events: auto;
+  }
   .archive-ghost .archive-num { position: absolute; top: -22px; left: 1px; margin: 0; }
 
   .archive-detail {
@@ -135,7 +134,7 @@ permalink: /i-am/
     font-size: clamp(24px, 3.2vw, 34px);
     font-weight: 700;
     letter-spacing: -0.02em;
-    color: var(--accent);
+    color: var(--ink);
     margin: 0 0 20px;
     opacity: 0; transform: translateY(10px);
     transition: opacity .5s ease, transform .5s ease;
@@ -175,8 +174,6 @@ permalink: /i-am/
 </head>
 <body>
 
-<div class="archive-hint" id="archiveHint">사진을 눌러보세요</div>
-
 <div class="archive">
   <div class="archive-grid" id="archiveGrid"></div>
 </div>
@@ -207,8 +204,8 @@ const ITEMS = [
   },
   {
     idx: '02',
-    img: '{{ "/assets/archive-02-coffee.jpg" | relative_url }}',
-    alt: '커피와 담배',
+    img: '{{ "/assets/archive-02-coffee.png" | relative_url }}',
+    alt: '커피',
     title: '행복 공식',
     paras: [
       '커피를 마시거나 술을 마시고 훌륭한 음악을 들으면 충분하다.'
@@ -218,7 +215,6 @@ const ITEMS = [
 
 const archiveEl = document.querySelector('.archive');
 const grid = document.getElementById('archiveGrid');
-const hint = document.getElementById('archiveHint');
 const detail = document.getElementById('archiveDetail');
 const detailTitle = document.getElementById('detailTitle');
 const detailBody = document.getElementById('detailBody');
@@ -282,7 +278,6 @@ function openItem(item, sourceEl) {
 
   detailTitle.textContent = item.title;
   detailBody.innerHTML = item.paras.map(p => `<p>${p}</p>`).join('');
-  hint.textContent = '눌러서 목록으로 돌아가기';
 
   ghostImg.addEventListener('click', closeDetail);
 
@@ -302,7 +297,6 @@ function closeDetail() {
   const cleanup = () => {
     sourceEl.classList.remove('is-source');
     ghost.remove();
-    hint.textContent = '사진을 눌러보세요';
     openState = null;
   };
   ghost.addEventListener('transitionend', cleanup, { once: true });
