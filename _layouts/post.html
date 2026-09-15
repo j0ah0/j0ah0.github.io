@@ -1,6 +1,19 @@
 ---
 layout: default
 ---
+<style>
+  .post-nav-arrow { position: fixed; top: 24px; font-size: 20px; color: #141414;
+    text-decoration: none; z-index: 900; font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; }
+  .post-nav-arrow:hover { color: #8a8a86; }
+  .post-nav-prev { left: 28px; }
+  .post-nav-next { right: 28px; }
+</style>
+{% if page.next %}
+  <a class="post-nav-arrow post-nav-prev" href="{{ page.next.url | relative_url }}">&larr;</a>
+{% endif %}
+{% if page.previous %}
+  <a class="post-nav-arrow post-nav-next" href="{{ page.previous.url | relative_url }}">&rarr;</a>
+{% endif %}
 <article>
   <h1>{{ page.title }}</h1>
   <p class="post-date">{{ page.date | date: "%Y-%m-%d" }}</p>
