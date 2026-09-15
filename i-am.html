@@ -89,7 +89,7 @@ permalink: /i-am/
   .archive-photo {
     /* Match every item's HEIGHT (not width) so the row reads evenly, while
        each photo still keeps its own aspect ratio rather than being cropped. */
-    height: 260px; width: auto; max-width: 100%; object-fit: contain; display: block;
+    height: 170px; width: auto; max-width: 100%; object-fit: contain; display: block;
     background: transparent;
     transition: transform .6s cubic-bezier(.22,.61,.36,1);
     will-change: transform;
@@ -125,17 +125,17 @@ permalink: /i-am/
     transition: opacity .3s ease;
   }
   .archive-detail.is-visible { opacity: 1; pointer-events: auto; }
-  .archive-detail-spacer { flex: 0 0 clamp(260px, 36vw, 420px); }
+  .archive-detail-spacer { flex: 0 0 clamp(180px, 24vw, 280px); }
   .archive-detail-text {
     max-width: 46ch;
     margin-left: clamp(32px, 6vw, 72px);
   }
   .archive-detail-text h2 {
-    font-size: clamp(24px, 3.2vw, 34px);
-    font-weight: 700;
-    letter-spacing: -0.02em;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.85;
     color: var(--ink);
-    margin: 0 0 20px;
+    margin: 0 0 16px;
     opacity: 0; transform: translateY(10px);
     transition: opacity .5s ease, transform .5s ease;
   }
@@ -298,6 +298,10 @@ function openItem(item, sourceEl) {
   detailTitle.textContent = item.title;
   detailBody.innerHTML = item.paras.map(p => `<p>${p}</p>`).join('');
 
+  // The ghost sits outside #archiveDetail (it's appended to <body> so its
+  // FLIP transform isn't relative to a transformed ancestor), so clicking it
+  // needs its own listener; clicking anywhere else in the overlay is handled
+  // by the single listener on `detail` set up below.
   ghostImg.addEventListener('click', closeDetail);
 
   openState = { item, sourceEl, ghost };
@@ -321,6 +325,11 @@ function closeDetail() {
   ghost.addEventListener('transitionend', cleanup, { once: true });
   setTimeout(cleanup, 650); // safety net if transitionend doesn't fire
 }
+
+// Clicking anywhere in the open detail view (not just precisely on the
+// photo) goes back — some photos are mostly transparent padding, so
+// requiring an exact hit on the drawn pixels felt broken.
+detail.addEventListener('click', closeDetail);
 
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeDetail();
