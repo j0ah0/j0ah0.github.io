@@ -136,10 +136,12 @@ function Scene({ children, onHover, ...props }) {
     if (frameCount.current % 2 === 0) state.events.update()
     // On a narrow/portrait viewport the same vertical FOV shows a much
     // narrower horizontal slice, so the wide ring gets clipped on the sides.
-    // Pull the camera back proportionally when the viewport is taller than
-    // it is wide to keep the whole ring in frame.
+    // The framing was tuned against a typical wide desktop window (~1.3
+    // aspect), so pull the camera back proportionally any time the viewport
+    // is narrower than that reference, not just when it's taller than wide.
+    const REFERENCE_ASPECT = 1.3
     const aspect = state.size.width / state.size.height
-    const distScale = aspect < 1 ? 1 / aspect : 1
+    const distScale = aspect < REFERENCE_ASPECT ? REFERENCE_ASPECT / aspect : 1
     easing.damp3(
       state.camera.position,
       [-state.pointer.x * 3.5 * distScale, (state.pointer.y * 3.5 + 4.5) * distScale, 15 * distScale],
