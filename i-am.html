@@ -13,84 +13,134 @@ permalink: /i-am/
 <style>
   :root {
     --ink: #111;
-    --bg: #fdfdfc;
-    --muted: #b7b7b3;
+    --bg: #ffffff;
+    --muted: #b7b0a3;
+    --num: #2a2a26;
     --accent: #F15A5A;
   }
   * { box-sizing: border-box; }
   html, body {
-    margin: 0; height: 100%; background: var(--bg); color: var(--ink);
-    overflow: hidden; font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+    margin: 0; min-height: 100%; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
   }
-  .stage {
-    position: relative; width: 100%; height: 100%; overflow: hidden;
-    touch-action: none;
-  }
-  .hint {
-    position: absolute; top: 28px; left: 28px; font-size: 13px; color: var(--muted);
-  }
-  .circle {
-    position: absolute; top: 50%; left: 12%; width: 16px; height: 16px;
-    background: var(--accent); border-radius: 50%;
-    transform: translate(-50%, -50%);
-    box-shadow: 0 0 0 8px rgba(241, 90, 90, 0.12);
-    z-index: 5; transition: transform .35s ease, top .35s ease; cursor: pointer;
-  }
-  .wheel-stage {
-    position: absolute; inset: 0; perspective: 1000px;
-  }
-  .wheel {
-    position: absolute; left: 26%; top: 50%; width: 66%; height: 0;
-    transform-style: preserve-3d;
-  }
-  .row {
-    position: absolute; left: 0; top: 0; width: 100%;
-    transform-origin: center center;
-    will-change: transform, opacity;
-    cursor: pointer; user-select: none;
-  }
-  .row .idx {
-    display: block; font-size: 13px; letter-spacing: 0.08em; color: var(--muted);
-    margin-bottom: 6px; font-weight: 500;
-  }
-  .row .label {
-    font-size: clamp(34px, 6vw, 58px); font-weight: 700; letter-spacing: -0.03em; line-height: 1;
-    color: var(--ink); transition: color .25s ease;
-  }
-  .row.is-active .label { color: var(--accent); }
+  body { overflow-x: hidden; }
 
-  .detail {
-    position: absolute; left: 26%; top: 50%; width: 62%; max-width: 560px;
-    transform: translateY(-50%);
+  .archive {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    padding: 96px 48px 120px;
+  }
+  .archive-hint {
+    position: fixed; top: 28px; left: 28px; font-size: 13px; color: var(--muted);
+    z-index: 20; transition: opacity .3s ease;
+  }
+
+  .archive-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 72px 40px;
+    max-width: 1120px;
+    margin: 0 auto;
+  }
+
+  .archive-item {
+    position: relative;
+    opacity: 0;
+    transform: translateY(12px);
+    animation: item-in .7s cubic-bezier(.22,.61,.36,1) forwards;
+    animation-delay: calc(var(--i, 0) * 110ms);
+  }
+  @keyframes item-in {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .archive-num {
+    display: block;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: var(--num);
+    margin: 0 0 8px 1px;
+  }
+
+  .archive-photo-btn {
+    display: block; width: 100%; padding: 0; border: none; background: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .archive-photo {
+    /* Keep each photo's own aspect ratio (per-item sizes are meant to vary
+       slightly) rather than force-cropping everything to one shape. The
+       max-height is only a safety net for unusually tall/narrow photos. */
+    width: 100%; height: auto; max-height: 78vh; object-fit: contain; display: block;
+    background: transparent;
+    transition: transform .6s cubic-bezier(.22,.61,.36,1);
+    will-change: transform;
+  }
+  .archive-photo-btn:hover .archive-photo,
+  .archive-photo-btn:focus-visible .archive-photo {
+    transform: scale(1.025);
+  }
+
+  /* clicked item lifts out of flow into a fixed "ghost" overlay; the grid
+     item underneath just goes invisible so siblings never reflow */
+  .archive-item.is-source { opacity: 0 !important; animation: none; }
+
+  .archive-ghost {
+    position: fixed; z-index: 40; top: 0; left: 0;
+    will-change: transform;
+    pointer-events: none;
+  }
+  .archive-ghost .archive-photo { transition: none; cursor: pointer; pointer-events: auto; }
+  .archive-ghost .archive-num { position: absolute; top: -22px; left: 1px; margin: 0; }
+
+  .archive-detail {
+    position: fixed; z-index: 30; inset: 0;
+    display: flex; align-items: center; justify-content: flex-start;
+    padding: 0 8vw;
     opacity: 0; pointer-events: none;
-    z-index: 6;
-    max-height: 78vh; overflow-y: auto;
+    transition: opacity .3s ease;
   }
-  .detail.is-open { opacity: 1; pointer-events: auto; }
-  .detail .idx {
-    display: block; font-size: 13px; letter-spacing: 0.08em; color: var(--muted);
-    margin-bottom: 10px; font-weight: 500;
-  }
-  .detail h2 {
-    font-size: clamp(28px, 5vw, 40px); font-weight: 700; letter-spacing: -0.03em; margin: 0 0 22px;
-    color: var(--accent);
-  }
-  .detail p {
-    font-size: 16px; line-height: 1.85; color: var(--ink); margin: 0 0 16px;
+  .archive-detail.is-visible { opacity: 1; pointer-events: auto; }
+  .archive-detail-spacer { flex: 0 0 clamp(260px, 36vw, 420px); }
+  .archive-detail-text {
     max-width: 46ch;
-    opacity: 0; transform: translateY(14px);
+    margin-left: clamp(32px, 6vw, 72px);
+  }
+  .archive-detail-text h2 {
+    font-size: clamp(24px, 3.2vw, 34px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--accent);
+    margin: 0 0 20px;
+    opacity: 0; transform: translateY(10px);
     transition: opacity .5s ease, transform .5s ease;
   }
-  .detail.is-open p { opacity: 1; transform: translateY(0); }
+  .archive-detail-text p {
+    font-size: 16px; line-height: 1.85; color: var(--ink); margin: 0 0 16px;
+    opacity: 0; transform: translateY(10px);
+    transition: opacity .5s ease, transform .5s ease;
+  }
+  .archive-detail.is-visible .archive-detail-text h2,
+  .archive-detail.is-visible .archive-detail-text p {
+    opacity: 1; transform: translateY(0);
+  }
+  .archive-detail-text p:nth-of-type(2) { transition-delay: .08s; }
+  .archive-detail-text p:nth-of-type(3) { transition-delay: .16s; }
 
-  @media (max-width: 640px) {
-    .circle { left: 10%; width: 12px; height: 12px; }
-    .wheel { left: 26%; width: 70%; }
-    .detail { left: 26%; width: 68%; }
-    .detail p { max-width: 32ch; }
+  @media (max-width: 860px) {
+    .archive { padding: 88px 24px 100px; }
+    .archive-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 56px 24px; }
+  }
+  @media (max-width: 560px) {
+    .archive-detail { flex-direction: column; align-items: flex-start; justify-content: flex-start;
+      padding: 96px 28px 40px; overflow-y: auto; }
+    .archive-detail-spacer { flex: 0 0 min(62vw, 300px); }
+    .archive-detail-text { margin-left: 0; margin-top: 28px; max-width: 100%; }
   }
 
-  /* ---- 코너 고정 브랜드/네비게이션 (모든 페이지 공통, 레이아웃과 무관하게 항상 표시) ---- */
+  /* ---- 코너 고정 브랜드/네비게이션 (모든 페이지 공통) ---- */
   .corner-brand { position: fixed; bottom: 24px; left: 28px; font-size: 14px; letter-spacing: 0.02em;
     color: #141414; z-index: 1000; font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; }
   .corner-nav { position: fixed; bottom: 24px; right: 28px; z-index: 1000;
@@ -101,14 +151,16 @@ permalink: /i-am/
 </style>
 </head>
 <body>
-<div class="stage" id="stage">
-  <div class="hint" id="hint">scroll, or click a word</div>
-  <div class="circle" id="circle"></div>
-  <div class="wheel-stage">
-    <div class="wheel" id="wheel"></div>
-  </div>
-  <div class="detail" id="detail">
-    <span class="idx" id="detailIdx"></span>
+
+<div class="archive-hint" id="archiveHint">사진을 눌러보세요</div>
+
+<div class="archive">
+  <div class="archive-grid" id="archiveGrid"></div>
+</div>
+
+<div class="archive-detail" id="archiveDetail">
+  <div class="archive-detail-spacer"></div>
+  <div class="archive-detail-text">
     <h2 id="detailTitle"></h2>
     <div id="detailBody"></div>
   </div>
@@ -118,146 +170,113 @@ permalink: /i-am/
 {% include custom-cursor.html %}
 
 <script>
+// Each item is one small personal essay, represented by a photo.
 const ITEMS = [
   {
-    key: 'name', idx: '01', label: 'Name',
-    paras: ['조하영', '대한민국', 'ig: j0ah0']
-  },
-  {
-    key: 'like', idx: '02', label: 'Like',
+    idx: '01',
+    img: '{{ "/assets/archive-01-olive.jpg" | relative_url }}',
+    alt: '올리브',
+    title: '올리브를 싫어하는 이유',
     paras: [
-      '좋아하는 것: 음악 듣기, 아이스 디저트, 역사와 배경',
-      '커피를 마시거나 술을 마시고 훌륭한 음악을 들으면 충분하다.'
-    ]
-  },
-  {
-    key: 'hate', idx: '03', label: 'Hate',
-    paras: [
-      '싫어하는 것: 올리브, 욕, 피상적인 것',
-      '블랙 올리브. 피자 위에 올라가는 그 검은 링이다. 원래 초록색이던 걸 화학 처리로 검게 만든 것이다. 색을 고정하려고 철분 시약을 넣는다. 그래서인지 입에 넣으면 피 비린내 같은 금속 냄새가 난다. 거기에 떫고 쓴맛도 남는다. 지방 성분이 입안을 오래 코팅하면서 그 향을 계속 붙잡아둔다. 화학 실험을 자주 하다 보니 뇌가 방향족 화합물 냄새와 이 맛을 비슷하게 묶어버린 모양이다. 위험한 것으로 분류해놓고 계속 뱉어내려 하는 것이다. 이유가 많아 보이는데... 그냥 몸이 정직하게 반응하는 편이다. 비슷한 이유로 녹차, 떫은 와인, 카카오 함량이 높은 다크 초콜릿 등도 한동안 못 먹었다.',
-      '겉으로만 친한 척하는 것, 내용 없는 대화, 유행이라서 좋아하는 척하는 것... 이런 것들 앞에서 마음이 금방 식는다. 말과 행동이 다른 사람도 그렇다. 한다고 해놓고 안 하고, 좋다고 해놓고 반대로 행동하는 것. 한두 번이면 넘어갈 수 있다. 그런데 패턴이 되면 신뢰가 빠르게 사라진다. 욕도 비슷하다. 꼭 필요해서 쓰는 말이라기보다 순간의 감정을 대충 덮어버리는 말처럼 느껴질 때가 많다. 정확한 단어를 고르는 편이 더 낫다.'
-    ]
-  },
-  {
-    key: 'why', idx: '04', label: 'Why',
-    paras: [
-      '누군가에게 영감이 되고 싶었다. 이 사이트를 보고 위로를 받거나, 어떤 긍정적인 부분을 하나라도 가져간다면 좋겠다고 생각했다. 세상에 좋은 영향을 남기고 싶다는 생각도 문득 들었다. 그래서 만들었다. 기억해 달라는 말을 직접 하기보다는 사이트 하나 남겨두는 편이 조금 덜 민망한 것 같다.'
+      '블랙 올리브. 피자 위에 올라가는 그 검은 링이다. 원래 초록색이던 걸 화학 처리로 검게 만든 것이다. 색을 고정하려고 철분 시약을 넣는다. 그래서인지 입에 넣으면 피 비린내 같은 금속 냄새가 난다. 거기에 떫고 쓴맛도 남는다. 지방 성분이 입안을 오래 코팅하면서 그 향을 계속 붙잡아둔다.',
+      '화학 실험을 자주 하다 보니 뇌가 방향족 화합물 냄새와 이 맛을 비슷하게 묶어버린 모양이다. 위험한 것으로 분류해놓고 계속 뱉어내려 하는 것이다. 이유가 많아 보이는데... 그냥 몸이 정직하게 반응하는 편이다. 비슷한 이유로 녹차, 떫은 와인, 카카오 함량이 높은 다크 초콜릿 등도 한동안 못 먹었다.'
     ]
   }
 ];
 
-const wheel = document.getElementById('wheel');
-const detail = document.getElementById('detail');
-const detailIdx = document.getElementById('detailIdx');
+const grid = document.getElementById('archiveGrid');
+const hint = document.getElementById('archiveHint');
+const detail = document.getElementById('archiveDetail');
 const detailTitle = document.getElementById('detailTitle');
 const detailBody = document.getElementById('detailBody');
-const circle = document.getElementById('circle');
-const stage = document.getElementById('stage');
-const hint = document.getElementById('hint');
 
-const rows = ITEMS.map((item, i) => {
-  const row = document.createElement('div');
-  row.className = 'row';
-  row.dataset.i = i;
-  row.innerHTML = `<span class="idx">${item.idx}</span><span class="label">${item.label}</span>`;
-  wheel.appendChild(row);
-  return row;
+let openState = null; // { item, sourceEl, ghostEl }
+
+ITEMS.forEach((item, i) => {
+  const el = document.createElement('div');
+  el.className = 'archive-item';
+  el.style.setProperty('--i', i);
+  el.innerHTML = `
+    <span class="archive-num">${item.idx}</span>
+    <button type="button" class="archive-photo-btn" aria-label="${item.title}">
+      <img class="archive-photo" src="${item.img}" alt="${item.alt}" />
+    </button>
+  `;
+  el.querySelector('.archive-photo-btn').addEventListener('click', () => openItem(item, el));
+  grid.appendChild(el);
 });
 
-const ANGLE_STEP = 34;   // deg between items
-const RADIUS = 240;      // px
+function openItem(item, sourceEl) {
+  if (openState) return;
+  const photo = sourceEl.querySelector('.archive-photo');
+  const first = photo.getBoundingClientRect();
 
-let offset = 0;          // continuous, in item units
-let openIndex = null;
+  sourceEl.classList.add('is-source');
 
-function render() {
-  rows.forEach((row, i) => {
-    const rel = i - offset;
-    const angle = rel * ANGLE_STEP;
-    const a = Math.abs(angle);
-    let opacity = Math.max(1 - a / 100, 0);
-    row.style.transform = `translateY(-50%) rotateX(${angle}deg) translateZ(${RADIUS}px)`;
-    row.style.opacity = openIndex === null ? opacity : 0;
-    row.style.pointerEvents = openIndex === null ? 'auto' : 'none';
-    row.classList.toggle('is-active', Math.round(offset) === i && a < ANGLE_STEP / 2);
-  });
-}
-render();
+  // Build a fixed-position ghost that starts exactly where the real photo was.
+  const ghost = document.createElement('div');
+  ghost.className = 'archive-ghost';
+  ghost.innerHTML = `
+    <span class="archive-num">${item.idx}</span>
+    <img class="archive-photo" src="${item.img}" alt="${item.alt}" style="aspect-ratio:${first.width}/${first.height};" />
+  `;
+  document.body.appendChild(ghost);
+  const ghostImg = ghost.querySelector('.archive-photo');
 
-function clamp(v, min, max) { return Math.min(max, Math.max(min, v)); }
+  ghost.style.width = first.width + 'px';
+  ghost.style.transform = `translate(${first.left}px, ${first.top}px)`;
 
-function onWheelEvent(e) {
-  if (openIndex !== null) {
-    if (e.deltaY !== 0) closeDetail();
-    return;
-  }
-  e.preventDefault();
-  offset = clamp(offset + e.deltaY * 0.0045, 0, ITEMS.length - 1);
-  render();
-}
-stage.addEventListener('wheel', onWheelEvent, { passive: false });
-
-// Touch drag support (mobile / trackpad-less touch devices).
-let touchStartY = null;
-let touchStartOffset = 0;
-stage.addEventListener('touchstart', (e) => {
-  touchStartY = e.touches[0].clientY;
-  touchStartOffset = offset;
-}, { passive: true });
-stage.addEventListener('touchmove', (e) => {
-  if (touchStartY === null) return;
-  if (openIndex !== null) {
-    if (Math.abs(e.touches[0].clientY - touchStartY) > 24) closeDetail();
-    return;
-  }
-  const dy = e.touches[0].clientY - touchStartY;
-  offset = clamp(touchStartOffset - dy * 0.012, 0, ITEMS.length - 1);
-  render();
-}, { passive: true });
-stage.addEventListener('touchend', () => { touchStartY = null; });
-
-// Keyboard support.
-document.addEventListener('keydown', (e) => {
-  if (openIndex !== null) {
-    if (e.key === 'Escape' || e.key === 'ArrowUp' || e.key === 'ArrowDown') closeDetail();
-    return;
-  }
-  if (e.key === 'ArrowDown') { offset = clamp(offset + 1, 0, ITEMS.length - 1); render(); }
-  if (e.key === 'ArrowUp') { offset = clamp(offset - 1, 0, ITEMS.length - 1); render(); }
-  if (e.key === 'Enter') openItem(Math.round(offset));
-});
-
-rows.forEach((row, i) => {
-  row.addEventListener('click', () => openItem(i));
-});
-
-function openItem(i) {
-  offset = i;
-  openIndex = i;
-  render();
-  const item = ITEMS[i];
-  detailIdx.textContent = item.idx;
-  detailTitle.textContent = item.label;
-  detailBody.innerHTML = item.paras.map(p => `<p>${p}</p>`).join('');
   requestAnimationFrame(() => {
-    detail.classList.add('is-open');
-    const rect = detailTitle.getBoundingClientRect();
-    circle.style.top = (rect.top + rect.height / 2) + 'px';
+    // Target: .archive-detail-spacer's column, vertically centered on the
+    // photo's own (post-scale) height — the spacer itself is zero-height,
+    // so its rect.top is already the vertical center point, not a top edge.
+    const spacer = detail.querySelector('.archive-detail-spacer');
+    detail.classList.add('is-visible');
+    const target = spacer.getBoundingClientRect();
+    const maxTargetHeight = window.innerHeight * 0.78;
+    let targetWidth = target.width;
+    let targetHeight = targetWidth * (first.height / first.width);
+    if (targetHeight > maxTargetHeight) {
+      targetHeight = maxTargetHeight;
+      targetWidth = targetHeight * (first.width / first.height);
+    }
+    const targetTop = target.top - targetHeight / 2;
+    ghost.style.transition = 'transform .55s cubic-bezier(.22,.61,.36,1), width .55s cubic-bezier(.22,.61,.36,1)';
+    ghost.style.width = targetWidth + 'px';
+    ghost.style.transform = `translate(${target.left}px, ${targetTop}px)`;
   });
-  circle.style.transform = 'translate(-50%, -50%) scale(1.6)';
-  hint.textContent = 'click the circle, or scroll, to go back';
+
+  detailTitle.textContent = item.title;
+  detailBody.innerHTML = item.paras.map(p => `<p>${p}</p>`).join('');
+  hint.textContent = '눌러서 목록으로 돌아가기';
+
+  ghostImg.addEventListener('click', closeDetail);
+
+  openState = { item, sourceEl, ghost };
 }
 
 function closeDetail() {
-  detail.classList.remove('is-open');
-  openIndex = null;
-  circle.style.top = '50%';
-  circle.style.transform = 'translate(-50%, -50%) scale(1)';
-  hint.textContent = 'scroll, or click a word';
-  render();
+  if (!openState) return;
+  const { sourceEl, ghost } = openState;
+  const first = sourceEl.querySelector('.archive-photo').getBoundingClientRect();
+
+  detail.classList.remove('is-visible');
+  ghost.style.transform = `translate(${first.left}px, ${first.top}px)`;
+  ghost.style.width = first.width + 'px';
+
+  const cleanup = () => {
+    sourceEl.classList.remove('is-source');
+    ghost.remove();
+    hint.textContent = '사진을 눌러보세요';
+    openState = null;
+  };
+  ghost.addEventListener('transitionend', cleanup, { once: true });
+  setTimeout(cleanup, 650); // safety net if transitionend doesn't fire
 }
 
-circle.addEventListener('click', () => { if (openIndex !== null) closeDetail(); });
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeDetail();
+});
 </script>
 </body>
 </html>
