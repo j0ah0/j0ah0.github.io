@@ -24,7 +24,7 @@ const SEASON_OFFSET = { spring: 0, summer: 0.4, autumn: 0, winter: -0.4 }
 // no reserved gap — so seasons ran straight into each other. Reserve a
 // fixed angular gap per season again, which also packs the real cards a
 // bit closer together within their own (now slightly smaller) span.
-const SEASON_GAP = 0.32
+const SEASON_GAP = 0.21 // ~2 card-widths' worth, down from ~3
 
 // Rotation input tuning, shared between the input-listener effect and the
 // per-frame momentum/damping in useFrame below.
