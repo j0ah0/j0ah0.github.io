@@ -35,7 +35,7 @@ permalink: /board/
   /* 한 곳에서 조절:
      --gb-who 이름 칸 너비 / --gb-measure 본문 폭(모든 글이 이 폭으로 통일) /
      --gb-size 글자 크기 / --gb-lh 줄 간격 (세트 사이 간격도 이 한 줄 높이 기준) */
-  #gb-app { --gb-who: 84px; --gb-gap: 14px; --gb-measure: 460px; --gb-size: 14px; --gb-lh: 1.7; --gb-set-gap: 1.25em; --gb-item-gap: 1.75em; }
+  #gb-app { --gb-who: 84px; --gb-gap: 14px; --gb-measure: 460px; --gb-size: 14px; --gb-lh: 1.7; --gb-set-gap: 1.15em; --gb-item-gap: 1.75em; }
 
   .gb-auth { text-align: right; font-size: 12px; color: var(--muted); margin-bottom: 14px; min-height: 20px; }
   .gb-auth button { font: inherit; font-size: 12px; border: none; background: none; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
@@ -665,7 +665,6 @@ permalink: /board/
       }
       list.appendChild(li);
     });
-    attachLensEvents();
   }, (err) => {
     list.innerHTML = '<li class="gb-empty">방명록을 불러오지 못했어요: ' + err.message + '</li>';
   });
@@ -739,16 +738,20 @@ permalink: /board/
     });
   }
 
-  function attachLensEvents() {
-    if (window.innerWidth <= 700) return;
-    document.querySelectorAll(".gb-item").forEach((item) => {
-      if (item.dataset.lensReady) return;
-      item.dataset.lensReady = "true";
-      item.addEventListener("mouseenter", (e) => showLens(item, e.clientX, e.clientY));
-      item.addEventListener("mousemove", (e) => moveLens(item, e.clientX, e.clientY));
-      item.addEventListener("mouseleave", hideLens);
-    });
-  }
+  // lens가 켜져 있으면 목록 어디든 마우스가 움직일 때마다 그 아래 글을 계속 따라다니며 보여준다
+  // (글자 위에 딱 맞춰 다가가야만 뜨는 게 아니라, 한 번 켜두면 계속 렌즈가 붙어있는 느낌).
+  document.addEventListener("mousemove", (e) => {
+    if (!lensEnabled || window.innerWidth <= 700) return;
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    const item = el && el.closest(".gb-item");
+    if (item) {
+      moveLens(item, e.clientX, e.clientY);
+    } else {
+      hideLens();
+    }
+  });
+
+  document.addEventListener("mouseleave", hideLens);
 
   window.addEventListener("resize", () => {
     if (window.innerWidth <= 700) hideLens();
