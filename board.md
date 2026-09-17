@@ -19,11 +19,11 @@ permalink: /board/
     <div class="gb-form-main">
       <div class="gb-form-content-row">
         <textarea id="gb-content" placeholder="content" maxlength="500" rows="1" required aria-label="내용"></textarea>
-        <label class="gb-secret" title="비밀글"><input type="checkbox" id="gb-secret" aria-label="비밀글"><span aria-hidden="true">🔒</span><span class="gb-secret-label">secret?</span></label>
+        <button type="submit" id="gb-submit" aria-label="등록">→</button>
       </div>
       <div class="gb-form-bottom">
+        <label class="gb-secret" title="비밀글"><input type="checkbox" id="gb-secret" aria-label="비밀글"><span aria-hidden="true">🔒</span><span class="gb-secret-label">secret?</span></label>
         <input type="password" id="gb-pw" placeholder="password" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" aria-label="비밀번호 4자리 숫자" title="비밀번호 4자리 숫자">
-        <button type="submit" id="gb-submit" aria-label="등록">→</button>
       </div>
     </div>
   </form>
@@ -141,7 +141,7 @@ permalink: /board/
   .gb-form-name { width: 100%; font-weight: 400; }
   .gb-form textarea { display: block; width: 100%; min-height: 1.7em; max-height: 240px; resize: none; overflow: hidden; }
 
-  /* content와 secret? 토글을 한 줄에 나란히 */
+  /* content와 전송 화살표를 한 줄에 (메시지 보내기 느낌), secret?/password는 그 아래 */
   .gb-form-content-row { display: flex; align-items: flex-start; gap: 14px; }
   .gb-form-content-row textarea { flex: 1; }
 
@@ -151,7 +151,7 @@ permalink: /board/
   .gb-form-main:has(#gb-secret:checked) .gb-form-bottom input[type="password"] { display: inline-block; }
 
   /* 비밀글: 체크박스 대신 자물쇠를 눌러 켜고 끔 (꺼지면 흐리게) */
-  .gb-secret { position: relative; display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; padding-top: 0.15em; font-size: 12px; cursor: pointer; filter: grayscale(1); opacity: 0.3; transition: opacity 120ms ease; }
+  .gb-secret { position: relative; display: inline-flex; align-items: center; gap: 4px; font-size: 12px; cursor: pointer; filter: grayscale(1); opacity: 0.3; transition: opacity 120ms ease; }
   .gb-secret:hover { opacity: 0.6; }
   .gb-secret:has(input:checked) { filter: none; opacity: 1; }
   .gb-secret input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; }
