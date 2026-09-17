@@ -17,10 +17,10 @@ permalink: /board/
   <form id="gb-form" class="gb-form">
     <input type="text" id="gb-name" class="gb-form-name" placeholder="이름" maxlength="20" required aria-label="닉네임">
     <div class="gb-form-main">
-      <textarea id="gb-content" placeholder="…" maxlength="500" rows="1" required aria-label="내용"></textarea>
+      <textarea id="gb-content" placeholder="content" maxlength="500" rows="1" required aria-label="내용"></textarea>
       <div class="gb-form-bottom">
-        <input type="password" id="gb-pw" placeholder="····" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" required aria-label="비밀번호 4자리 숫자" title="비밀번호 4자리 숫자">
-        <label class="gb-secret" title="비밀글"><input type="checkbox" id="gb-secret" aria-label="비밀글"><span aria-hidden="true">🔒</span></label>
+        <input type="password" id="gb-pw" placeholder="password(4)" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" required aria-label="비밀번호 4자리 숫자" title="비밀번호 4자리 숫자">
+        <label class="gb-secret" title="비밀글"><input type="checkbox" id="gb-secret" aria-label="비밀글"><span aria-hidden="true">🔒</span><span class="gb-secret-label">secret?</span></label>
         <button type="submit" id="gb-submit" aria-label="등록">→</button>
       </div>
     </div>
@@ -137,10 +137,10 @@ permalink: /board/
   .gb-form-name { width: 100%; font-weight: 400; }
   .gb-form textarea { display: block; width: 100%; min-height: 1.7em; max-height: 240px; resize: none; overflow: hidden; }
   .gb-form-bottom { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; margin-top: 6px; font-size: 11px; color: var(--muted); }
-  .gb-form-bottom input[type="password"] { width: 44px; font-size: 12px; letter-spacing: 0.15em; }
+  .gb-form-bottom input[type="password"] { width: 92px; font-size: 12px; letter-spacing: 0.04em; }
 
   /* 비밀글: 체크박스 대신 자물쇠를 눌러 켜고 끔 (꺼지면 흐리게) */
-  .gb-secret { position: relative; display: inline-flex; font-size: 12px; cursor: pointer; filter: grayscale(1); opacity: 0.3; transition: opacity 120ms ease; }
+  .gb-secret { position: relative; display: inline-flex; align-items: center; gap: 4px; font-size: 12px; cursor: pointer; filter: grayscale(1); opacity: 0.3; transition: opacity 120ms ease; }
   .gb-secret:hover { opacity: 0.6; }
   .gb-secret:has(input:checked) { filter: none; opacity: 1; }
   .gb-secret input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; }
