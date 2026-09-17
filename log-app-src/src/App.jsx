@@ -1,7 +1,7 @@
 import * as THREE from 'three'
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, extend, useFrame } from '@react-three/fiber'
-import { Image, ScrollControls, useScroll, Billboard, Text } from '@react-three/drei'
+import { Image, Billboard, Text } from '@react-three/drei'
 import { easing, geometry } from 'maath'
 
 extend(geometry)
@@ -17,6 +17,12 @@ const SEASON_ORDER = ['spring', 'summer', 'autumn', 'winter']
 // Vertical offset per season group, giving the ring a staircase look.
 const SEASON_OFFSET = { spring: 0, summer: 0.4, autumn: 0, winter: -0.4 }
 
+// Rotation input tuning, shared between the input-listener effect and the
+// per-frame momentum/damping in useFrame below.
+const WHEEL_SPEED = 0.0018
+const TOUCH_SPEED = 0.0035
+const TOUCH_DECAY = 3.5 // higher = coasting after a flick stops sooner
+
 function groupBySeason(items) {
   const buckets = { spring: [], summer: [], autumn: [], winter: [] }
   items.forEach((it) => {
@@ -31,9 +37,7 @@ export const App = () => {
   return (
     <>
       <Canvas dpr={1} gl={{ antialias: false }} camera={{ position: [0, 4.5, 9], fov: 45 }}>
-        <ScrollControls pages={4} damping={0.1}>
-          <Scene position={[0, 1.5, 0]} onHover={setHovered} />
-        </ScrollControls>
+        <Scene position={[0, 1.5, 0]} onHover={setHovered} />
       </Canvas>
       <HoverPreview item={hovered} />
     </>
@@ -92,40 +96,62 @@ function HoverPreview({ item }) {
 
 function Scene({ children, onHover, ...props }) {
   const ref = useRef()
-  const scroll = useScroll()
-
-  // Own infinite-loop implementation instead of ScrollControls' built-in
-  // `infinite` prop: that one resets the scroll div's scrollTop on its native
-  // 'scroll' event with a 40ms cooldown between resets, which a fast/momentum
-  // scroll (e.g. trackpad) can outrun right at the wrap point (reported as
-  // "gets stuck going from winter back to spring") and can also fire right at
-  // mount before there's room to scroll either way. Checking every frame
-  // instead of only on 'scroll' events, with no cooldown, avoids both.
-  //
-  // When we hit an edge we recenter scrollTop AND snap state.offset/scroll.el
-  // scroll ref to match it *synchronously*, the same way ScrollControls' own
-  // infinite mode does — otherwise offset would ease from the old value
-  // toward the new one over `damping` seconds, i.e. visibly spin through
-  // part of a lap. `laps` banks the difference so the actual displayed
-  // rotation (offset + laps) doesn't change at all at the moment of reset.
-  const laps = useRef(0)
   const frameCount = useRef(0)
 
-  // scrollHeight/clientHeight only change on resize (or when content changes),
-  // but reading them is a layout query — doing that every frame right next to
-  // a scrollTop read, itself running 60x/sec during an active scroll, was
-  // forcing a synchronous reflow every frame and is what made scrolling feel
-  // stuttery. Cache the pair and only recompute via ResizeObserver.
-  const maxScroll = useRef(0)
-  useLayoutEffect(() => {
-    const el = scroll.el
-    if (!el) return
-    const measure = () => { maxScroll.current = el.scrollHeight - el.clientHeight }
-    measure()
-    const ro = new ResizeObserver(measure)
-    ro.observe(el)
-    return () => ro.disconnect()
-  }, [scroll.el])
+  // Rotation is one unbounded float driven directly by wheel/touch input,
+  // instead of ScrollControls' scrollable-div + 0..1 offset model with a
+  // manual "teleport scrollTop back to the middle" wraparound hack. That
+  // hack (see git history) was itself a workaround for drei's built-in
+  // `infinite` getting stuck on a fast/momentum scroll, but the teleport is
+  // a real discontinuity every time the ring crossed a season boundary —
+  // exactly the stutter being chased. A plain accumulating value has no
+  // wrap point at all, so there is nothing to teleport past.
+  const targetRotation = useRef(0)
+  const rotation = useRef({ value: 0 })
+  const isTouching = useRef(false)
+  const touchVelocity = useRef(0) // rad/sec, for a bit of coast-to-stop after lifting a finger
+
+  useEffect(() => {
+    const onWheel = (e) => {
+      e.preventDefault()
+      targetRotation.current += e.deltaY * WHEEL_SPEED
+    }
+    let touchY = null
+    let lastTouchTime = 0
+    const onTouchStart = (e) => {
+      isTouching.current = true
+      touchVelocity.current = 0
+      touchY = e.touches[0].clientY
+      lastTouchTime = performance.now()
+    }
+    const onTouchMove = (e) => {
+      if (touchY === null) return
+      const y = e.touches[0].clientY
+      const now = performance.now()
+      const dt = Math.max(now - lastTouchTime, 1) / 1000
+      const dy = touchY - y
+      const delta = dy * TOUCH_SPEED
+      targetRotation.current += delta
+      touchVelocity.current = delta / dt
+      touchY = y
+      lastTouchTime = now
+    }
+    const onTouchEnd = () => {
+      isTouching.current = false
+      touchY = null
+    }
+
+    window.addEventListener('wheel', onWheel, { passive: false })
+    window.addEventListener('touchstart', onTouchStart, { passive: true })
+    window.addEventListener('touchmove', onTouchMove, { passive: true })
+    window.addEventListener('touchend', onTouchEnd)
+    return () => {
+      window.removeEventListener('wheel', onWheel)
+      window.removeEventListener('touchstart', onTouchStart)
+      window.removeEventListener('touchmove', onTouchMove)
+      window.removeEventListener('touchend', onTouchEnd)
+    }
+  }, [])
 
   const buckets = useMemo(() => groupBySeason(ITEMS), [])
   // Every season gets at least a sliver of the ring, so its label always shows
@@ -134,18 +160,16 @@ function Scene({ children, onHover, ...props }) {
   const weightTotal = weights.reduce((a, b) => a + b, 0)
 
   useFrame((state, delta) => {
-    const el = scroll.el
-    if (el) {
-      const max = maxScroll.current
-      if (max > 0 && (el.scrollTop <= 2 || el.scrollTop >= max - 2)) {
-        const oldOffset = scroll.offset
-        el.scrollTop = max / 2
-        scroll.scroll.current = 0.5
-        scroll.offset = 0.5
-        laps.current += oldOffset - 0.5
-      }
+    // Coast briefly after a touch flick, the way native momentum scrolling
+    // would have — a raw touchmove listener has no such thing on its own
+    // since there's no real scrollable element generating the follow-up
+    // events for us.
+    if (!isTouching.current && Math.abs(touchVelocity.current) > 0.001) {
+      targetRotation.current += touchVelocity.current * delta
+      touchVelocity.current *= Math.max(0, 1 - delta * TOUCH_DECAY)
     }
-    ref.current.rotation.y = -(scroll.offset + laps.current) * (Math.PI * 2) // Rotate contents
+    easing.damp(rotation.current, 'value', targetRotation.current, 0.15, delta)
+    ref.current.rotation.y = -rotation.current.value // Rotate contents
     // Raycasting all ~80 cards is real per-frame cost; every other frame is
     // still responsive enough for hover-while-rotating and halves that cost.
     frameCount.current++
