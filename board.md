@@ -35,7 +35,7 @@ permalink: /board/
   /* 한 곳에서 조절:
      --gb-who 이름 칸 너비 / --gb-measure 본문 폭(모든 글이 이 폭으로 통일) /
      --gb-size 글자 크기 / --gb-lh 줄 간격 (세트 사이 간격도 이 한 줄 높이 기준) */
-  #gb-app { --gb-who: 84px; --gb-gap: 14px; --gb-measure: 460px; --gb-size: 14px; --gb-lh: 1.7; --gb-set-gap: 1.15em; --gb-item-gap: 1.75em; }
+  #gb-app { --gb-who: 84px; --gb-gap: 14px; --gb-measure: 460px; --gb-size: 14px; --gb-lh: 1.7; --gb-set-gap: 1.05em; --gb-item-gap: 1.15em; }
 
   .gb-auth { text-align: right; font-size: 12px; color: var(--muted); margin-bottom: 14px; min-height: 20px; }
   .gb-auth button { font: inherit; font-size: 12px; border: none; background: none; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
