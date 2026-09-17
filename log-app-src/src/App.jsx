@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, extend, useFrame } from '@react-three/fiber'
 import { Image, ScrollControls, useScroll, Billboard, Text } from '@react-three/drei'
 import { easing, geometry } from 'maath'
@@ -111,6 +111,22 @@ function Scene({ children, onHover, ...props }) {
   const laps = useRef(0)
   const frameCount = useRef(0)
 
+  // scrollHeight/clientHeight only change on resize (or when content changes),
+  // but reading them is a layout query — doing that every frame right next to
+  // a scrollTop read, itself running 60x/sec during an active scroll, was
+  // forcing a synchronous reflow every frame and is what made scrolling feel
+  // stuttery. Cache the pair and only recompute via ResizeObserver.
+  const maxScroll = useRef(0)
+  useLayoutEffect(() => {
+    const el = scroll.el
+    if (!el) return
+    const measure = () => { maxScroll.current = el.scrollHeight - el.clientHeight }
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [scroll.el])
+
   const buckets = useMemo(() => groupBySeason(ITEMS), [])
   // Every season gets at least a sliver of the ring, so its label always shows
   // even before any posts are tagged with it.
@@ -120,7 +136,7 @@ function Scene({ children, onHover, ...props }) {
   useFrame((state, delta) => {
     const el = scroll.el
     if (el) {
-      const max = el.scrollHeight - el.clientHeight
+      const max = maxScroll.current
       if (max > 0 && (el.scrollTop <= 2 || el.scrollTop >= max - 2)) {
         const oldOffset = scroll.offset
         el.scrollTop = max / 2
