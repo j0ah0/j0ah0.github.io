@@ -15,7 +15,7 @@ permalink: /board/
 
   <!-- 작성 폼 = 대화의 다음 화자 한 줄 -->
   <form id="gb-form" class="gb-form">
-    <input type="text" id="gb-name" class="gb-form-name" placeholder="이름" maxlength="20" required aria-label="닉네임">
+    <input type="text" id="gb-name" class="gb-form-name" placeholder="name" maxlength="20" required aria-label="닉네임">
     <div class="gb-form-main">
       <div class="gb-form-content-row">
         <textarea id="gb-content" placeholder="content" maxlength="500" rows="1" required aria-label="내용"></textarea>
@@ -129,6 +129,7 @@ permalink: /board/
   .gb-form {
     display: grid;
     grid-template-columns: var(--gb-who) minmax(0, var(--gb-measure));
+    align-items: start;
     column-gap: var(--gb-gap);
     margin-top: calc(var(--gb-lh) * 1em);
     font-size: var(--gb-size);
