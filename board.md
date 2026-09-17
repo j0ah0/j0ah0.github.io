@@ -20,6 +20,10 @@ permalink: /board/
     </div>
   </form>
 
+  <div class="gb-list-tools">
+    <button type="button" id="gb-lens-toggle" class="gb-lens-toggle"></button>
+  </div>
+
   <ul id="gb-list" class="gb-list"></ul>
 </div>
 
@@ -44,6 +48,14 @@ permalink: /board/
   #gb-submit { padding: 7px 16px; border: 1px solid var(--text); border-radius: 999px; background: var(--text); color: var(--bg); font: inherit; font-size: 12px; cursor: pointer; }
   #gb-submit:hover { opacity: 0.8; }
   #gb-submit:disabled { opacity: 0.4; cursor: default; }
+
+  .gb-list-tools { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+  .gb-lens-toggle { border: none; background: none; padding: 2px 0; font: inherit; font-size: 10px; letter-spacing: 0.06em; color: var(--muted); cursor: pointer; }
+  .gb-lens-toggle:hover { color: var(--text); }
+  .gb-lens-toggle .gb-lens-dot { display: inline-block; margin-right: 5px; font-size: 8px; vertical-align: 1px; }
+  @media (max-width: 700px) {
+    .gb-list-tools { display: none; }
+  }
 
   .gb-list { list-style: none; margin: 0; padding: 0; }
   .gb-empty { padding: 30px 0; color: var(--muted); font-size: 13px; }
@@ -553,6 +565,7 @@ permalink: /board/
   // ---- 유리구슬 돋보기: 데스크톱에서 방명록 위에 마우스를 올리면 그 부분만 확대해 보여준다 ----
   const lens = document.getElementById("gb-lens");
   const lensInner = document.getElementById("gb-lens-inner");
+  const lensToggle = document.getElementById("gb-lens-toggle");
   const LENS_SIZE = 180;
   const LENS_SCALE = 1.6;
   let lensItem = null;
@@ -560,8 +573,25 @@ permalink: /board/
   let lensY = 0;
   let lensFrame = null;
 
+  // 늘 켜져 있으면 글 읽을 때 방해가 될 수 있어서 기본은 꺼둔 채로 시작하고,
+  // 사용자가 직접 켠 상태는 localStorage에 남겨서 새로고침해도 유지한다.
+  let lensEnabled = localStorage.getItem("gb_lens_enabled") === "1";
+
+  function updateLensToggleUI() {
+    lensToggle.innerHTML = '<span class="gb-lens-dot">' + (lensEnabled ? "●" : "○") + '</span>lens';
+    lensToggle.title = lensEnabled ? "off" : "magnify";
+  }
+  updateLensToggleUI();
+
+  lensToggle.addEventListener("click", () => {
+    lensEnabled = !lensEnabled;
+    try { localStorage.setItem("gb_lens_enabled", lensEnabled ? "1" : "0"); } catch (e) {}
+    updateLensToggleUI();
+    if (!lensEnabled) hideLens();
+  });
+
   function showLens(item, x, y) {
-    if (window.innerWidth <= 700 || !item || !item.isConnected) return;
+    if (!lensEnabled || window.innerWidth <= 700 || !item || !item.isConnected) return;
     lensItem = item;
     lensX = x;
     lensY = y;
