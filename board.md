@@ -7,107 +7,140 @@ permalink: /board/
 <div id="gb-auth" class="gb-auth"></div>
 
 <div id="gb-app">
-  <form id="gb-form" class="gb-form">
-    <div class="gb-form-title">GUESTBOOK</div>
-    <div class="gb-form-row">
-      <input type="text" id="gb-name" placeholder="닉네임" maxlength="20" required>
-      <input type="password" id="gb-pw" placeholder="비밀번호 4자리" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" required>
-    </div>
-    <textarea id="gb-content" placeholder="여러분의 소중한 이야기를 남겨주세요." maxlength="500" required></textarea>
-    <div class="gb-form-bottom">
-      <label class="gb-secret"><input type="checkbox" id="gb-secret"> 비밀글</label>
-      <button type="submit" id="gb-submit">등록</button>
-    </div>
-  </form>
-
   <div class="gb-list-tools">
     <button type="button" id="gb-lens-toggle" class="gb-lens-toggle"></button>
   </div>
 
   <ul id="gb-list" class="gb-list"></ul>
+
+  <!-- 작성 폼 = 대화의 다음 화자 한 줄 -->
+  <form id="gb-form" class="gb-form">
+    <input type="text" id="gb-name" class="gb-form-name" placeholder="이름" maxlength="20" required aria-label="닉네임">
+    <div class="gb-form-main">
+      <textarea id="gb-content" placeholder="…" maxlength="500" rows="1" required aria-label="내용"></textarea>
+      <div class="gb-form-bottom">
+        <input type="password" id="gb-pw" placeholder="····" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" required aria-label="비밀번호 4자리 숫자" title="비밀번호 4자리 숫자">
+        <label class="gb-secret" title="비밀글"><input type="checkbox" id="gb-secret" aria-label="비밀글"><span aria-hidden="true">🔒</span></label>
+        <button type="submit" id="gb-submit" aria-label="등록">→</button>
+      </div>
+    </div>
+  </form>
 </div>
 
 <div id="gb-lens" class="gb-lens"><div id="gb-lens-inner" class="gb-lens-inner"></div></div>
 
 <style>
+  /* 화자 이름 칸 너비 / 본문 글자 크기를 한 곳에서 조절 */
+  #gb-app { --gb-who: 64px; --gb-gap: 16px; --gb-size: 14px; --gb-lh: 1.7; }
+
   .gb-auth { text-align: right; font-size: 12px; color: var(--muted); margin-bottom: 14px; min-height: 20px; }
   .gb-auth button { font: inherit; font-size: 12px; border: none; background: none; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
   .gb-auth button:hover { color: var(--text); }
   #gb-login { opacity: 0.4; }
 
-  .gb-form { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: 48px; }
-  .gb-form-title { padding: 10px 0 8px; font-size: 10px; letter-spacing: 0.12em; color: var(--muted); }
-  .gb-form-row { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--border); }
-  .gb-form-row input { width: 100%; box-sizing: border-box; padding: 12px 0; border: none; background: transparent; font: inherit; font-size: 13px; color: var(--text); outline: none; }
-  .gb-form-row input:first-child { padding-right: 16px; border-right: 1px solid var(--border); }
-  .gb-form-row input:last-child { padding-left: 16px; }
-  .gb-form-row input::placeholder, .gb-form textarea::placeholder { color: var(--muted); }
-  .gb-form textarea { display: block; width: 100%; min-height: 90px; box-sizing: border-box; padding: 14px 0; border: none; border-top: 1px solid var(--border); background: transparent; font: inherit; font-size: 13px; line-height: 1.8; color: var(--text); resize: vertical; outline: none; }
-  .gb-form-bottom { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-top: 1px solid var(--border); }
-  .gb-secret { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); cursor: pointer; }
-  #gb-submit { padding: 7px 16px; border: 1px solid var(--text); border-radius: 999px; background: var(--text); color: var(--bg); font: inherit; font-size: 12px; cursor: pointer; }
-  #gb-submit:hover { opacity: 0.8; }
-  #gb-submit:disabled { opacity: 0.4; cursor: default; }
-
-  .gb-list-tools { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+  .gb-list-tools { display: flex; justify-content: flex-end; margin-bottom: 18px; }
   .gb-lens-toggle { border: none; background: none; padding: 2px 0; font: inherit; font-size: 10px; letter-spacing: 0.06em; color: var(--muted); cursor: pointer; }
   .gb-lens-toggle:hover { color: var(--text); }
   .gb-lens-toggle .gb-lens-dot { display: inline-block; margin-right: 5px; font-size: 8px; vertical-align: 1px; }
-  @media (max-width: 700px) {
-    .gb-list-tools { display: none; }
-  }
 
+  /* ---- 대화 목록 ---- */
   .gb-list { list-style: none; margin: 0; padding: 0; }
-  .gb-empty { padding: 30px 0; color: var(--muted); font-size: 13px; }
+  .gb-empty { color: var(--muted); font-size: var(--gb-size); }
 
-  .gb-item { position: relative; display: grid; grid-template-columns: 68px 1fr; column-gap: 24px; padding: 20px 0 26px; border-bottom: 1px solid var(--border); }
-  .gb-item:first-child { border-top: 1px solid var(--border); }
-  .gb-item-name { display: block; font-size: 13px; font-weight: 600; color: var(--text); }
-  .gb-item-date { display: block; margin-top: 4px; font-size: 10px; color: var(--muted); }
-  .gb-item-main { min-width: 0; }
-  .gb-item-body p { margin: 0 0 1.1em; font-size: 14px; line-height: 1.8; color: var(--text); white-space: pre-wrap; word-break: break-word; }
-  .gb-item-body p:last-child { margin-bottom: 0; }
-
-  .gb-del-btn { display: none; position: absolute; right: 0; border: none; background: none; color: var(--muted); font-size: 14px; padding: 2px 4px; cursor: pointer; }
-  body.gb-is-owner .gb-del-btn { display: inline-block; }
-  .gb-del-btn:hover { color: #c0392b; }
-  .gb-item .gb-del-btn { top: 18px; }
-  .gb-reply .gb-del-btn { top: 14px; }
-
-  .gb-secret-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; min-height: 28px; font-size: 13px; color: var(--muted); }
-  .gb-reply-dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
-  .gb-secret-row input { width: 70px; padding: 5px 8px; font-size: 13px; border: 1px solid var(--border); border-radius: 999px; background: transparent; color: var(--text); outline: none; }
-  .gb-secret-row button { padding: 5px 10px; font-size: 12px; border: 1px solid var(--border); border-radius: 999px; background: transparent; color: var(--text); cursor: pointer; }
-  .gb-secret-row button:hover { background: var(--border); }
-
-  .gb-replies { list-style: none; margin: 26px 0 0; padding: 0; }
-  .gb-reply { position: relative; display: grid; grid-template-columns: 68px 1fr; column-gap: 24px; padding: 16px 0 0; }
-  .gb-reply-name { display: block; font-size: 13px; font-weight: 600; color: var(--text); }
-  .gb-reply-date { display: block; margin-top: 4px; font-size: 10px; color: var(--muted); }
+  .gb-item,
+  .gb-reply {
+    position: relative;
+    display: grid;
+    grid-template-columns: var(--gb-who) minmax(0, 1fr);
+    column-gap: var(--gb-gap);
+    font-size: var(--gb-size);
+    line-height: var(--gb-lh);
+  }
+  .gb-item { margin: 0 0 0.35em; }
+  .gb-item-name,
+  .gb-reply-name { font-weight: 600; color: var(--text); word-break: keep-all; }
+  .gb-item-main,
   .gb-reply-main { min-width: 0; }
-  .gb-reply-body p { margin: 0 0 1em; font-size: 13px; line-height: 1.75; color: var(--text); white-space: pre-wrap; word-break: break-word; }
+
+  .gb-item-body p,
+  .gb-reply-body p { margin: 0 0 0.5em; color: var(--text); white-space: pre-wrap; word-break: break-word; }
+  .gb-item-body p:last-child,
   .gb-reply-body p:last-child { margin-bottom: 0; }
 
-  .gb-images { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; max-width: 480px; }
+  /* 답글은 들여쓰지 않고 같은 이름 칸에 정렬 → 대화처럼 이어짐 */
+  .gb-replies { grid-column: 1 / -1; list-style: none; margin: 0.35em 0 0; padding: 0; }
+  .gb-reply + .gb-reply { margin-top: 0.35em; }
+
+  .gb-del-btn { display: none; position: absolute; top: 0; right: 0; border: none; background: none; color: var(--muted); font-size: 12px; padding: 2px 4px; cursor: pointer; }
+  body.gb-is-owner .gb-del-btn { display: inline-block; }
+  .gb-del-btn:hover { color: #c0392b; }
+
+  /* ---- 비밀글 ---- */
+  .gb-secret-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); }
+  .gb-reply-dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+  .gb-secret-row input { width: 64px; padding: 0; border: none; background: transparent; font: inherit; color: var(--text); outline: none; }
+  .gb-secret-row input::placeholder { color: var(--muted); opacity: 0.6; }
+  .gb-secret-row button { padding: 0; border: none; background: none; font: inherit; color: var(--text); cursor: pointer; }
+  .gb-secret-row button:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+  /* ---- 답글 사진 ---- */
+  .gb-images { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; max-width: 480px; }
   .gb-image { display: block; width: 100%; height: auto; border-radius: 2px; background: var(--border); }
 
-  .gb-reply-form { display: none; margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--border); }
+  /* ---- 관리자 답글 폼 (선 없이) ---- */
+  .gb-reply-form { display: none; grid-column: 2; margin: 0.3em 0 0.9em; }
   body.gb-is-owner .gb-reply-form { display: block; }
-  .gb-reply-form textarea { display: block; width: 100%; min-height: 40px; max-height: 160px; box-sizing: border-box; padding: 0 0 8px; border: none; background: transparent; font: inherit; font-size: 13px; line-height: 1.6; color: var(--text); resize: none; overflow: hidden; outline: none; }
-  .gb-reply-tools { display: flex; align-items: center; justify-content: space-between; padding-top: 8px; border-top: 1px solid var(--border); }
-  .gb-reply-file-label { font-size: 11px; color: var(--muted); cursor: pointer; }
-  .gb-reply-file-label:hover { color: var(--text); }
+  .gb-reply-form textarea { display: block; width: 100%; min-height: 1.7em; max-height: 160px; box-sizing: border-box; padding: 0; border: none; background: transparent; font: inherit; font-size: 13px; line-height: 1.6; color: var(--text); resize: none; overflow: hidden; outline: none; }
+  .gb-reply-form textarea::placeholder { color: var(--muted); opacity: 0.6; }
+  .gb-reply-tools { display: flex; align-items: center; gap: 14px; margin-top: 4px; }
+  .gb-reply-file-label,
+  .gb-reply-submit { padding: 0; border: none; background: none; font: inherit; font-size: 15px; line-height: 1; color: var(--muted); cursor: pointer; }
+  .gb-reply-submit { margin-left: auto; }
+  .gb-reply-file-label:hover,
+  .gb-reply-submit:hover { color: var(--text); }
   .gb-reply-file-label input { display: none; }
-  .gb-reply-submit { padding: 5px 12px; font-size: 11px; border: 1px solid var(--border); border-radius: 999px; background: transparent; color: var(--text); cursor: pointer; }
-  .gb-reply-submit:hover { background: var(--border); }
   .gb-reply-submit:disabled { opacity: 0.4; cursor: default; }
 
-  .gb-upload-preview { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-  .gb-upload-thumb { position: relative; width: 48px; height: 48px; border: 1px solid var(--border); overflow: hidden; }
+  .gb-upload-preview { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .gb-upload-preview:empty { display: none; }
+  .gb-upload-thumb { position: relative; width: 48px; height: 48px; overflow: hidden; }
   .gb-upload-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .gb-upload-remove { position: absolute; top: 1px; right: 1px; width: 15px; height: 15px; border: none; border-radius: 50%; background: rgba(0,0,0,0.6); color: #fff; font-size: 9px; line-height: 15px; text-align: center; cursor: pointer; padding: 0; }
 
-  /* ---- 유리구슬 돋보기: 목록 위에 마우스를 올리면 그 자리만 확대되는 원형 렌즈 ---- */
+  /* ---- 작성 폼: 마지막 화자 다음 줄 ---- */
+  .gb-form {
+    display: grid;
+    grid-template-columns: var(--gb-who) minmax(0, 1fr);
+    column-gap: var(--gb-gap);
+    margin-top: 2.2em;
+    font-size: var(--gb-size);
+    line-height: var(--gb-lh);
+  }
+  .gb-form input,
+  .gb-form textarea { padding: 0; border: none; background: transparent; font: inherit; color: var(--text); outline: none; }
+  .gb-form input::placeholder,
+  .gb-form textarea::placeholder { color: var(--muted); opacity: 0.6; }
+  .gb-form-name { width: 100%; font-weight: 600; }
+  .gb-form textarea { display: block; width: 100%; min-height: 1.7em; max-height: 240px; resize: none; overflow: hidden; }
+  .gb-form-bottom { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; margin-top: 6px; font-size: 11px; color: var(--muted); }
+  .gb-form-bottom input[type="password"] { width: 44px; font-size: 12px; letter-spacing: 0.15em; }
+
+  /* 비밀글: 체크박스 대신 자물쇠를 눌러 켜고 끔 (꺼지면 흐리게) */
+  .gb-secret { position: relative; display: inline-flex; font-size: 12px; cursor: pointer; filter: grayscale(1); opacity: 0.3; transition: opacity 120ms ease; }
+  .gb-secret:hover { opacity: 0.6; }
+  .gb-secret:has(input:checked) { filter: none; opacity: 1; }
+  .gb-secret input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; }
+  .gb-secret:has(input:focus-visible) { outline: 1px solid var(--muted); outline-offset: 2px; }
+
+  #gb-submit { margin-left: auto; padding: 0 2px; border: none; background: none; font: inherit; font-size: 18px; line-height: 1; color: var(--text); cursor: pointer; transition: transform 120ms ease; }
+  #gb-submit:hover { transform: translateX(3px); }
+  #gb-submit:disabled { opacity: 0.3; cursor: default; transform: none; }
+
+  .gb-form input:focus-visible,
+  .gb-form textarea:focus-visible,
+  .gb-reply-form textarea:focus-visible { box-shadow: 0 1px 0 var(--muted); }
+
+  /* ---- 유리구슬 돋보기 ---- */
   .gb-lens {
     position: fixed; z-index: 500; left: 0; top: 0; width: 180px; height: 180px;
     border-radius: 50%; overflow: hidden; pointer-events: none; opacity: 0;
@@ -125,19 +158,18 @@ permalink: /board/
   }
   .gb-lens.is-visible { opacity: 1; transform: translate(-50%, -50%) scale(1); }
   .gb-lens-inner { position: absolute; left: 0; top: 0; transform-origin: 0 0; pointer-events: none; }
-  .gb-lens-inner .gb-item { border-top: none; }
   .gb-lens-inner .gb-del-btn,
   .gb-lens-inner .gb-reply-form,
   .gb-lens-inner .gb-secret-row button,
   .gb-lens-inner .gb-secret-row input { display: none !important; }
 
+  @media (prefers-reduced-motion: reduce) {
+    .gb-lens { transition: none; }
+  }
+
   @media (max-width: 700px) {
-    .gb-form-row { grid-template-columns: 1fr; }
-    .gb-form-row input:first-child { border-right: none; border-bottom: 1px solid var(--border); padding-right: 0; }
-    .gb-form-row input:last-child { padding-left: 0; }
-    .gb-item, .gb-reply { grid-template-columns: 1fr; row-gap: 6px; }
-    .gb-item-name, .gb-reply-name { display: inline; }
-    .gb-item-date, .gb-reply-date { display: inline; margin-top: 0; margin-left: 8px; }
+    #gb-app { --gb-who: 52px; --gb-gap: 12px; --gb-size: 13px; }
+    .gb-list-tools { display: none; }
     .gb-lens { display: none; }
   }
 </style>
@@ -184,8 +216,7 @@ permalink: /board/
     return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
   }
 
-  // 빈 줄 기준으로 문단을 나누고 줄바꿈은 <br>로 유지한다. innerHTML을 쓰지 않아
-  // 방문자가 입력한 텍스트가 그대로 마크업으로 해석되는 일이 없다.
+  // 빈 줄 기준으로 문단을 나누고 줄바꿈은 <br>로 유지한다.
   function renderParagraphs(container, text) {
     container.innerHTML = "";
     String(text || "").replace(/\r\n/g, "\n").split(/\n{2,}/).forEach((para) => {
@@ -196,6 +227,12 @@ permalink: /board/
       });
       container.appendChild(p);
     });
+  }
+
+  // textarea가 내용에 맞춰 늘어나게
+  function autoGrow(el, max) {
+    el.style.height = "";
+    el.style.height = Math.min(el.scrollHeight, max) + "px";
   }
 
   // ---- 비밀글 비밀번호 시도 횟수 제한 (이 브라우저 기준) ----
@@ -248,11 +285,14 @@ permalink: /board/
 
   // ---- 새 글 등록 ----
   const form = document.getElementById("gb-form");
+  const mainTextarea = document.getElementById("gb-content");
+  mainTextarea.addEventListener("input", () => autoGrow(mainTextarea, 240));
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const name = document.getElementById("gb-name").value.trim();
     const pw = document.getElementById("gb-pw").value.trim();
-    const content = document.getElementById("gb-content").value.trim();
+    const content = mainTextarea.value.trim();
     const secret = document.getElementById("gb-secret").checked;
     if (!name || !/^[0-9]{4}$/.test(pw) || !content) {
       alert("닉네임, 4자리 숫자 비밀번호, 내용을 모두 입력해주세요.");
@@ -264,6 +304,7 @@ permalink: /board/
       const passwordHash = await sha256(pw);
       await addDoc(gbRef, { name, passwordHash, content, secret, createdAt: serverTimestamp() });
       form.reset();
+      mainTextarea.style.height = "";
     } catch (err) {
       alert("등록에 실패했어요: " + err.message);
     } finally {
@@ -335,16 +376,14 @@ permalink: /board/
         const d = r.data();
         if (d.deleted) return;
         const replyId = r.id;
-        const date = d.createdAt && d.createdAt.toDate ? d.createdAt.toDate().toLocaleString("ko-KR") : "";
 
         const li = document.createElement("li");
         li.className = "gb-reply";
 
-        const head = document.createElement("div");
-        head.innerHTML = '<span class="gb-reply-name"></span><span class="gb-reply-date"></span>';
+        const name = document.createElement("span");
+        name.className = "gb-reply-name";
         // 과거에 j0ah0로 저장된 답글도 화면에는 항상 하영으로 보이게 한다.
-        head.querySelector(".gb-reply-name").textContent = REPLY_NAME;
-        head.querySelector(".gb-reply-date").textContent = date;
+        name.textContent = REPLY_NAME;
 
         const main = document.createElement("div");
         main.className = "gb-reply-main";
@@ -361,11 +400,12 @@ permalink: /board/
         delBtn.textContent = "✕";
         delBtn.addEventListener("click", () => handleDeleteReply(entryId, replyId));
 
-        li.appendChild(head);
+        li.appendChild(name);
         li.appendChild(main);
         li.appendChild(delBtn);
         container.appendChild(li);
       });
+      container.style.display = container.children.length ? "" : "none";
       refreshLensIfShowing();
     });
   }
@@ -375,11 +415,11 @@ permalink: /board/
     const wrap = document.createElement("div");
     wrap.className = "gb-reply-form";
     wrap.innerHTML =
-      '<textarea class="gb-reply-content" maxlength="500" placeholder="답글을 입력해주세요. (Enter: 등록 / Shift+Enter: 줄바꿈)" rows="1"></textarea>' +
+      '<textarea class="gb-reply-content" maxlength="500" placeholder="…" rows="1" aria-label="답글" title="Enter 등록 / Shift+Enter 줄바꿈"></textarea>' +
       '<div class="gb-upload-preview"></div>' +
       '<div class="gb-reply-tools">' +
-      '<label class="gb-reply-file-label">+ 사진<input type="file" class="gb-reply-file" accept="image/*" multiple></label>' +
-      '<button type="button" class="gb-reply-submit">답글 등록</button>' +
+      '<label class="gb-reply-file-label" title="사진 첨부">+<input type="file" class="gb-reply-file" accept="image/*" multiple aria-label="사진 첨부"></label>' +
+      '<button type="button" class="gb-reply-submit" aria-label="답글 등록">→</button>' +
       '</div>';
 
     const contentInput = wrap.querySelector(".gb-reply-content");
@@ -436,9 +476,7 @@ permalink: /board/
       }
       btn.disabled = true;
       try {
-        // 문서 ID를 먼저 만들어두고 사진을 그 ID 경로로 올린 다음, 완성된 데이터를 한 번에 저장한다.
-        // (이미지 URL을 나중에 따로 update하지 않는 이유: Firestore 규칙이 답글 update를
-        //  deleted/deletedAt 필드로만 제한해두었기 때문)
+        // 문서 ID를 먼저 만들고 사진을 그 경로로 올린 뒤, 완성된 데이터를 한 번에 저장한다.
         const replyRef = doc(collection(db, "guestbook", entryId, "replies"));
         let images = [];
         if (selectedFiles.length > 0) {
@@ -457,16 +495,14 @@ permalink: /board/
     };
     btn.addEventListener("click", submit);
     contentInput.addEventListener("keydown", (ev) => {
-      if (ev.key === "Enter" && !ev.shiftKey) { ev.preventDefault(); submit(); }
+      if (ev.key === "Enter" && !ev.shiftKey && !ev.isComposing) { ev.preventDefault(); submit(); }
     });
-    contentInput.addEventListener("input", () => {
-      contentInput.style.height = "";
-      contentInput.style.height = Math.min(contentInput.scrollHeight, 160) + "px";
-    });
+    contentInput.addEventListener("input", () => autoGrow(contentInput, 160));
     return wrap;
   }
 
-  // ---- 비밀글이 아닌 글(또는 비밀번호가 맞은 글): 본문 + 답글 목록 + 답글 폼 붙이기 ----
+  // ---- 공개 글(또는 비밀번호가 맞은 글): 본문 + 답글 + 답글 폼 ----
+  // 답글과 답글 폼은 본문 칸 안이 아니라 li 바로 아래에 붙여서, 이름 칸이 세로로 한 줄에 정렬되게 한다.
   function renderOpen(li, entryId, content) {
     const main = li.querySelector(".gb-item-main");
 
@@ -477,19 +513,20 @@ permalink: /board/
 
     const repliesEl = document.createElement("ul");
     repliesEl.className = "gb-replies";
-    main.appendChild(repliesEl);
+    repliesEl.style.display = "none";
+    li.appendChild(repliesEl);
     attachReplies(entryId, repliesEl);
 
-    main.appendChild(buildReplyForm(entryId));
+    li.appendChild(buildReplyForm(entryId));
   }
 
-  // ---- 목록 렌더링 ----
+  // ---- 목록 렌더링 (오래된 글 → 최신 글) ----
   const list = document.getElementById("gb-list");
-  const q = query(gbRef, orderBy("createdAt", "desc"));
+  const q = query(gbRef, orderBy("createdAt", "asc"));
   onSnapshot(q, (snapshot) => {
     const docs = snapshot.docs.filter((d) => !d.data().deleted);
     if (docs.length === 0) {
-      list.innerHTML = '<li class="gb-empty">아직 남긴 글이 없어요. 첫 방명록을 남겨보세요!</li>';
+      list.innerHTML = '<li class="gb-empty">아직 남긴 글이 없어요. 아래에 첫 이야기를 남겨보세요.</li>';
       hideLens();
       return;
     }
@@ -499,12 +536,10 @@ permalink: /board/
       const entryId = docSnap.id;
       const li = document.createElement("li");
       li.className = "gb-item";
-      const date = d.createdAt && d.createdAt.toDate ? d.createdAt.toDate().toLocaleString("ko-KR") : "";
 
-      const author = document.createElement("div");
-      author.innerHTML = '<span class="gb-item-name"></span><span class="gb-item-date"></span>';
-      author.querySelector(".gb-item-name").textContent = d.name;
-      author.querySelector(".gb-item-date").textContent = date;
+      const name = document.createElement("span");
+      name.className = "gb-item-name";
+      name.textContent = d.name;
 
       const main = document.createElement("div");
       main.className = "gb-item-main";
@@ -516,7 +551,7 @@ permalink: /board/
       delBtn.textContent = "✕";
       delBtn.addEventListener("click", () => handleDelete(entryId));
 
-      li.appendChild(author);
+      li.appendChild(name);
       li.appendChild(main);
       li.appendChild(delBtn);
 
@@ -526,7 +561,7 @@ permalink: /board/
         if (getFailCount(entryId) >= MAX_TRIES) {
           row.textContent = "🔒 비밀번호를 5회 이상 틀려서 더 이상 열람할 수 없습니다.";
         } else {
-          row.innerHTML = '🔒 비밀글입니다<span class="gb-reply-dot" style="display:none;" title="답글이 있어요"></span> <input type="password" maxlength="4" inputmode="numeric" placeholder="비밀번호"> <button type="button">확인</button>';
+          row.innerHTML = '<span title="비밀글">🔒</span><span class="gb-reply-dot" style="display:none;" title="답글이 있어요"></span><input type="password" maxlength="4" inputmode="numeric" placeholder="····" aria-label="비밀번호"><button type="button" aria-label="열기">→</button>';
           const input = row.querySelector("input");
           const btn = row.querySelector("button");
           const replyDot = row.querySelector(".gb-reply-dot");
@@ -562,7 +597,7 @@ permalink: /board/
     list.innerHTML = '<li class="gb-empty">방명록을 불러오지 못했어요: ' + err.message + '</li>';
   });
 
-  // ---- 유리구슬 돋보기: 데스크톱에서 방명록 위에 마우스를 올리면 그 부분만 확대해 보여준다 ----
+  // ---- 유리구슬 돋보기 ----
   const lens = document.getElementById("gb-lens");
   const lensInner = document.getElementById("gb-lens-inner");
   const lensToggle = document.getElementById("gb-lens-toggle");
@@ -573,9 +608,8 @@ permalink: /board/
   let lensY = 0;
   let lensFrame = null;
 
-  // 늘 켜져 있으면 글 읽을 때 방해가 될 수 있어서 기본은 꺼둔 채로 시작하고,
-  // 사용자가 직접 켠 상태는 localStorage에 남겨서 새로고침해도 유지한다.
-  let lensEnabled = localStorage.getItem("gb_lens_enabled") === "1";
+  let lensEnabled = false;
+  try { lensEnabled = localStorage.getItem("gb_lens_enabled") === "1"; } catch (e) {}
 
   function updateLensToggleUI() {
     lensToggle.innerHTML = '<span class="gb-lens-dot">' + (lensEnabled ? "●" : "○") + '</span>lens';
@@ -620,7 +654,6 @@ permalink: /board/
     lens.classList.remove("is-visible");
   }
 
-  // 답글이 실시간으로 추가/삭제돼 내용이 바뀌면, 지금 보고 있는 렌즈도 최신 내용으로 다시 그린다.
   function refreshLensIfShowing() {
     if (lensItem && lensItem.isConnected) showLens(lensItem, lensX, lensY);
   }
