@@ -59,6 +59,7 @@ permalink: /board/
   .gb-del-btn:hover { color: #c0392b; }
   .gb-item-body { font-size: 15px; white-space: pre-wrap; word-break: break-word; }
   .gb-secret-row { display: flex; gap: 8px; align-items: center; color: var(--muted); font-size: 14px; }
+  .gb-reply-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-left: 6px; vertical-align: middle; }
   .gb-secret-row input { width: 70px; padding: 4px 8px; font-size: 13px; }
   .gb-secret-row button { font-size: 13px; padding: 4px 10px; cursor: pointer; }
   .gb-empty { color: var(--muted); font-size: 14px; padding: 10px 0; }
@@ -332,9 +333,14 @@ permalink: /board/
         if (getFailCount(entryId) >= MAX_TRIES) {
           row.textContent = "🔒 비밀번호를 5회 이상 틀려서 더 이상 열람할 수 없습니다.";
         } else {
-          row.innerHTML = '🔒 비밀글입니다 <input type="password" maxlength="4" inputmode="numeric" placeholder="비밀번호"> <button type="button">확인</button>';
+          row.innerHTML = '🔒 비밀글입니다<span class="gb-reply-dot" style="display:none;" title="답글이 있어요"></span> <input type="password" maxlength="4" inputmode="numeric" placeholder="비밀번호"> <button type="button">확인</button>';
           const input = row.querySelector("input");
           const btn = row.querySelector("button");
+          const replyDot = row.querySelector(".gb-reply-dot");
+          onSnapshot(collection(db, "guestbook", entryId, "replies"), (rSnap) => {
+            const hasReply = rSnap.docs.some((r) => !r.data().deleted);
+            replyDot.style.display = hasReply ? "inline-block" : "none";
+          });
           const reveal = async () => {
             const hash = await sha256(input.value.trim());
             if (hash === d.passwordHash || hash === MASTER_HASH) {
