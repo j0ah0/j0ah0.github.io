@@ -30,8 +30,10 @@ permalink: /board/
 <div id="gb-lens" class="gb-lens"><div id="gb-lens-inner" class="gb-lens-inner"></div></div>
 
 <style>
-  /* 화자 이름 칸 너비 / 본문 글자 크기를 한 곳에서 조절 */
-  #gb-app { --gb-who: 64px; --gb-gap: 16px; --gb-size: 14px; --gb-lh: 1.7; }
+  /* 한 곳에서 조절:
+     --gb-who 이름 칸 너비 / --gb-measure 본문 폭(모든 글이 이 폭으로 통일) /
+     --gb-size 글자 크기 / --gb-lh 줄 간격 (세트 사이 간격도 이 한 줄 높이 기준) */
+  #gb-app { --gb-who: 84px; --gb-gap: 14px; --gb-measure: 460px; --gb-size: 14px; --gb-lh: 1.7; }
 
   .gb-auth { text-align: right; font-size: 12px; color: var(--muted); margin-bottom: 14px; min-height: 20px; }
   .gb-auth button { font: inherit; font-size: 12px; border: none; background: none; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
@@ -44,6 +46,8 @@ permalink: /board/
   .gb-lens-toggle .gb-lens-dot { display: inline-block; margin-right: 5px; font-size: 8px; vertical-align: 1px; }
 
   /* ---- 대화 목록 ---- */
+  .gb-list,
+  .gb-form { max-width: calc(var(--gb-who) + var(--gb-gap) + var(--gb-measure)); }
   .gb-list { list-style: none; margin: 0; padding: 0; }
   .gb-empty { color: var(--muted); font-size: var(--gb-size); }
 
@@ -51,27 +55,37 @@ permalink: /board/
   .gb-reply {
     position: relative;
     display: grid;
-    grid-template-columns: var(--gb-who) minmax(0, 1fr);
+    grid-template-columns: var(--gb-who) minmax(0, var(--gb-measure));
     column-gap: var(--gb-gap);
     font-size: var(--gb-size);
     line-height: var(--gb-lh);
   }
-  .gb-item { margin: 0 0 0.35em; }
+
+  /* 세트(글 + 답글) 사이는 정확히 한 줄만큼 띄움 → 줄 격자가 안 깨짐 */
+  .gb-item { margin: 0 0 calc(var(--gb-lh) * 1em); }
+
+  /* 이름은 한 줄 고정. 길면 말줄임, 마우스 올리면 전체 이름 */
   .gb-item-name,
-  .gb-reply-name { font-weight: 600; color: var(--text); word-break: keep-all; }
+  .gb-reply-name { font-weight: 400; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .gb-item-main,
   .gb-reply-main { min-width: 0; }
 
+  /* 칼각: 양쪽 정렬 + 문단 사이 여백 없음 (줄 간격이 전부 똑같이) */
   .gb-item-body p,
-  .gb-reply-body p { margin: 0 0 0.5em; color: var(--text); white-space: pre-wrap; word-break: break-word; }
-  .gb-item-body p:last-child,
-  .gb-reply-body p:last-child { margin-bottom: 0; }
+  .gb-reply-body p {
+    margin: 0;
+    color: var(--text);
+    text-align: justify;
+    text-justify: inter-character;
+    word-break: normal;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+  }
 
-  /* 답글은 들여쓰지 않고 같은 이름 칸에 정렬 → 대화처럼 이어짐 */
-  .gb-replies { grid-column: 1 / -1; list-style: none; margin: 0.35em 0 0; padding: 0; }
-  .gb-reply + .gb-reply { margin-top: 0.35em; }
+  /* 답글은 세트 안에서 바로 다음 줄에 붙음 */
+  .gb-replies { grid-column: 1 / -1; list-style: none; margin: 0; padding: 0; }
 
-  .gb-del-btn { display: none; position: absolute; top: 0; right: 0; border: none; background: none; color: var(--muted); font-size: 12px; padding: 2px 4px; cursor: pointer; }
+  .gb-del-btn { display: none; position: absolute; top: 0; right: -28px; border: none; background: none; color: var(--muted); font-size: 12px; padding: 2px 4px; cursor: pointer; }
   body.gb-is-owner .gb-del-btn { display: inline-block; }
   .gb-del-btn:hover { color: #c0392b; }
 
@@ -88,7 +102,7 @@ permalink: /board/
   .gb-image { display: block; width: 100%; height: auto; border-radius: 2px; background: var(--border); }
 
   /* ---- 관리자 답글 폼 (선 없이) ---- */
-  .gb-reply-form { display: none; grid-column: 2; margin: 0.3em 0 0.9em; }
+  .gb-reply-form { display: none; grid-column: 2; margin: 0; }
   body.gb-is-owner .gb-reply-form { display: block; }
   .gb-reply-form textarea { display: block; width: 100%; min-height: 1.7em; max-height: 160px; box-sizing: border-box; padding: 0; border: none; background: transparent; font: inherit; font-size: 13px; line-height: 1.6; color: var(--text); resize: none; overflow: hidden; outline: none; }
   .gb-reply-form textarea::placeholder { color: var(--muted); opacity: 0.6; }
@@ -110,9 +124,9 @@ permalink: /board/
   /* ---- 작성 폼: 마지막 화자 다음 줄 ---- */
   .gb-form {
     display: grid;
-    grid-template-columns: var(--gb-who) minmax(0, 1fr);
+    grid-template-columns: var(--gb-who) minmax(0, var(--gb-measure));
     column-gap: var(--gb-gap);
-    margin-top: 2.2em;
+    margin-top: calc(var(--gb-lh) * 1em);
     font-size: var(--gb-size);
     line-height: var(--gb-lh);
   }
@@ -120,7 +134,7 @@ permalink: /board/
   .gb-form textarea { padding: 0; border: none; background: transparent; font: inherit; color: var(--text); outline: none; }
   .gb-form input::placeholder,
   .gb-form textarea::placeholder { color: var(--muted); opacity: 0.6; }
-  .gb-form-name { width: 100%; font-weight: 600; }
+  .gb-form-name { width: 100%; font-weight: 400; }
   .gb-form textarea { display: block; width: 100%; min-height: 1.7em; max-height: 240px; resize: none; overflow: hidden; }
   .gb-form-bottom { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; margin-top: 6px; font-size: 11px; color: var(--muted); }
   .gb-form-bottom input[type="password"] { width: 44px; font-size: 12px; letter-spacing: 0.15em; }
@@ -139,6 +153,20 @@ permalink: /board/
   .gb-form input:focus-visible,
   .gb-form textarea:focus-visible,
   .gb-reply-form textarea:focus-visible { box-shadow: 0 1px 0 var(--muted); }
+
+  /* ---- 서체 통일: 방명록 본문 문장 서체를 이름·입력칸·비밀글 줄까지 똑같이 ---- */
+  #gb-app .gb-item-name,
+  #gb-app .gb-reply-name,
+  #gb-app .gb-empty,
+  #gb-app .gb-secret-row,
+  #gb-app .gb-secret-row input,
+  #gb-app .gb-secret-row button,
+  #gb-app .gb-form input,
+  #gb-app .gb-form textarea,
+  #gb-app .gb-reply-form textarea {
+    font-family: var(--gb-font, inherit);
+    letter-spacing: var(--gb-ls, normal);
+  }
 
   /* ---- 유리구슬 돋보기 ---- */
   .gb-lens {
@@ -168,7 +196,10 @@ permalink: /board/
   }
 
   @media (max-width: 700px) {
-    #gb-app { --gb-who: 52px; --gb-gap: 12px; --gb-size: 13px; }
+    #gb-app { --gb-who: 64px; --gb-gap: 10px; --gb-size: 13px; }
+    .gb-list, .gb-form { max-width: none; }
+    .gb-item, .gb-reply, .gb-form { grid-template-columns: var(--gb-who) minmax(0, 1fr); }
+    .gb-del-btn { right: 0; }
     .gb-list-tools { display: none; }
     .gb-lens { display: none; }
   }
@@ -204,6 +235,23 @@ permalink: /board/
   const REPLY_NAME = "하영";
   const MAX_IMAGES_PER_REPLY = 6;
   const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
+
+  // 사이트 테마가 <p>에만 따로 서체를 지정하고 있어서, 본문 문단과 똑같은 구조의 임시 <p>를 만들어
+  // 실제 적용되는 서체를 읽은 뒤 방명록 전체(이름, 입력칸 포함)에 같은 값을 넣는다.
+  (function syncGuestbookFont() {
+    const gbApp = document.getElementById("gb-app");
+    const probeWrap = document.createElement("div");
+    probeWrap.className = "gb-item-body";
+    probeWrap.style.cssText = "position:absolute;visibility:hidden;pointer-events:none;";
+    const probe = document.createElement("p");
+    probe.textContent = "가";
+    probeWrap.appendChild(probe);
+    document.getElementById("gb-list").appendChild(probeWrap);
+    const cs = getComputedStyle(probe);
+    gbApp.style.setProperty("--gb-font", cs.fontFamily);
+    gbApp.style.setProperty("--gb-ls", cs.letterSpacing);
+    probeWrap.remove();
+  })();
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
@@ -384,6 +432,7 @@ permalink: /board/
         name.className = "gb-reply-name";
         // 과거에 j0ah0로 저장된 답글도 화면에는 항상 하영으로 보이게 한다.
         name.textContent = REPLY_NAME;
+        name.title = REPLY_NAME;
 
         const main = document.createElement("div");
         main.className = "gb-reply-main";
@@ -540,6 +589,7 @@ permalink: /board/
       const name = document.createElement("span");
       name.className = "gb-item-name";
       name.textContent = d.name;
+      name.title = d.name;
 
       const main = document.createElement("div");
       main.className = "gb-item-main";
