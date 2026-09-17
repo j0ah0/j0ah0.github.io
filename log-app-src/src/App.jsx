@@ -17,6 +17,15 @@ const SEASON_ORDER = ['spring', 'summer', 'autumn', 'winter']
 // Vertical offset per season group, giving the ring a staircase look.
 const SEASON_OFFSET = { spring: 0, summer: 0.4, autumn: 0, winter: -0.4 }
 
+// The original demo packed cards at a fixed density (Math.round(len * 22))
+// and only rendered amount - 3 of those slots, leaving a gap of ~3 empty
+// card-widths at the end of every category's arc. Real post counts drive
+// `len` here instead, and cards were spread across the *entire* arc with
+// no reserved gap — so seasons ran straight into each other. Reserve a
+// fixed angular gap per season again, which also packs the real cards a
+// bit closer together within their own (now slightly smaller) span.
+const SEASON_GAP = 0.32
+
 // Rotation input tuning, shared between the input-listener effect and the
 // per-frame momentum/damping in useFrame below.
 const WHEEL_SPEED = 0.0018
@@ -182,9 +191,12 @@ function Scene({ children, onHover, ...props }) {
     const REFERENCE_ASPECT = 1.3
     const aspect = state.size.width / state.size.height
     const distScale = aspect < REFERENCE_ASPECT ? REFERENCE_ASPECT / aspect : 1
+    // Vertical sensitivity back down near the original demo's (2, not 3.5)
+    // — moving the mouse to the bottom of the screen was dropping the
+    // camera position too low / too close to the ring's underside.
     easing.damp3(
       state.camera.position,
-      [-state.pointer.x * 3.5 * distScale, (state.pointer.y * 3.5 + 4.5) * distScale, 15 * distScale],
+      [-state.pointer.x * 3.5 * distScale, (state.pointer.y * 2 + 4.5) * distScale, 15 * distScale],
       0.15,
       delta
     )
@@ -223,6 +235,8 @@ function Cards({ category, data, from = 0, len = Math.PI * 2, radius = 5.25, onP
   const textRef = useRef()
   const amount = data.length
   const textPosition = from + len / 2
+  // Keep at least half the arc usable even for a tiny/short category.
+  const usableLen = Math.max(len - SEASON_GAP, len * 0.5)
 
   useFrame((state, delta) => {
     easing.damp(textRef.current.position, 'y', hovered !== null ? -0.5 : 0.5, 0.2, delta)
@@ -236,7 +250,7 @@ function Cards({ category, data, from = 0, len = Math.PI * 2, radius = 5.25, onP
         </Text>
       </Billboard>
       {data.map((item, i) => {
-        const angle = from + (i / amount) * len
+        const angle = from + (i / amount) * usableLen
         return (
           <Card
             key={item.slug}
