@@ -17,10 +17,12 @@ permalink: /board/
   <form id="gb-form" class="gb-form">
     <input type="text" id="gb-name" class="gb-form-name" placeholder="이름" maxlength="20" required aria-label="닉네임">
     <div class="gb-form-main">
-      <textarea id="gb-content" placeholder="content" maxlength="500" rows="1" required aria-label="내용"></textarea>
-      <div class="gb-form-bottom">
-        <input type="password" id="gb-pw" placeholder="password(4)" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" required aria-label="비밀번호 4자리 숫자" title="비밀번호 4자리 숫자">
+      <div class="gb-form-content-row">
+        <textarea id="gb-content" placeholder="content" maxlength="500" rows="1" required aria-label="내용"></textarea>
         <label class="gb-secret" title="비밀글"><input type="checkbox" id="gb-secret" aria-label="비밀글"><span aria-hidden="true">🔒</span><span class="gb-secret-label">secret?</span></label>
+      </div>
+      <div class="gb-form-bottom">
+        <input type="password" id="gb-pw" placeholder="password" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" aria-label="비밀번호 4자리 숫자" title="비밀번호 4자리 숫자">
         <button type="submit" id="gb-submit" aria-label="등록">→</button>
       </div>
     </div>
@@ -33,7 +35,7 @@ permalink: /board/
   /* 한 곳에서 조절:
      --gb-who 이름 칸 너비 / --gb-measure 본문 폭(모든 글이 이 폭으로 통일) /
      --gb-size 글자 크기 / --gb-lh 줄 간격 (세트 사이 간격도 이 한 줄 높이 기준) */
-  #gb-app { --gb-who: 84px; --gb-gap: 14px; --gb-measure: 460px; --gb-size: 14px; --gb-lh: 1.7; }
+  #gb-app { --gb-who: 84px; --gb-gap: 14px; --gb-measure: 460px; --gb-size: 14px; --gb-lh: 1.7; --gb-set-gap: 1.25em; --gb-item-gap: 1.75em; }
 
   .gb-auth { text-align: right; font-size: 12px; color: var(--muted); margin-bottom: 14px; min-height: 20px; }
   .gb-auth button { font: inherit; font-size: 12px; border: none; background: none; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
@@ -62,7 +64,8 @@ permalink: /board/
   }
 
   /* 세트(글 + 답글) 사이는 정확히 한 줄만큼 띄움 → 줄 격자가 안 깨짐 */
-  .gb-item { margin: 0 0 calc(var(--gb-lh) * 1em); }
+  /* 다른 사람의 글(세트) 사이는 넓게, 같은 세트 안(글+답글)은 좁게 띄워서 구분이 잘 되게 */
+  .gb-item { margin: 0 0 var(--gb-item-gap); }
 
   /* 이름은 한 줄 고정. 길면 말줄임, 마우스 올리면 전체 이름 */
   .gb-item-name,
@@ -83,7 +86,8 @@ permalink: /board/
   }
 
   /* 답글은 세트 안에서 바로 다음 줄에 붙음 */
-  .gb-replies { grid-column: 1 / -1; list-style: none; margin: 0; padding: 0; }
+  .gb-replies { grid-column: 1 / -1; list-style: none; margin: var(--gb-set-gap) 0 0; padding: 0; }
+  .gb-reply + .gb-reply { margin-top: var(--gb-set-gap); }
 
   .gb-del-btn { display: none; position: absolute; top: 0; right: -28px; border: none; background: none; color: var(--muted); font-size: 12px; padding: 2px 4px; cursor: pointer; }
   body.gb-is-owner .gb-del-btn { display: inline-block; }
@@ -102,7 +106,7 @@ permalink: /board/
   .gb-image { display: block; width: 100%; height: auto; border-radius: 2px; background: var(--border); }
 
   /* ---- 관리자 답글 폼 (선 없이) ---- */
-  .gb-reply-form { display: none; grid-column: 2; margin: 0; }
+  .gb-reply-form { display: none; grid-column: 2; margin: var(--gb-set-gap) 0 0; }
   body.gb-is-owner .gb-reply-form { display: block; }
   .gb-reply-form textarea { display: block; width: 100%; min-height: 1.7em; max-height: 160px; box-sizing: border-box; padding: 0; border: none; background: transparent; font: inherit; font-size: 13px; line-height: 1.6; color: var(--text); resize: none; overflow: hidden; outline: none; }
   .gb-reply-form textarea::placeholder { color: var(--muted); opacity: 0.6; }
@@ -136,11 +140,18 @@ permalink: /board/
   .gb-form textarea::placeholder { color: var(--muted); opacity: 0.6; }
   .gb-form-name { width: 100%; font-weight: 400; }
   .gb-form textarea { display: block; width: 100%; min-height: 1.7em; max-height: 240px; resize: none; overflow: hidden; }
+
+  /* content와 secret? 토글을 한 줄에 나란히 */
+  .gb-form-content-row { display: flex; align-items: flex-start; gap: 14px; }
+  .gb-form-content-row textarea { flex: 1; }
+
   .gb-form-bottom { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; margin-top: 6px; font-size: 11px; color: var(--muted); }
-  .gb-form-bottom input[type="password"] { width: 92px; font-size: 12px; letter-spacing: 0.04em; }
+  /* secret?가 켜졌을 때만 비밀번호 입력칸이 나타남 */
+  .gb-form-bottom input[type="password"] { display: none; width: 92px; font-size: 12px; letter-spacing: 0.04em; }
+  .gb-form-main:has(#gb-secret:checked) .gb-form-bottom input[type="password"] { display: inline-block; }
 
   /* 비밀글: 체크박스 대신 자물쇠를 눌러 켜고 끔 (꺼지면 흐리게) */
-  .gb-secret { position: relative; display: inline-flex; align-items: center; gap: 4px; font-size: 12px; cursor: pointer; filter: grayscale(1); opacity: 0.3; transition: opacity 120ms ease; }
+  .gb-secret { position: relative; display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; padding-top: 0.15em; font-size: 12px; cursor: pointer; filter: grayscale(1); opacity: 0.3; transition: opacity 120ms ease; }
   .gb-secret:hover { opacity: 0.6; }
   .gb-secret:has(input:checked) { filter: none; opacity: 1; }
   .gb-secret input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; }
@@ -334,22 +345,34 @@ permalink: /board/
   // ---- 새 글 등록 ----
   const form = document.getElementById("gb-form");
   const mainTextarea = document.getElementById("gb-content");
+  const secretCheckbox = document.getElementById("gb-secret");
+  const pwInput = document.getElementById("gb-pw");
   mainTextarea.addEventListener("input", () => autoGrow(mainTextarea, 240));
+
+  // 비밀번호칸은 secret?이 켜졌을 때만 보이고 필요하다 (CSS가 숨김/표시를 담당).
+  // 꺼지면 입력해둔 값도 지워서 다음에 다시 켰을 때 헷갈리지 않게 한다.
+  secretCheckbox.addEventListener("change", () => {
+    if (!secretCheckbox.checked) pwInput.value = "";
+  });
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const name = document.getElementById("gb-name").value.trim();
-    const pw = document.getElementById("gb-pw").value.trim();
     const content = mainTextarea.value.trim();
-    const secret = document.getElementById("gb-secret").checked;
-    if (!name || !/^[0-9]{4}$/.test(pw) || !content) {
-      alert("닉네임, 4자리 숫자 비밀번호, 내용을 모두 입력해주세요.");
+    const secret = secretCheckbox.checked;
+    const pw = pwInput.value.trim();
+    if (!name || !content) {
+      alert("이름과 내용을 입력해주세요.");
+      return;
+    }
+    if (secret && !/^[0-9]{4}$/.test(pw)) {
+      alert("비밀글은 4자리 숫자 비밀번호가 필요해요.");
       return;
     }
     const submitBtn = document.getElementById("gb-submit");
     submitBtn.disabled = true;
     try {
-      const passwordHash = await sha256(pw);
+      const passwordHash = secret ? await sha256(pw) : "";
       await addDoc(gbRef, { name, passwordHash, content, secret, createdAt: serverTimestamp() });
       form.reset();
       mainTextarea.style.height = "";
