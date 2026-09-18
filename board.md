@@ -7,40 +7,39 @@ permalink: /board/
 <div id="gb-auth" class="gb-auth"></div>
 
 <div id="gb-app">
-  <div class="gb-list-tools">
-    <button type="button" id="gb-lens-toggle" class="gb-lens-toggle"></button>
-  </div>
-
-  <!-- gb-pages는 비어서 시작한다. JS가 글/답글/작성폼을 화면 높이 기준 "페이지"
+  <!-- gb-pages는 비어서 시작한다. JS가 글/답글을 화면 높이 기준 "페이지"
        (.gb-flow) 단위로 나눠서 채운다 - 한 페이지의 단을 위→아래로 다 채운 뒤에야
-       다음 단으로, 그것도 다 차면 다음 페이지로 넘어가는 잡지 지면 방식. -->
-  <div id="gb-pages" class="gb-pages">
-    <!-- 작성 폼: 마지막 글 바로 다음에 이어지는 다음 화자. JS가 페이지 사이를
-         옮겨 다니며 배치하지만, 폼 자체(이벤트 리스너 포함)는 이 노드 그대로 유지된다. -->
-    <form id="gb-form" class="gb-form">
-      <input type="text" id="gb-name" class="gb-form-name" placeholder="name" maxlength="20" required aria-label="닉네임">
-      <div class="gb-form-main">
-        <div class="gb-form-content-row">
-          <textarea id="gb-content" placeholder="content" maxlength="500" rows="1" required aria-label="내용"></textarea>
-          <button type="submit" id="gb-submit" aria-label="등록">→</button>
-        </div>
-        <div class="gb-form-bottom">
-          <label class="gb-secret" title="비밀글"><input type="checkbox" id="gb-secret" aria-label="비밀글"><span aria-hidden="true">🔒</span><span class="gb-secret-label">secret?</span></label>
-          <input type="password" id="gb-pw" placeholder="password" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" aria-label="비밀번호 4자리 숫자" title="비밀번호 4자리 숫자">
-        </div>
-      </div>
-    </form>
-  </div>
-</div>
+       다음 단으로, 그것도 다 차면 다음 페이지로 넘어가는 잡지 지면 방식.
+       (모바일에서는 --gb-cols:1 + height:auto라 사실상 그냥 이어지는 세로 스크롤이 된다.) -->
+  <div id="gb-pages" class="gb-pages"></div>
 
-<div id="gb-lens" class="gb-lens"><div id="gb-lens-inner" class="gb-lens-inner"></div></div>
+  <!-- 작성 폼: 더 이상 글 목록의 일부가 아니라 화면 하단에 항상 고정된다
+       (아이메시지 같은 대화창 느낌). #gb-app의 자식으로 둬서 --gb-nav-space 같은
+       CSS 변수는 그대로 물려받지만, 실제 화면 위치는 position:fixed로 따로 잡는다.
+       관리자로 로그인하면 숨겨진다 - 방문자용 글쓰기라서 본인이 쓸 일이 없다. -->
+  <form id="gb-form" class="gb-form">
+    <input type="text" id="gb-name" class="gb-form-name" placeholder="name" maxlength="20" required aria-label="닉네임">
+    <div class="gb-form-main">
+      <div class="gb-form-content-row">
+        <textarea id="gb-content" placeholder="content" maxlength="500" rows="1" required aria-label="내용"></textarea>
+        <button type="submit" id="gb-submit" aria-label="등록">→</button>
+      </div>
+      <div class="gb-form-bottom">
+        <label class="gb-secret" title="비밀글"><input type="checkbox" id="gb-secret" aria-label="비밀글"><span aria-hidden="true">🔒</span><span class="gb-secret-label">secret?</span></label>
+        <input type="password" id="gb-pw" placeholder="password" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" aria-label="비밀번호 4자리 숫자" title="비밀번호 4자리 숫자">
+      </div>
+    </div>
+  </form>
+</div>
 
 <style>
   /* 한 곳에서 조절:
      --gb-edge 화면 가장자리 여백(코너 nav와 같은 28px) / --gb-who 이름 칸 너비 /
      --gb-cols 한 페이지의 단 수 / --gb-colgap 단 사이 간격 /
-     --gb-size 글자 크기 / --gb-lh 줄 간격 */
-  #gb-app { --gb-edge: 28px; --gb-who: 66px; --gb-gap: 10px; --gb-cols: 4; --gb-colgap: 40px; --gb-size: 12px; --gb-lh: 1.35; --gb-item-gap: 1.9em; }
+     --gb-size 글자 크기 / --gb-lh 줄 간격 /
+     --gb-nav-space, --gb-form-space는 안전한 기본값일 뿐 - JS(measureReservedSpace)가
+     실제 코너 네비 높이와 입력창 높이를 매번 측정해서 정확한 값으로 덮어쓴다. */
+  #gb-app { --gb-edge: 28px; --gb-who: 66px; --gb-gap: 10px; --gb-cols: 4; --gb-colgap: 40px; --gb-size: 12px; --gb-lh: 1.35; --gb-item-gap: 1.9em; --gb-nav-space: 60px; --gb-form-space: 90px; }
 
   /* 테마의 가운데 정렬 컨테이너(.wrap, max-width 720px)를 뚫고 화면 양끝까지 채운다.
      margin만으로는 부모가 flex/grid일 때 자식이 shrink-to-fit으로 굳을 수 있어서
@@ -62,19 +61,17 @@ permalink: /board/
   #gb-login { opacity: 0.4; transition: opacity 120ms ease; }
   #gb-login:hover, #gb-login:focus-visible { opacity: 1; }
 
-  .gb-list-tools { display: flex; justify-content: flex-end; margin-bottom: 18px; }
-  .gb-lens-toggle { border: none; background: none; padding: 2px 0; font: inherit; font-size: 10px; letter-spacing: 0.06em; color: var(--muted); cursor: pointer; }
-  .gb-lens-toggle:hover { color: var(--text); }
-  .gb-lens-toggle .gb-lens-dot { display: inline-block; margin-right: 5px; font-size: 8px; vertical-align: 1px; }
-
   /* ---- 대화 목록: 신문/잡지 지면처럼, 화면 높이만큼을 한 "페이지"로 써서
      단을 위→아래로 다 채운 뒤 다음 단으로, 페이지가 다 차면 다음 페이지로 ----
-     .gb-flow는 JS(paginate)가 필요한 만큼 여러 개 만들어 #gb-pages 아래에 쌓는다. */
+     .gb-flow는 JS(paginate)가 필요한 만큼 여러 개 만들어 #gb-pages 아래에 쌓는다.
+     창을 좁혀도 --gb-cols는 4로 고정 (700px 미만 모바일에서만 1단으로 바뀐다). */
   .gb-flow {
     column-count: var(--gb-cols);
     column-gap: var(--gb-colgap);
     column-fill: auto;
-    height: calc(100vh - 110px);
+    /* 지면 높이 = 화면 높이 - 하단 코너 네비 - 고정 입력창. 그래서 글이
+       딱 이 높이까지만 차고 넘치면 다음 지면(.gb-flow)으로 넘어간다. */
+    height: calc(100vh - var(--gb-nav-space) - var(--gb-form-space));
     overflow: hidden;
   }
   .gb-flow + .gb-flow { margin-top: var(--gb-item-gap); }
@@ -124,10 +121,6 @@ permalink: /board/
      세트끼리는 --gb-item-gap으로 확실히 띄운다) */
   .gb-replies { grid-column: 1 / -1; list-style: none; margin: 0; padding: 0; }
 
-  .gb-del-btn { display: none; position: absolute; top: 0; right: -28px; border: none; background: none; color: var(--muted); font-size: 12px; padding: 2px 4px; cursor: pointer; }
-  body.gb-is-owner .gb-del-btn { display: inline-block; }
-  .gb-del-btn:hover { color: #c0392b; }
-
   /* ---- 비밀글 ---- */
   .gb-secret-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); }
   .gb-reply-dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
@@ -136,11 +129,12 @@ permalink: /board/
   .gb-secret-row button { padding: 0; border: none; background: none; font: inherit; color: var(--text); cursor: pointer; }
   .gb-secret-row button:hover { text-decoration: underline; text-underline-offset: 3px; }
 
-  /* ---- 답글 사진 ---- */
+  /* ---- 답글 사진 (이미 올라간 사진을 보여주기만 함) ---- */
   .gb-images { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; max-width: 480px; }
   .gb-image { display: block; width: 100%; height: auto; border-radius: 2px; background: var(--border); }
 
-  /* ---- 관리자 답글 폼 (선 없이) ---- */
+  /* ---- 관리자 답글 폼: 글 하나당 답글은 1개만 허용한다 (1질문 1답글이면 보통
+     해결되니까). 이미 답글이 달린 글에는 JS가 이 폼을 display:none으로 숨긴다. ---- */
   .gb-reply-form { display: none; grid-column: 2; margin: 0; }
   body.gb-is-owner .gb-reply-form { display: block; }
   .gb-reply-form textarea { display: block; width: 100%; min-height: 1.7em; max-height: 160px; box-sizing: border-box; padding: 0; border: none; background: transparent; font: inherit; font-size: 13px; line-height: 1.6; color: var(--text); resize: none; overflow: hidden; outline: none; }
@@ -160,18 +154,25 @@ permalink: /board/
   .gb-upload-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .gb-upload-remove { position: absolute; top: 1px; right: 1px; width: 15px; height: 15px; border: none; border-radius: 50%; background: rgba(0,0,0,0.6); color: #fff; font-size: 9px; line-height: 15px; text-align: center; cursor: pointer; padding: 0; }
 
-  /* ---- 작성 폼: 마지막 화자 다음 줄 ---- */
+  /* ---- 작성 폼: 아이메시지처럼 화면 하단에 항상 고정 (name/content 칸) ---- */
   .gb-form {
+    position: fixed;
+    left: var(--gb-edge);
+    right: var(--gb-edge);
+    bottom: var(--gb-nav-space);
+    z-index: 200;
     display: grid;
     grid-template-columns: var(--gb-who) minmax(0, 1fr);
     align-items: start;
     column-gap: var(--gb-gap);
-    margin-top: var(--gb-item-gap);
+    box-sizing: border-box;
+    padding-top: 10px;
+    padding-bottom: 8px;
     font-size: var(--gb-size);
     line-height: var(--gb-lh);
-    break-inside: avoid;
-    page-break-inside: avoid;
   }
+  /* 관리자로 로그인하면 방문자용 글쓰기 폼은 보이지 않는다 (본인은 쓸 일이 없어서) */
+  body.gb-is-owner .gb-form { display: none; }
   .gb-form input,
   .gb-form textarea { padding: 0; border: none; background: transparent; font: inherit; font-size: var(--gb-size); line-height: var(--gb-lh); color: var(--text); outline: none; }
   .gb-form input::placeholder,
@@ -217,50 +218,25 @@ permalink: /board/
     letter-spacing: var(--gb-ls, normal);
   }
 
-  /* ---- 유리구슬 돋보기 ---- */
-  .gb-lens {
-    position: fixed; z-index: 500; left: 0; top: 0; width: 180px; height: 180px;
-    border-radius: 50%; overflow: hidden; pointer-events: none; opacity: 0;
-    background:
-      radial-gradient(circle at 32% 28%, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.12) 16%, rgba(255,255,255,0) 32%),
-      var(--bg);
-    box-shadow: 0 8px 26px rgba(0,0,0,0.16), inset 0 0 0 1px rgba(255,255,255,0.8), inset 0 0 20px rgba(255,255,255,0.2);
-    transform: translate(-50%, -50%) scale(0.7);
-    transition: opacity 160ms ease, transform 220ms cubic-bezier(.2,.8,.2,1);
-  }
-  .gb-lens::before {
-    content: ""; position: absolute; inset: 0; border-radius: 50%;
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.9), inset 0 -8px 20px rgba(0,0,0,0.08);
-    pointer-events: none;
-  }
-  .gb-lens.is-visible { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-  .gb-lens-inner { position: absolute; left: 0; top: 0; transform-origin: 0 0; pointer-events: none; }
-  .gb-lens-inner .gb-del-btn,
-  .gb-lens-inner .gb-reply-form,
-  .gb-lens-inner .gb-secret-row button,
-  .gb-lens-inner .gb-secret-row input { display: none !important; }
-
-  @media (prefers-reduced-motion: reduce) {
-    .gb-lens { transition: none; }
-  }
-
-  /* 단 수는 고정이라 화면이 좁아지면 직접 줄여줘야 한 줄이 너무 짧아지지 않는다 */
-  @media (max-width: 1000px) {
-    #gb-app { --gb-cols: 2; }
-  }
-
+  /* 데스크톱은 창을 좁혀도 4단을 유지한다 (700px 미만 모바일에서만 1단으로 바뀜) */
   @media (max-width: 700px) {
     #gb-app { --gb-edge: 16px; --gb-who: 64px; --gb-gap: 10px; --gb-size: 13px; --gb-cols: 1; }
-    .gb-del-btn { right: 0; }
-    .gb-list-tools { display: none; }
-    .gb-lens { display: none; }
+
+    /* 모바일에서는 "지면" 개념을 풀어서 그냥 계속 이어지는 세로 스크롤로 만든다.
+       height 제한과 overflow:hidden을 없애면 --gb-cols:1이라 자연스럽게 한 흐름이 된다. */
+    .gb-flow {
+      height: auto;
+      overflow: visible;
+      /* 고정 입력창 + 코너 네비에 마지막 글이 가려지지 않도록 바닥 여백 확보 */
+      padding-bottom: calc(var(--gb-form-space) + var(--gb-nav-space) + 20px);
+    }
   }
 </style>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import {
-    getFirestore, collection, addDoc, setDoc, doc, updateDoc,
+    getFirestore, collection, addDoc, setDoc, doc,
     query, orderBy, onSnapshot, serverTimestamp
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
   import {
@@ -288,10 +264,11 @@ permalink: /board/
   const MAX_IMAGES_PER_REPLY = 6;
   const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
 
+  const gbApp = document.getElementById("gb-app");
+
   // 사이트 테마가 <p>에만 따로 서체를 지정하고 있어서, 본문 문단과 똑같은 구조의 임시 <p>를 만들어
   // 실제 적용되는 서체를 읽은 뒤 방명록 전체(이름, 입력칸 포함)에 같은 값을 넣는다.
   (function syncGuestbookFont() {
-    const gbApp = document.getElementById("gb-app");
     const probeWrap = document.createElement("div");
     probeWrap.className = "gb-item-body";
     probeWrap.style.cssText = "position:absolute;visibility:hidden;pointer-events:none;";
@@ -385,17 +362,23 @@ permalink: /board/
     scheduleLayoutFlow();
   });
 
-  // ---- 새 글 등록 ----
+  // ---- 새 글 등록 (방문자용, 관리자로 로그인하면 CSS가 이 폼을 숨긴다) ----
   const form = document.getElementById("gb-form");
   const mainTextarea = document.getElementById("gb-content");
   const secretCheckbox = document.getElementById("gb-secret");
   const pwInput = document.getElementById("gb-pw");
-  mainTextarea.addEventListener("input", () => autoGrow(mainTextarea, 240));
+  // textarea가 늘어나거나 줄어들면 입력창 높이가 바뀌어 페이지가 다시 계산돼야 한다.
+  mainTextarea.addEventListener("input", () => {
+    autoGrow(mainTextarea, 240);
+    scheduleLayoutFlow();
+  });
 
   // 비밀번호칸은 secret?이 켜졌을 때만 보이고 필요하다 (CSS가 숨김/표시를 담당).
   // 꺼지면 입력해둔 값도 지워서 다음에 다시 켰을 때 헷갈리지 않게 한다.
   secretCheckbox.addEventListener("change", () => {
     if (!secretCheckbox.checked) pwInput.value = "";
+    // 비밀번호칸이 나타나거나 사라지면서 입력창 전체 높이가 바뀐다.
+    scheduleLayoutFlow();
   });
 
   form.addEventListener("submit", async (e) => {
@@ -419,34 +402,13 @@ permalink: /board/
       await addDoc(gbRef, { name, passwordHash, content, secret, createdAt: serverTimestamp() });
       form.reset();
       mainTextarea.style.height = "";
+      scheduleLayoutFlow();
     } catch (err) {
       alert("등록에 실패했어요: " + err.message);
     } finally {
       submitBtn.disabled = false;
     }
   });
-
-  // ---- 글 삭제 (soft delete, 관리자만) ----
-  async function handleDelete(entryId) {
-    if (!isOwner) return;
-    if (!confirm("삭제하시겠습니까?")) return;
-    try {
-      await updateDoc(doc(db, "guestbook", entryId), { deleted: true, deletedAt: serverTimestamp() });
-    } catch (err) {
-      alert("삭제에 실패했어요: " + err.message);
-    }
-  }
-
-  // ---- 답글 삭제 (soft delete, 관리자만) ----
-  async function handleDeleteReply(entryId, replyId) {
-    if (!isOwner) return;
-    if (!confirm("답글을 삭제하시겠습니까?")) return;
-    try {
-      await updateDoc(doc(db, "guestbook", entryId, "replies", replyId), { deleted: true, deletedAt: serverTimestamp() });
-    } catch (err) {
-      alert("답글 삭제에 실패했어요: " + err.message);
-    }
-  }
 
   function safeFileName(name) {
     return String(name).replace(/[^a-zA-Z0-9가-힣._-]/g, "_").slice(0, 100);
@@ -481,16 +443,18 @@ permalink: /board/
     container.appendChild(wrap);
   }
 
-  // ---- 답글 목록 실시간 렌더링 ----
-  function attachReplies(entryId, container) {
+  // ---- 답글 목록 실시간 렌더링. 삭제 UI는 없다 (필요하면 Firebase 콘솔에서 직접).
+  // 답글은 글 하나당 1개만 허용하므로, 이미 답글이 있으면 replyForm을 숨긴다. ----
+  function attachReplies(entryId, container, replyForm) {
     const repliesRef = collection(db, "guestbook", entryId, "replies");
     const rq = query(repliesRef, orderBy("createdAt", "asc"));
     onSnapshot(rq, (snap) => {
       container.innerHTML = "";
+      let hasReply = false;
       snap.forEach((r) => {
         const d = r.data();
         if (d.deleted) return;
-        const replyId = r.id;
+        hasReply = true;
 
         const li = document.createElement("li");
         li.className = "gb-reply";
@@ -509,25 +473,17 @@ permalink: /board/
         main.appendChild(body);
         renderImages(main, d.images);
 
-        const delBtn = document.createElement("button");
-        delBtn.type = "button";
-        delBtn.className = "gb-del-btn";
-        delBtn.title = "삭제";
-        delBtn.textContent = "✕";
-        delBtn.addEventListener("click", () => handleDeleteReply(entryId, replyId));
-
         li.appendChild(name);
         li.appendChild(main);
-        li.appendChild(delBtn);
         container.appendChild(li);
       });
       container.style.display = container.children.length ? "" : "none";
-      refreshLensIfShowing();
+      if (replyForm) replyForm.style.display = hasReply ? "none" : "";
       scheduleLayoutFlow();
     });
   }
 
-  // ---- 답글 작성 폼 (이름은 항상 하영으로 고정, 사진 여러 장 첨부 가능) ----
+  // ---- 답글 작성 폼 (이름은 항상 하영으로 고정, 사진 여러 장 첨부 가능, 글 하나당 1회) ----
   function buildReplyForm(entryId) {
     const wrap = document.createElement("div");
     wrap.className = "gb-reply-form";
@@ -632,12 +588,14 @@ permalink: /board/
     repliesEl.className = "gb-replies";
     repliesEl.style.display = "none";
     li.appendChild(repliesEl);
-    attachReplies(entryId, repliesEl);
 
-    li.appendChild(buildReplyForm(entryId));
+    const replyForm = buildReplyForm(entryId);
+    li.appendChild(replyForm);
+
+    attachReplies(entryId, repliesEl, replyForm);
   }
 
-  // ---- 목록 렌더링 (오래된 글 → 최신 글) ----
+  // ---- 목록 렌더링 (오래된 글 → 최신 글). 삭제 UI는 없다 (필요하면 Firebase 콘솔에서 직접) ----
   // 관리자로 로그인하면 latestSnapshot을 다시 그려서, 이미 잠겨 있던 비밀글도
   // 새로고침 없이 바로 비밀번호 없이 열리게 한다.
   // renderList는 DOM 노드를 만들어 currentNodes에 채우기만 하고, 실제 화면
@@ -657,7 +615,6 @@ permalink: /board/
       empty.className = "gb-empty";
       empty.textContent = "아직 남긴 글이 없어요. 아래에 첫 이야기를 남겨보세요.";
       nodes.push(empty);
-      hideLens();
     }
 
     docs.forEach((docSnap) => {
@@ -674,16 +631,8 @@ permalink: /board/
       const main = document.createElement("div");
       main.className = "gb-item-main";
 
-      const delBtn = document.createElement("button");
-      delBtn.type = "button";
-      delBtn.className = "gb-del-btn";
-      delBtn.title = "삭제";
-      delBtn.textContent = "✕";
-      delBtn.addEventListener("click", () => handleDelete(entryId));
-
       item.appendChild(name);
       item.appendChild(main);
-      item.appendChild(delBtn);
 
       if (d.secret && !isOwner) {
         const row = document.createElement("div");
@@ -724,14 +673,38 @@ permalink: /board/
       nodes.push(item);
     });
 
-    nodes.push(form);
     currentNodes = nodes;
+  }
+
+  // ---- 화면에 실제로 남기는 여백 측정: 코너 네비(고정) + 입력창(고정)이
+  // 차지하는 화면 공간을 재서 --gb-nav-space/--gb-form-space에 반영한다.
+  // 값을 추측해서 박아두는 대신 매 레이아웃마다 실측하므로, 코너 네비 디자인이
+  // 바뀌거나 입력창이 늘어나도(비밀번호칸 등장, textarea 여러 줄) 항상 정확하다. ----
+  const cornerNav = document.querySelector(".corner-nav");
+  const cornerBrand = document.querySelector(".corner-brand");
+
+  function measureReservedSpace() {
+    let navSpace = 0;
+    [cornerNav, cornerBrand].forEach((el) => {
+      if (!el) return;
+      const fromBottom = window.innerHeight - el.getBoundingClientRect().top;
+      if (fromBottom > navSpace) navSpace = fromBottom;
+    });
+    navSpace += 10;
+
+    // 관리자로 로그인해서 입력창이 숨겨지면 offsetHeight가 0이 되고,
+    // 그만큼 지면을 더 넓게 쓸 수 있다.
+    const formSpace = form.offsetHeight + (form.offsetHeight > 0 ? 20 : 0);
+
+    gbApp.style.setProperty("--gb-nav-space", navSpace + "px");
+    gbApp.style.setProperty("--gb-form-space", formSpace + "px");
   }
 
   // ---- 페이지 나누기: 화면 높이(.gb-flow)를 한 지면으로 보고, 단을 위→아래로
   // 채운 뒤 다음 단으로, 페이지 하나가 다 차면 새 페이지를 만들어 이어 붙인다.
-  // 이미 만들어둔 노드(currentNodes)를 옮겨 붙이기만 하므로 사진/답글/폼의
-  // 상태와 이벤트 리스너는 그대로 유지된다. ----
+  // 이미 만들어둔 노드(currentNodes)를 옮겨 붙이기만 하므로 답글/폼의 상태와
+  // 이벤트 리스너는 그대로 유지된다. 작성 폼은 더 이상 이 안에 들어가지 않는다
+  // (항상 고정된 별도의 요소). ----
   function newPage() {
     const flow = document.createElement("div");
     flow.className = "gb-flow";
@@ -740,6 +713,7 @@ permalink: /board/
   }
 
   function paginate() {
+    measureReservedSpace();
     pagesContainer.innerHTML = "";
     let flow = newPage();
     currentNodes.forEach((node) => {
@@ -767,96 +741,11 @@ permalink: /board/
     const errNode = document.createElement("div");
     errNode.className = "gb-empty";
     errNode.textContent = "방명록을 불러오지 못했어요: " + err.message;
-    currentNodes = [errNode, form];
+    currentNodes = [errNode];
     scheduleLayoutFlow();
   });
 
-  // ---- 유리구슬 돋보기 ----
-  const lens = document.getElementById("gb-lens");
-  const lensInner = document.getElementById("gb-lens-inner");
-  const lensToggle = document.getElementById("gb-lens-toggle");
-  const LENS_SIZE = 180;
-  const LENS_SCALE = 1.6;
-  let lensItem = null;
-  let lensX = 0;
-  let lensY = 0;
-  let lensFrame = null;
-
-  let lensEnabled = false;
-  try { lensEnabled = localStorage.getItem("gb_lens_enabled") === "1"; } catch (e) {}
-
-  function updateLensToggleUI() {
-    lensToggle.innerHTML = '<span class="gb-lens-dot">' + (lensEnabled ? "●" : "○") + '</span>lens';
-    lensToggle.title = lensEnabled ? "off" : "magnify";
-  }
-  updateLensToggleUI();
-
-  lensToggle.addEventListener("click", () => {
-    lensEnabled = !lensEnabled;
-    try { localStorage.setItem("gb_lens_enabled", lensEnabled ? "1" : "0"); } catch (e) {}
-    updateLensToggleUI();
-    if (!lensEnabled) hideLens();
-  });
-
-  function showLens(item, x, y) {
-    if (!lensEnabled || window.innerWidth <= 700 || !item || !item.isConnected) return;
-    lensItem = item;
-    lensX = x;
-    lensY = y;
-
-    const rect = item.getBoundingClientRect();
-    const clone = item.cloneNode(true);
-    clone.style.width = rect.width + "px";
-    clone.style.boxSizing = "border-box";
-    lensInner.innerHTML = "";
-    lensInner.appendChild(clone);
-
-    const center = LENS_SIZE / 2;
-    const localX = x - rect.left;
-    const localY = y - rect.top;
-    lensInner.style.left = (center - localX * LENS_SCALE) + "px";
-    lensInner.style.top = (center - localY * LENS_SCALE) + "px";
-    lensInner.style.transform = "scale(" + LENS_SCALE + ")";
-
-    lens.style.left = x + "px";
-    lens.style.top = y + "px";
-    lens.classList.add("is-visible");
-  }
-
-  function hideLens() {
-    lensItem = null;
-    lens.classList.remove("is-visible");
-  }
-
-  function refreshLensIfShowing() {
-    if (lensItem && lensItem.isConnected) showLens(lensItem, lensX, lensY);
-  }
-
-  function moveLens(item, x, y) {
-    if (lensFrame) cancelAnimationFrame(lensFrame);
-    lensFrame = requestAnimationFrame(() => {
-      showLens(item, x, y);
-      lensFrame = null;
-    });
-  }
-
-  // lens가 켜져 있으면 목록 어디든 마우스가 움직일 때마다 그 아래 글을 계속 따라다니며 보여준다
-  // (글자 위에 딱 맞춰 다가가야만 뜨는 게 아니라, 한 번 켜두면 계속 렌즈가 붙어있는 느낌).
-  document.addEventListener("mousemove", (e) => {
-    if (!lensEnabled || window.innerWidth <= 700) return;
-    const el = document.elementFromPoint(e.clientX, e.clientY);
-    const item = el && el.closest(".gb-item");
-    if (item) {
-      moveLens(item, e.clientX, e.clientY);
-    } else {
-      hideLens();
-    }
-  });
-
-  document.addEventListener("mouseleave", hideLens);
-
   window.addEventListener("resize", () => {
-    if (window.innerWidth <= 700) hideLens();
     scheduleLayoutFlow();
   });
 </script>
