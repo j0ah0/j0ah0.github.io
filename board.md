@@ -42,9 +42,18 @@ permalink: /board/
   #gb-app { --gb-edge: 28px; --gb-who: 66px; --gb-gap: 10px; --gb-cols: 3; --gb-colgap: 48px; --gb-size: 12px; --gb-lh: 1.35; --gb-item-gap: 1.9em; }
 
   /* 테마의 가운데 정렬 컨테이너(.wrap, max-width 720px)를 뚫고 화면 양끝까지 채운다.
+     margin만으로는 부모가 flex/grid일 때 자식이 shrink-to-fit으로 굳을 수 있어서
+     width: 100vw를 직접 박아 폭을 강제하고, 가장자리 여백은 padding으로 준다.
      코너 nav(Main/I am/Log...)가 뷰포트 기준 28px에 고정돼 있어서 --gb-edge를 맞춰뒀다. */
   .gb-auth,
-  #gb-app { margin-inline: calc(50% - 50vw + var(--gb-edge)); }
+  #gb-app {
+    box-sizing: border-box;
+    width: 100vw;
+    max-width: 100vw;
+    margin-inline: calc(50% - 50vw);
+    padding-inline: var(--gb-edge);
+  }
+  body { overflow-x: clip; }
 
   .gb-auth { text-align: right; font-size: 12px; color: var(--muted); margin-bottom: 14px; min-height: 20px; }
   .gb-auth button { font: inherit; font-size: 12px; border: none; background: none; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
