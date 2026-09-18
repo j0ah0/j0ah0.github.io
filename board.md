@@ -49,8 +49,8 @@ permalink: /board/
   .gb-auth { text-align: right; font-size: 12px; color: var(--muted); margin-bottom: 14px; min-height: 20px; }
   .gb-auth button { font: inherit; font-size: 12px; border: none; background: none; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
   .gb-auth button:hover { color: var(--text); }
-  #gb-login { opacity: 0; transition: opacity 120ms ease; }
-  #gb-login:hover, #gb-login:focus-visible { opacity: 0.6; }
+  #gb-login { opacity: 0.4; transition: opacity 120ms ease; }
+  #gb-login:hover, #gb-login:focus-visible { opacity: 1; }
 
   .gb-list-tools { display: flex; justify-content: flex-end; margin-bottom: 18px; }
   .gb-lens-toggle { border: none; background: none; padding: 2px 0; font: inherit; font-size: 10px; letter-spacing: 0.06em; color: var(--muted); cursor: pointer; }
