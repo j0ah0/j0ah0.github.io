@@ -362,6 +362,7 @@ permalink: /board/
     isOwner = !!(user && user.email === OWNER_EMAIL);
     document.body.classList.toggle("gb-is-owner", isOwner);
     renderAuthBar(user);
+    if (latestSnapshot) renderList(latestSnapshot);
   });
 
   // ---- 새 글 등록 ----
@@ -615,9 +616,11 @@ permalink: /board/
   }
 
   // ---- 목록 렌더링 (오래된 글 → 최신 글) ----
+  // 관리자로 로그인하면 latestSnapshot을 다시 그려서, 이미 잠겨 있던 비밀글도
+  // 새로고침 없이 바로 비밀번호 없이 열리게 한다.
   const list = document.getElementById("gb-list");
-  const q = query(gbRef, orderBy("createdAt", "asc"));
-  onSnapshot(q, (snapshot) => {
+  let latestSnapshot = null;
+  function renderList(snapshot) {
     const docs = snapshot.docs.filter((d) => !d.data().deleted);
     if (docs.length === 0) {
       list.innerHTML = '<li class="gb-empty">아직 남긴 글이 없어요. 아래에 첫 이야기를 남겨보세요.</li>';
@@ -650,7 +653,7 @@ permalink: /board/
       li.appendChild(main);
       li.appendChild(delBtn);
 
-      if (d.secret) {
+      if (d.secret && !isOwner) {
         const row = document.createElement("div");
         row.className = "gb-secret-row";
         if (getFailCount(entryId) >= MAX_TRIES) {
@@ -687,6 +690,12 @@ permalink: /board/
       }
       list.appendChild(li);
     });
+  }
+
+  const q = query(gbRef, orderBy("createdAt", "asc"));
+  onSnapshot(q, (snapshot) => {
+    latestSnapshot = snapshot;
+    renderList(snapshot);
   }, (err) => {
     list.innerHTML = '<li class="gb-empty">방명록을 불러오지 못했어요: ' + err.message + '</li>';
   });
