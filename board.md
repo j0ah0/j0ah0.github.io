@@ -74,8 +74,9 @@ permalink: /board/
   }
 
   /* 다른 사람의 글(세트) 사이는 넓게, 같은 세트 안(글+답글)은 좁게 띄워서 구분이 잘 되게.
-     한 세트는 단 경계에서 쪼개지지 않고 통째로 다음 단으로 넘어간다. */
-  .gb-item { margin: 0 0 var(--gb-item-gap); break-inside: avoid; page-break-inside: avoid; }
+     break-inside: avoid를 안 걸어서 긴 세트는 단 경계에서 자연스럽게 잘려 다음 단으로 이어진다
+     (잡지가 실제로 하는 방식) - 그래야 가장 큰 세트 하나 때문에 뒤 단이 통째로 비지 않는다. */
+  .gb-item { margin: 0 0 var(--gb-item-gap); }
 
   /* 이름은 한 줄 고정. 길면 말줄임, 마우스 올리면 전체 이름 */
   .gb-item-name,
