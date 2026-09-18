@@ -37,7 +37,7 @@ permalink: /board/
   /* 한 곳에서 조절:
      --gb-who 이름 칸 너비 / --gb-cols 단(칼럼) 수, --gb-colgap 단 사이 간격 /
      --gb-size 글자 크기 / --gb-lh 줄 간격 */
-  #gb-app { --gb-who: 66px; --gb-gap: 10px; --gb-cols: 2; --gb-colgap: 48px; --gb-size: 12px; --gb-lh: 1.5; --gb-set-gap: 0.7em; --gb-item-gap: 0.9em; }
+  #gb-app { --gb-who: 66px; --gb-gap: 10px; --gb-cols: 2; --gb-colgap: 48px; --gb-size: 12px; --gb-lh: 1.35; --gb-item-gap: 1.9em; }
 
   .gb-auth { text-align: right; font-size: 12px; color: var(--muted); margin-bottom: 14px; min-height: 20px; }
   .gb-auth button { font: inherit; font-size: 12px; border: none; background: none; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
@@ -77,10 +77,14 @@ permalink: /board/
   .gb-item-main,
   .gb-reply-main { min-width: 0; }
 
-  /* 칼각: 양쪽 정렬 + 문단 사이 여백 없음 (줄 간격이 전부 똑같이) */
-  .gb-item-body p,
-  .gb-reply-body p {
+  /* 칼각: 양쪽 정렬 + 문단 사이 여백 없음 (줄 간격이 전부 똑같이).
+     #gb-app를 앞에 붙여 테마가 p에 직접 거는 font-size/line-height보다 우선하게 한다
+     (상속만으로는 테마의 p 규칙에 밀릴 수 있어서 여기서 직접 값을 준다). */
+  #gb-app .gb-item-body p,
+  #gb-app .gb-reply-body p {
     margin: 0;
+    font-size: var(--gb-size);
+    line-height: var(--gb-lh);
     color: var(--text);
     text-align: justify;
     text-justify: inter-character;
@@ -89,9 +93,9 @@ permalink: /board/
     hyphens: auto;
   }
 
-  /* 답글은 세트 안에서 바로 다음 줄에 붙음 */
-  .gb-replies { grid-column: 1 / -1; list-style: none; margin: var(--gb-set-gap) 0 0; padding: 0; }
-  .gb-reply + .gb-reply { margin-top: var(--gb-set-gap); }
+  /* 답글은 세트 안에서 바로 다음 줄에 붙음 (세트 내부는 줄 간격만으로 붙이고,
+     세트끼리는 --gb-item-gap으로 확실히 띄운다) */
+  .gb-replies { grid-column: 1 / -1; list-style: none; margin: 0; padding: 0; }
 
   .gb-del-btn { display: none; position: absolute; top: 0; right: -28px; border: none; background: none; color: var(--muted); font-size: 12px; padding: 2px 4px; cursor: pointer; }
   body.gb-is-owner .gb-del-btn { display: inline-block; }
@@ -110,7 +114,7 @@ permalink: /board/
   .gb-image { display: block; width: 100%; height: auto; border-radius: 2px; background: var(--border); }
 
   /* ---- 관리자 답글 폼 (선 없이) ---- */
-  .gb-reply-form { display: none; grid-column: 2; margin: var(--gb-set-gap) 0 0; }
+  .gb-reply-form { display: none; grid-column: 2; margin: 0; }
   body.gb-is-owner .gb-reply-form { display: block; }
   .gb-reply-form textarea { display: block; width: 100%; min-height: 1.7em; max-height: 160px; box-sizing: border-box; padding: 0; border: none; background: transparent; font: inherit; font-size: 13px; line-height: 1.6; color: var(--text); resize: none; overflow: hidden; outline: none; }
   .gb-reply-form textarea::placeholder { color: var(--muted); opacity: 0.6; }
@@ -142,7 +146,7 @@ permalink: /board/
     page-break-inside: avoid;
   }
   .gb-form input,
-  .gb-form textarea { padding: 0; border: none; background: transparent; font: inherit; color: var(--text); outline: none; }
+  .gb-form textarea { padding: 0; border: none; background: transparent; font: inherit; font-size: var(--gb-size); line-height: var(--gb-lh); color: var(--text); outline: none; }
   .gb-form input::placeholder,
   .gb-form textarea::placeholder { color: var(--muted); opacity: 0.6; }
   .gb-form-name { width: 100%; font-weight: 400; }
