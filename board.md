@@ -35,9 +35,15 @@ permalink: /board/
 
 <style>
   /* 한 곳에서 조절:
-     --gb-who 이름 칸 너비 / --gb-cols 단(칼럼) 수, --gb-colgap 단 사이 간격 /
+     --gb-edge 화면 가장자리 여백(코너 nav와 같은 28px) / --gb-who 이름 칸 너비 /
+     --gb-colw 단 하나의 너비(화면이 넓어지면 단 수가 자동으로 늘어남) / --gb-colgap 단 사이 간격 /
      --gb-size 글자 크기 / --gb-lh 줄 간격 */
-  #gb-app { --gb-who: 66px; --gb-gap: 10px; --gb-cols: 2; --gb-colgap: 48px; --gb-size: 12px; --gb-lh: 1.35; --gb-item-gap: 1.9em; }
+  #gb-app { --gb-edge: 28px; --gb-who: 66px; --gb-gap: 10px; --gb-colw: 300px; --gb-colgap: 48px; --gb-size: 12px; --gb-lh: 1.35; --gb-item-gap: 1.9em; }
+
+  /* 테마의 가운데 정렬 컨테이너(.wrap, max-width 720px)를 뚫고 화면 양끝까지 채운다.
+     코너 nav(Main/I am/Log...)가 뷰포트 기준 28px에 고정돼 있어서 --gb-edge를 맞춰뒀다. */
+  .gb-auth,
+  #gb-app { margin-inline: calc(50% - 50vw + var(--gb-edge)); }
 
   .gb-auth { text-align: right; font-size: 12px; color: var(--muted); margin-bottom: 14px; min-height: 20px; }
   .gb-auth button { font: inherit; font-size: 12px; border: none; background: none; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
@@ -53,7 +59,7 @@ permalink: /board/
   /* ---- 대화 목록: 잡지처럼 여러 단으로 흐르게 ----
      목록과 작성 폼을 .gb-flow 하나로 묶어서 같은 단 흐름을 타게 한다.
      그래야 폼이 마지막 글 바로 다음 줄에 자연스럽게 이어진다. */
-  .gb-flow { column-count: var(--gb-cols); column-gap: var(--gb-colgap); column-fill: balance; }
+  .gb-flow { column-width: var(--gb-colw); column-gap: var(--gb-colgap); column-fill: balance; }
   .gb-list { list-style: none; margin: 0; padding: 0; }
   .gb-empty { color: var(--muted); font-size: var(--gb-size); }
 
@@ -217,13 +223,8 @@ permalink: /board/
     .gb-lens { transition: none; }
   }
 
-  /* 단이 3열 이상 좁아지면 한 줄이 25자보다 짧아져 양쪽 정렬이 벌어져 보이므로 1단으로 접는다 */
-  @media (max-width: 1000px) {
-    #gb-app { --gb-cols: 1; }
-  }
-
   @media (max-width: 700px) {
-    #gb-app { --gb-who: 64px; --gb-gap: 10px; --gb-size: 13px; }
+    #gb-app { --gb-edge: 16px; --gb-who: 64px; --gb-gap: 10px; --gb-size: 13px; }
     .gb-del-btn { right: 0; }
     .gb-list-tools { display: none; }
     .gb-lens { display: none; }
