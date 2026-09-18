@@ -39,7 +39,7 @@ permalink: /board/
      --gb-size 글자 크기 / --gb-lh 줄 간격 /
      --gb-nav-space, --gb-form-space는 안전한 기본값일 뿐 - JS(measureReservedSpace)가
      실제 코너 네비 높이와 입력창 높이를 매번 측정해서 정확한 값으로 덮어쓴다. */
-  #gb-app { --gb-edge: 28px; --gb-who: 66px; --gb-gap: 10px; --gb-cols: 4; --gb-colgap: 40px; --gb-size: 12px; --gb-lh: 1.35; --gb-item-gap: 1.9em; --gb-nav-space: 60px; --gb-form-space: 90px; }
+  #gb-app { --gb-edge: 28px; --gb-who: 66px; --gb-gap: 10px; --gb-cols: 4; --gb-colgap: 40px; --gb-size: 12px; --gb-lh: 1.35; --gb-item-gap: 1.9em; --gb-nav-space: 60px; --gb-form-space: 90px; --gb-top-space: 40px; }
 
   /* 테마의 가운데 정렬 컨테이너(.wrap, max-width 720px)를 뚫고 화면 양끝까지 채운다.
      margin만으로는 부모가 flex/grid일 때 자식이 shrink-to-fit으로 굳을 수 있어서
@@ -69,9 +69,10 @@ permalink: /board/
     column-count: var(--gb-cols);
     column-gap: var(--gb-colgap);
     column-fill: auto;
-    /* 지면 높이 = 화면 높이 - 하단 코너 네비 - 고정 입력창. 그래서 글이
-       딱 이 높이까지만 차고 넘치면 다음 지면(.gb-flow)으로 넘어간다. */
-    height: calc(100vh - var(--gb-nav-space) - var(--gb-form-space));
+    /* 지면 높이 = 화면 높이 - (지면이 시작하는 위쪽 여백: 관리자 로그인 바 등)
+       - 하단 코너 네비 - 고정 입력창. 그래서 글이 딱 이 높이까지만 차고
+       넘치면 다음 지면(.gb-flow)으로 넘어간다. */
+    height: calc(100vh - var(--gb-top-space) - var(--gb-nav-space) - var(--gb-form-space));
     overflow: hidden;
   }
   .gb-flow + .gb-flow { margin-top: var(--gb-item-gap); }
@@ -696,8 +697,14 @@ permalink: /board/
     // 그만큼 지면을 더 넓게 쓸 수 있다.
     const formSpace = form.offsetHeight + (form.offsetHeight > 0 ? 20 : 0);
 
+    // #gb-pages 앞에 있는 관리자 로그인 바 등 때문에 첫 지면도 화면 맨 위(0px)가
+    // 아니라 그만큼 내려온 지점에서 시작한다. rect.top은 스크롤에 따라 바뀌므로
+    // scrollY를 더해 스크롤과 무관한 값으로 고정한다.
+    const topSpace = pagesContainer.getBoundingClientRect().top + window.scrollY;
+
     gbApp.style.setProperty("--gb-nav-space", navSpace + "px");
     gbApp.style.setProperty("--gb-form-space", formSpace + "px");
+    gbApp.style.setProperty("--gb-top-space", topSpace + "px");
   }
 
   // ---- 페이지 나누기: 화면 높이(.gb-flow)를 한 지면으로 보고, 단을 위→아래로
