@@ -741,6 +741,8 @@ permalink: /board/
     latestSnapshotDocs: latestSnapshot ? latestSnapshot.docs.length : null,
     paginateError: window.__gbPaginateError || null
   });
+  // 테스트 환경에서 탭이 백그라운드라 requestAnimationFrame이 안 돌 때 강제로 돌려보기 위한 것.
+  window.__gbForcePaginate = paginate;
 
   let layoutFrame = null;
   function scheduleLayoutFlow() {
