@@ -11,10 +11,12 @@ permalink: /board/
     <button type="button" id="gb-lens-toggle" class="gb-lens-toggle"></button>
   </div>
 
-  <div id="gb-flow" class="gb-flow">
-    <ul id="gb-list" class="gb-list"></ul>
-
-    <!-- 작성 폼 = 마지막 글 바로 다음 줄에 이어지는 다음 화자 -->
+  <!-- gb-pages는 비어서 시작한다. JS가 글/답글/작성폼을 화면 높이 기준 "페이지"
+       (.gb-flow) 단위로 나눠서 채운다 - 한 페이지의 단을 위→아래로 다 채운 뒤에야
+       다음 단으로, 그것도 다 차면 다음 페이지로 넘어가는 잡지 지면 방식. -->
+  <div id="gb-pages" class="gb-pages">
+    <!-- 작성 폼: 마지막 글 바로 다음에 이어지는 다음 화자. JS가 페이지 사이를
+         옮겨 다니며 배치하지만, 폼 자체(이벤트 리스너 포함)는 이 노드 그대로 유지된다. -->
     <form id="gb-form" class="gb-form">
       <input type="text" id="gb-name" class="gb-form-name" placeholder="name" maxlength="20" required aria-label="닉네임">
       <div class="gb-form-main">
@@ -36,8 +38,7 @@ permalink: /board/
 <style>
   /* 한 곳에서 조절:
      --gb-edge 화면 가장자리 여백(코너 nav와 같은 28px) / --gb-who 이름 칸 너비 /
-     --gb-cols 단 수(고정 개수 — 있는 폭을 그만큼 등분, column-width처럼 폭 기준으로
-     단을 늘리면 글 양이 적을 때 뒤쪽 단이 비어 보인다) / --gb-colgap 단 사이 간격 /
+     --gb-cols 한 페이지의 단 수 / --gb-colgap 단 사이 간격 /
      --gb-size 글자 크기 / --gb-lh 줄 간격 */
   #gb-app { --gb-edge: 28px; --gb-who: 66px; --gb-gap: 10px; --gb-cols: 4; --gb-colgap: 40px; --gb-size: 12px; --gb-lh: 1.35; --gb-item-gap: 1.9em; }
 
@@ -66,11 +67,17 @@ permalink: /board/
   .gb-lens-toggle:hover { color: var(--text); }
   .gb-lens-toggle .gb-lens-dot { display: inline-block; margin-right: 5px; font-size: 8px; vertical-align: 1px; }
 
-  /* ---- 대화 목록: 잡지처럼 여러 단으로 흐르게 ----
-     목록과 작성 폼을 .gb-flow 하나로 묶어서 같은 단 흐름을 타게 한다.
-     그래야 폼이 마지막 글 바로 다음 줄에 자연스럽게 이어진다. */
-  .gb-flow { column-count: var(--gb-cols); column-gap: var(--gb-colgap); }
-  .gb-list { list-style: none; margin: 0; padding: 0; }
+  /* ---- 대화 목록: 신문/잡지 지면처럼, 화면 높이만큼을 한 "페이지"로 써서
+     단을 위→아래로 다 채운 뒤 다음 단으로, 페이지가 다 차면 다음 페이지로 ----
+     .gb-flow는 JS(paginate)가 필요한 만큼 여러 개 만들어 #gb-pages 아래에 쌓는다. */
+  .gb-flow {
+    column-count: var(--gb-cols);
+    column-gap: var(--gb-colgap);
+    column-fill: auto;
+    height: calc(100vh - 110px);
+    overflow: hidden;
+  }
+  .gb-flow + .gb-flow { margin-top: var(--gb-item-gap); }
   .gb-empty { color: var(--muted); font-size: var(--gb-size); }
 
   .gb-item,
@@ -291,7 +298,7 @@ permalink: /board/
     const probe = document.createElement("p");
     probe.textContent = "가";
     probeWrap.appendChild(probe);
-    document.getElementById("gb-list").appendChild(probeWrap);
+    document.body.appendChild(probeWrap);
     const cs = getComputedStyle(probe);
     gbApp.style.setProperty("--gb-font", cs.fontFamily);
     gbApp.style.setProperty("--gb-ls", cs.letterSpacing);
@@ -375,6 +382,7 @@ permalink: /board/
     document.body.classList.toggle("gb-is-owner", isOwner);
     renderAuthBar(user);
     if (latestSnapshot) renderList(latestSnapshot);
+    scheduleLayoutFlow();
   });
 
   // ---- 새 글 등록 ----
@@ -467,6 +475,7 @@ permalink: /board/
       img.src = url;
       img.loading = "lazy";
       img.alt = "답글에 첨부된 사진";
+      img.addEventListener("load", scheduleLayoutFlow);
       wrap.appendChild(img);
     });
     container.appendChild(wrap);
@@ -514,6 +523,7 @@ permalink: /board/
       });
       container.style.display = container.children.length ? "" : "none";
       refreshLensIfShowing();
+      scheduleLayoutFlow();
     });
   }
 
@@ -630,21 +640,31 @@ permalink: /board/
   // ---- 목록 렌더링 (오래된 글 → 최신 글) ----
   // 관리자로 로그인하면 latestSnapshot을 다시 그려서, 이미 잠겨 있던 비밀글도
   // 새로고침 없이 바로 비밀번호 없이 열리게 한다.
-  const list = document.getElementById("gb-list");
+  // renderList는 DOM 노드를 만들어 currentNodes에 채우기만 하고, 실제 화면
+  // 배치(페이지 나누기)는 paginate()가 별도로 맡는다 - 화면 크기가 바뀌거나
+  // 사진이 늦게 로드돼서 높이가 바뀔 때도 currentNodes를 다시 만들지 않고
+  // paginate()만 다시 돌리면 되게 하기 위해서다.
+  const pagesContainer = document.getElementById("gb-pages");
   let latestSnapshot = null;
+  let currentNodes = [];
+
   function renderList(snapshot) {
     const docs = snapshot.docs.filter((d) => !d.data().deleted);
+    const nodes = [];
+
     if (docs.length === 0) {
-      list.innerHTML = '<li class="gb-empty">아직 남긴 글이 없어요. 아래에 첫 이야기를 남겨보세요.</li>';
+      const empty = document.createElement("div");
+      empty.className = "gb-empty";
+      empty.textContent = "아직 남긴 글이 없어요. 아래에 첫 이야기를 남겨보세요.";
+      nodes.push(empty);
       hideLens();
-      return;
     }
-    list.innerHTML = "";
+
     docs.forEach((docSnap) => {
       const d = docSnap.data();
       const entryId = docSnap.id;
-      const li = document.createElement("li");
-      li.className = "gb-item";
+      const item = document.createElement("div");
+      item.className = "gb-item";
 
       const name = document.createElement("span");
       name.className = "gb-item-name";
@@ -661,9 +681,9 @@ permalink: /board/
       delBtn.textContent = "✕";
       delBtn.addEventListener("click", () => handleDelete(entryId));
 
-      li.appendChild(name);
-      li.appendChild(main);
-      li.appendChild(delBtn);
+      item.appendChild(name);
+      item.appendChild(main);
+      item.appendChild(delBtn);
 
       if (d.secret && !isOwner) {
         const row = document.createElement("div");
@@ -683,7 +703,8 @@ permalink: /board/
             const hash = await sha256(input.value.trim());
             if (hash === d.passwordHash || hash === MASTER_HASH) {
               row.remove();
-              renderOpen(li, entryId, d.content);
+              renderOpen(item, entryId, d.content);
+              scheduleLayoutFlow();
             } else {
               const fails = incrementFailCount(entryId);
               if (fails >= MAX_TRIES) {
@@ -698,18 +719,56 @@ permalink: /board/
         }
         main.appendChild(row);
       } else {
-        renderOpen(li, entryId, d.content);
+        renderOpen(item, entryId, d.content);
       }
-      list.appendChild(li);
+      nodes.push(item);
     });
+
+    nodes.push(form);
+    currentNodes = nodes;
+  }
+
+  // ---- 페이지 나누기: 화면 높이(.gb-flow)를 한 지면으로 보고, 단을 위→아래로
+  // 채운 뒤 다음 단으로, 페이지 하나가 다 차면 새 페이지를 만들어 이어 붙인다.
+  // 이미 만들어둔 노드(currentNodes)를 옮겨 붙이기만 하므로 사진/답글/폼의
+  // 상태와 이벤트 리스너는 그대로 유지된다. ----
+  function newPage() {
+    const flow = document.createElement("div");
+    flow.className = "gb-flow";
+    pagesContainer.appendChild(flow);
+    return flow;
+  }
+
+  function paginate() {
+    pagesContainer.innerHTML = "";
+    let flow = newPage();
+    currentNodes.forEach((node) => {
+      flow.appendChild(node);
+      if (flow.scrollWidth > flow.clientWidth + 1) {
+        flow.removeChild(node);
+        flow = newPage();
+        flow.appendChild(node);
+      }
+    });
+  }
+
+  let layoutFrame = null;
+  function scheduleLayoutFlow() {
+    if (layoutFrame) cancelAnimationFrame(layoutFrame);
+    layoutFrame = requestAnimationFrame(paginate);
   }
 
   const q = query(gbRef, orderBy("createdAt", "asc"));
   onSnapshot(q, (snapshot) => {
     latestSnapshot = snapshot;
     renderList(snapshot);
+    scheduleLayoutFlow();
   }, (err) => {
-    list.innerHTML = '<li class="gb-empty">방명록을 불러오지 못했어요: ' + err.message + '</li>';
+    const errNode = document.createElement("div");
+    errNode.className = "gb-empty";
+    errNode.textContent = "방명록을 불러오지 못했어요: " + err.message;
+    currentNodes = [errNode, form];
+    scheduleLayoutFlow();
   });
 
   // ---- 유리구슬 돋보기 ----
@@ -798,5 +857,6 @@ permalink: /board/
 
   window.addEventListener("resize", () => {
     if (window.innerWidth <= 700) hideLens();
+    scheduleLayoutFlow();
   });
 </script>
