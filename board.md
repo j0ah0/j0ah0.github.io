@@ -720,29 +720,18 @@ permalink: /board/
   }
 
   function paginate() {
-    try {
-      measureReservedSpace();
-      pagesContainer.innerHTML = "";
-      let flow = newPage();
-      currentNodes.forEach((node) => {
+    measureReservedSpace();
+    pagesContainer.innerHTML = "";
+    let flow = newPage();
+    currentNodes.forEach((node) => {
+      flow.appendChild(node);
+      if (flow.scrollWidth > flow.clientWidth + 1) {
+        flow.removeChild(node);
+        flow = newPage();
         flow.appendChild(node);
-        if (flow.scrollWidth > flow.clientWidth + 1) {
-          flow.removeChild(node);
-          flow = newPage();
-          flow.appendChild(node);
-        }
-      });
-    } catch (e) {
-      window.__gbPaginateError = e.message + " | " + e.stack;
-    }
+      }
+    });
   }
-  window.__gbDebug = () => ({
-    currentNodesLen: currentNodes.length,
-    latestSnapshotDocs: latestSnapshot ? latestSnapshot.docs.length : null,
-    paginateError: window.__gbPaginateError || null
-  });
-  // 테스트 환경에서 탭이 백그라운드라 requestAnimationFrame이 안 돌 때 강제로 돌려보기 위한 것.
-  window.__gbForcePaginate = paginate;
 
   let layoutFrame = null;
   function scheduleLayoutFlow() {
