@@ -720,18 +720,27 @@ permalink: /board/
   }
 
   function paginate() {
-    measureReservedSpace();
-    pagesContainer.innerHTML = "";
-    let flow = newPage();
-    currentNodes.forEach((node) => {
-      flow.appendChild(node);
-      if (flow.scrollWidth > flow.clientWidth + 1) {
-        flow.removeChild(node);
-        flow = newPage();
+    try {
+      measureReservedSpace();
+      pagesContainer.innerHTML = "";
+      let flow = newPage();
+      currentNodes.forEach((node) => {
         flow.appendChild(node);
-      }
-    });
+        if (flow.scrollWidth > flow.clientWidth + 1) {
+          flow.removeChild(node);
+          flow = newPage();
+          flow.appendChild(node);
+        }
+      });
+    } catch (e) {
+      window.__gbPaginateError = e.message + " | " + e.stack;
+    }
   }
+  window.__gbDebug = () => ({
+    currentNodesLen: currentNodes.length,
+    latestSnapshotDocs: latestSnapshot ? latestSnapshot.docs.length : null,
+    paginateError: window.__gbPaginateError || null
+  });
 
   let layoutFrame = null;
   function scheduleLayoutFlow() {
