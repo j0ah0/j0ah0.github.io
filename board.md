@@ -33,9 +33,9 @@ permalink: /board/
 
 <style>
   /* 한 곳에서 조절:
-     --gb-who 이름 칸 너비 / --gb-measure 본문 폭(모든 글이 이 폭으로 통일) /
-     --gb-size 글자 크기 / --gb-lh 줄 간격 (세트 사이 간격도 이 한 줄 높이 기준) */
-  #gb-app { --gb-who: 84px; --gb-gap: 14px; --gb-measure: 460px; --gb-size: 14px; --gb-lh: 1.7; --gb-set-gap: 0.7em; --gb-item-gap: 2.2em; }
+     --gb-who 이름 칸 너비 / --gb-cols 단(칼럼) 수, --gb-colgap 단 사이 간격 /
+     --gb-size 글자 크기 / --gb-lh 줄 간격 */
+  #gb-app { --gb-who: 46px; --gb-gap: 10px; --gb-cols: 2; --gb-colgap: 36px; --gb-size: 12px; --gb-lh: 1.5; --gb-set-gap: 0.7em; --gb-item-gap: 0.9em; }
 
   .gb-auth { text-align: right; font-size: 12px; color: var(--muted); margin-bottom: 14px; min-height: 20px; }
   .gb-auth button { font: inherit; font-size: 12px; border: none; background: none; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
@@ -48,25 +48,25 @@ permalink: /board/
   .gb-lens-toggle:hover { color: var(--text); }
   .gb-lens-toggle .gb-lens-dot { display: inline-block; margin-right: 5px; font-size: 8px; vertical-align: 1px; }
 
-  /* ---- 대화 목록 ---- */
-  .gb-list,
-  .gb-form { max-width: calc(var(--gb-who) + var(--gb-gap) + var(--gb-measure)); }
-  .gb-list { list-style: none; margin: 0; padding: 0; }
+  /* ---- 대화 목록: 잡지처럼 여러 단으로 흐르게 ---- */
+  .gb-list { list-style: none; margin: 0; padding: 0; column-count: var(--gb-cols); column-gap: var(--gb-colgap); }
+  /* 작성 폼은 단 하나 너비만 차지 */
+  .gb-form { max-width: calc((100% - var(--gb-colgap) * (var(--gb-cols) - 1)) / var(--gb-cols)); }
   .gb-empty { color: var(--muted); font-size: var(--gb-size); }
 
   .gb-item,
   .gb-reply {
     position: relative;
     display: grid;
-    grid-template-columns: var(--gb-who) minmax(0, var(--gb-measure));
+    grid-template-columns: var(--gb-who) minmax(0, 1fr);
     column-gap: var(--gb-gap);
     font-size: var(--gb-size);
     line-height: var(--gb-lh);
   }
 
-  /* 세트(글 + 답글) 사이는 정확히 한 줄만큼 띄움 → 줄 격자가 안 깨짐 */
-  /* 다른 사람의 글(세트) 사이는 넓게, 같은 세트 안(글+답글)은 좁게 띄워서 구분이 잘 되게 */
-  .gb-item { margin: 0 0 var(--gb-item-gap); }
+  /* 다른 사람의 글(세트) 사이는 넓게, 같은 세트 안(글+답글)은 좁게 띄워서 구분이 잘 되게.
+     한 세트는 단 경계에서 쪼개지지 않고 통째로 다음 단으로 넘어간다. */
+  .gb-item { margin: 0 0 var(--gb-item-gap); break-inside: avoid; page-break-inside: avoid; }
 
   /* 이름은 한 줄 고정. 길면 말줄임, 마우스 올리면 전체 이름 */
   .gb-item-name,
@@ -129,7 +129,7 @@ permalink: /board/
   /* ---- 작성 폼: 마지막 화자 다음 줄 ---- */
   .gb-form {
     display: grid;
-    grid-template-columns: var(--gb-who) minmax(0, var(--gb-measure));
+    grid-template-columns: var(--gb-who) minmax(0, 1fr);
     align-items: start;
     column-gap: var(--gb-gap);
     margin-top: var(--gb-item-gap);
@@ -208,10 +208,13 @@ permalink: /board/
     .gb-lens { transition: none; }
   }
 
+  /* 단이 3열 이상 좁아지면 한 줄이 25자보다 짧아져 양쪽 정렬이 벌어져 보이므로 1단으로 접는다 */
+  @media (max-width: 1000px) {
+    #gb-app { --gb-cols: 1; }
+  }
+
   @media (max-width: 700px) {
     #gb-app { --gb-who: 64px; --gb-gap: 10px; --gb-size: 13px; }
-    .gb-list, .gb-form { max-width: none; }
-    .gb-item, .gb-reply, .gb-form { grid-template-columns: var(--gb-who) minmax(0, 1fr); }
     .gb-del-btn { right: 0; }
     .gb-list-tools { display: none; }
     .gb-lens { display: none; }
