@@ -39,7 +39,7 @@ permalink: /board/
      --gb-cols 단 수(고정 개수 — 있는 폭을 그만큼 등분, column-width처럼 폭 기준으로
      단을 늘리면 글 양이 적을 때 뒤쪽 단이 비어 보인다) / --gb-colgap 단 사이 간격 /
      --gb-size 글자 크기 / --gb-lh 줄 간격 */
-  #gb-app { --gb-edge: 28px; --gb-who: 66px; --gb-gap: 10px; --gb-cols: 3; --gb-colgap: 48px; --gb-size: 12px; --gb-lh: 1.35; --gb-item-gap: 1.9em; }
+  #gb-app { --gb-edge: 28px; --gb-who: 66px; --gb-gap: 10px; --gb-cols: 4; --gb-colgap: 40px; --gb-size: 12px; --gb-lh: 1.35; --gb-item-gap: 1.9em; }
 
   /* 테마의 가운데 정렬 컨테이너(.wrap, max-width 720px)를 뚫고 화면 양끝까지 채운다.
      margin만으로는 부모가 flex/grid일 때 자식이 shrink-to-fit으로 굳을 수 있어서
