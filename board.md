@@ -11,22 +11,24 @@ permalink: /board/
     <button type="button" id="gb-lens-toggle" class="gb-lens-toggle"></button>
   </div>
 
-  <ul id="gb-list" class="gb-list"></ul>
+  <div id="gb-flow" class="gb-flow">
+    <ul id="gb-list" class="gb-list"></ul>
 
-  <!-- 작성 폼 = 대화의 다음 화자 한 줄 -->
-  <form id="gb-form" class="gb-form">
-    <input type="text" id="gb-name" class="gb-form-name" placeholder="name" maxlength="20" required aria-label="닉네임">
-    <div class="gb-form-main">
-      <div class="gb-form-content-row">
-        <textarea id="gb-content" placeholder="content" maxlength="500" rows="1" required aria-label="내용"></textarea>
-        <button type="submit" id="gb-submit" aria-label="등록">→</button>
+    <!-- 작성 폼 = 마지막 글 바로 다음 줄에 이어지는 다음 화자 -->
+    <form id="gb-form" class="gb-form">
+      <input type="text" id="gb-name" class="gb-form-name" placeholder="name" maxlength="20" required aria-label="닉네임">
+      <div class="gb-form-main">
+        <div class="gb-form-content-row">
+          <textarea id="gb-content" placeholder="content" maxlength="500" rows="1" required aria-label="내용"></textarea>
+          <button type="submit" id="gb-submit" aria-label="등록">→</button>
+        </div>
+        <div class="gb-form-bottom">
+          <label class="gb-secret" title="비밀글"><input type="checkbox" id="gb-secret" aria-label="비밀글"><span aria-hidden="true">🔒</span><span class="gb-secret-label">secret?</span></label>
+          <input type="password" id="gb-pw" placeholder="password" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" aria-label="비밀번호 4자리 숫자" title="비밀번호 4자리 숫자">
+        </div>
       </div>
-      <div class="gb-form-bottom">
-        <label class="gb-secret" title="비밀글"><input type="checkbox" id="gb-secret" aria-label="비밀글"><span aria-hidden="true">🔒</span><span class="gb-secret-label">secret?</span></label>
-        <input type="password" id="gb-pw" placeholder="password" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" aria-label="비밀번호 4자리 숫자" title="비밀번호 4자리 숫자">
-      </div>
-    </div>
-  </form>
+    </form>
+  </div>
 </div>
 
 <div id="gb-lens" class="gb-lens"><div id="gb-lens-inner" class="gb-lens-inner"></div></div>
@@ -35,7 +37,7 @@ permalink: /board/
   /* 한 곳에서 조절:
      --gb-who 이름 칸 너비 / --gb-cols 단(칼럼) 수, --gb-colgap 단 사이 간격 /
      --gb-size 글자 크기 / --gb-lh 줄 간격 */
-  #gb-app { --gb-who: 46px; --gb-gap: 10px; --gb-cols: 2; --gb-colgap: 36px; --gb-size: 12px; --gb-lh: 1.5; --gb-set-gap: 0.7em; --gb-item-gap: 0.9em; }
+  #gb-app { --gb-who: 66px; --gb-gap: 10px; --gb-cols: 2; --gb-colgap: 48px; --gb-size: 12px; --gb-lh: 1.5; --gb-set-gap: 0.7em; --gb-item-gap: 0.9em; }
 
   .gb-auth { text-align: right; font-size: 12px; color: var(--muted); margin-bottom: 14px; min-height: 20px; }
   .gb-auth button { font: inherit; font-size: 12px; border: none; background: none; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
@@ -48,10 +50,11 @@ permalink: /board/
   .gb-lens-toggle:hover { color: var(--text); }
   .gb-lens-toggle .gb-lens-dot { display: inline-block; margin-right: 5px; font-size: 8px; vertical-align: 1px; }
 
-  /* ---- 대화 목록: 잡지처럼 여러 단으로 흐르게 ---- */
-  .gb-list { list-style: none; margin: 0; padding: 0; column-count: var(--gb-cols); column-gap: var(--gb-colgap); }
-  /* 작성 폼은 단 하나 너비만 차지 */
-  .gb-form { max-width: calc((100% - var(--gb-colgap) * (var(--gb-cols) - 1)) / var(--gb-cols)); }
+  /* ---- 대화 목록: 잡지처럼 여러 단으로 흐르게 ----
+     목록과 작성 폼을 .gb-flow 하나로 묶어서 같은 단 흐름을 타게 한다.
+     그래야 폼이 마지막 글 바로 다음 줄에 자연스럽게 이어진다. */
+  .gb-flow { column-count: var(--gb-cols); column-gap: var(--gb-colgap); column-fill: balance; }
+  .gb-list { list-style: none; margin: 0; padding: 0; }
   .gb-empty { color: var(--muted); font-size: var(--gb-size); }
 
   .gb-item,
@@ -135,6 +138,8 @@ permalink: /board/
     margin-top: var(--gb-item-gap);
     font-size: var(--gb-size);
     line-height: var(--gb-lh);
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
   .gb-form input,
   .gb-form textarea { padding: 0; border: none; background: transparent; font: inherit; color: var(--text); outline: none; }
