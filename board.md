@@ -17,16 +17,20 @@ permalink: /board/
        (아이메시지 같은 대화창 느낌). #gb-app의 자식으로 둬서 --gb-nav-space 같은
        CSS 변수는 그대로 물려받지만, 실제 화면 위치는 position:fixed로 따로 잡는다.
        관리자로 로그인하면 숨겨진다 - 방문자용 글쓰기라서 본인이 쓸 일이 없다. -->
-  <form id="gb-form" class="gb-form">
-    <input type="text" id="gb-name" class="gb-form-name" placeholder="name" maxlength="20" required aria-label="닉네임">
+  <form id="gb-form" class="gb-form" autocomplete="off">
+    <input type="text" id="gb-name" class="gb-form-name" placeholder="name" maxlength="20" required aria-label="닉네임" autocomplete="off">
     <div class="gb-form-main">
       <div class="gb-form-content-row">
-        <textarea id="gb-content" placeholder="content" maxlength="500" rows="1" required aria-label="내용"></textarea>
+        <textarea id="gb-content" placeholder="content" maxlength="500" rows="1" required aria-label="내용" autocomplete="off"></textarea>
         <button type="submit" id="gb-submit" aria-label="등록">→</button>
       </div>
       <div class="gb-form-bottom">
         <label class="gb-secret" title="비밀글"><input type="checkbox" id="gb-secret" aria-label="비밀글"><span aria-hidden="true">🔒</span><span class="gb-secret-label">secret?</span></label>
-        <input type="password" id="gb-pw" placeholder="password" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" aria-label="비밀번호 4자리 숫자" title="비밀번호 4자리 숫자">
+        <!-- type="password"를 쓰면 크롬이 이 form을 로그인/회원가입 폼으로 오인해서
+             이름/내용 칸에도 자동완성·저장된 비밀번호 제안을 띄운다. 실제로는 4자리
+             숫자 PIN일 뿐이라 type="text" + -webkit-text-security로 점(dot) 마스킹만
+             흉내내고, autocomplete="off"로 저장/자동완성 후보에서 완전히 뺀다. -->
+        <input type="text" id="gb-pw" class="gb-pin-mask" placeholder="password" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" autocomplete="off" aria-label="비밀번호 4자리 숫자" title="비밀번호 4자리 숫자">
       </div>
     </div>
   </form>
@@ -188,9 +192,13 @@ permalink: /board/
   .gb-form-content-row textarea { flex: 1; }
 
   .gb-form-bottom { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; margin-top: 6px; font-size: 11px; color: var(--muted); }
-  /* secret?가 켜졌을 때만 비밀번호 입력칸이 나타남 */
-  .gb-form-bottom input[type="password"] { display: none; width: 92px; font-size: 12px; letter-spacing: 0.04em; }
-  .gb-form-main:has(#gb-secret:checked) .gb-form-bottom input[type="password"] { display: inline-block; }
+  /* secret?가 켜졌을 때만 비밀번호 입력칸이 나타남 (더 이상 type="password"가 아니라
+     #gb-pw로 직접 지정 - 크롬 자동완성 오작동을 피하려고 type="text"로 바꿨다) */
+  #gb-pw { display: none; width: 92px; font-size: 12px; letter-spacing: 0.04em; }
+  .gb-form-main:has(#gb-secret:checked) #gb-pw { display: inline-block; }
+  /* 실제 계정 비밀번호가 아닌 4자리 PIN이라 type="password" 대신 이걸로 점(dot) 마스킹만
+     흉내낸다 - 크롬이 로그인 폼으로 오인해 이름/내용 칸까지 자동완성 뜨게 하던 걸 방지 */
+  .gb-pin-mask { -webkit-text-security: disc; }
 
   /* 비밀글: 체크박스 대신 자물쇠를 눌러 켜고 끔 (꺼지면 흐리게) */
   .gb-secret { position: relative; display: inline-flex; align-items: center; gap: 4px; font-size: 12px; cursor: pointer; filter: grayscale(1); opacity: 0.3; transition: opacity 120ms ease; }
@@ -678,7 +686,7 @@ permalink: /board/
         if (getFailCount(entryId) >= MAX_TRIES) {
           row.textContent = "🔒 비밀번호를 5회 이상 틀려서 더 이상 열람할 수 없습니다.";
         } else {
-          row.innerHTML = '<span title="비밀글">🔒</span><span class="gb-reply-dot" style="display:none;" title="답글이 있어요"></span><input type="password" maxlength="4" inputmode="numeric" placeholder="····" aria-label="비밀번호"><button type="button" aria-label="열기">→</button>';
+          row.innerHTML = '<span title="비밀글">🔒</span><span class="gb-reply-dot" style="display:none;" title="답글이 있어요"></span><input type="text" class="gb-pin-mask" maxlength="4" inputmode="numeric" placeholder="····" autocomplete="off" aria-label="비밀번호"><button type="button" aria-label="열기">→</button>';
           const input = row.querySelector("input");
           const btn = row.querySelector("button");
           const replyDot = row.querySelector(".gb-reply-dot");
