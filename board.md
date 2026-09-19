@@ -835,14 +835,14 @@ permalink: /board/
   window.addEventListener("orientationchange", () => {
     scheduleLayoutFlow();
   });
-  // 모바일 키보드가 열리고 닫힐 때도 visualViewport가 resize를 쏘는데, 그때마다
-  // scheduleLayoutFlow(=paginate, #gb-pages를 통째로 비웠다 다시 채움)까지 같이
-  // 돌리면 키보드 애니메이션 중에 불필요한 리플로우가 겹친다. 모바일은 어차피
-  // .gb-flow가 height:auto라 재배치할 게 없으니, 여기서는 입력창 위치만 옮긴다.
-  if (window.visualViewport) {
-    window.visualViewport.addEventListener("resize", positionFormAboveKeyboard);
-    window.visualViewport.addEventListener("scroll", positionFormAboveKeyboard);
-  }
+  // ---- 진단용으로 잠깐 꺼둠: 키보드에 맞춰 입력창을 옮기는 동작(visualViewport
+  // resize/scroll → positionFormAboveKeyboard) 자체가 흰 화면의 원인인지
+  // 분리해서 확인하는 중. 이 동안은 입력창이 키보드 위로 안 따라가고 원래
+  // 자리(코너 네비 위)에 그대로 있는다 - 원인 못 찾으면 다시 켤 것. ----
+  // if (window.visualViewport) {
+  //   window.visualViewport.addEventListener("resize", positionFormAboveKeyboard);
+  //   window.visualViewport.addEventListener("scroll", positionFormAboveKeyboard);
+  // }
 
   // ---- 모바일 키보드가 뜨면 고정 입력창이 키보드에 가려지는 문제 ----
   // window.innerHeight(레이아웃 뷰포트)는 키보드가 떠도 안 바뀌지만,
