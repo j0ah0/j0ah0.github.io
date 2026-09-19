@@ -4,10 +4,6 @@ title: Main
 permalink: /
 ---
 <div class="main-page">
-<h1>Main</h1>
-
-
-
 <p>Main - 지금 보고 있는 이 휑한 페이지</p>
 
 <p>I am - 저는 이런 사람입니다</p>
@@ -20,7 +16,13 @@ permalink: /
 </div>
 
 <style>
-  .main-page { margin-top: 22vh; }
-  .main-page h1 { font-size: 18px; font-weight: 400; margin: 0 0 18px; }
-  .main-page p { font-size: 14px; }
+  /* /i-am/ 프로필 글과 같은 폰트 (log-app-src/src/App.jsx FONT_URL 과도 동일) */
+  @font-face {
+    font-family: 'Inter';
+    src: url('https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-400-normal.woff') format('woff');
+    font-weight: 400; font-display: swap;
+  }
+
+  .main-page { margin-top: 22vh; font-family: 'Inter', -apple-system, "Helvetica Neue", Arial, sans-serif; }
+  .main-page p { font-size: 12px; line-height: 1.7; margin: 0 0 16px; }
 </style>
