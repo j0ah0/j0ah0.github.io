@@ -18,14 +18,15 @@ permalink: /board/
        CSS 변수는 그대로 물려받지만, 실제 화면 위치는 position:fixed로 따로 잡는다.
        관리자로 로그인하면 숨겨진다 - 방문자용 글쓰기라서 본인이 쓸 일이 없다. -->
   <form id="gb-form" class="gb-form" autocomplete="off">
-    <!-- 진단용으로 잠깐 뺌: readonly + onfocus="removeAttribute" 트릭(크롬 자동완성
-         방지용, board.md JS 변경 이력 참고)이 모바일 흰 화면의 원인인지 분리
-         확인 중. 이 동안은 크롬에서 자동완성이 다시 뜰 수 있음 - 원인 못
-         찾으면 다시 넣을 것. -->
-    <input type="text" id="gb-name" class="gb-form-name" placeholder="name" maxlength="20" required aria-label="닉네임" autocomplete="off">
+    <!-- autocomplete="off" 만으로는 크롬이 "name" 같은 흔한 필드는 계속 무시하고
+         자동완성 후보창을 띄운다. readonly로 시작해서 실제로 포커스가 들어온
+         순간에만 편집 가능하게 풀어주면 - 크롬이 페이지 로드 시점에 읽기전용으로
+         본 필드는 자동완성 대상에서 아예 제외한다.
+         (진단 결과 이 트릭은 흰 화면의 원인이 아닌 것으로 확인돼서 복원함.) -->
+    <input type="text" id="gb-name" class="gb-form-name" placeholder="name" maxlength="20" required aria-label="닉네임" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')">
     <div class="gb-form-main">
       <div class="gb-form-content-row">
-        <textarea id="gb-content" placeholder="content" maxlength="500" rows="1" required aria-label="내용" autocomplete="off"></textarea>
+        <textarea id="gb-content" placeholder="content" maxlength="500" rows="1" required aria-label="내용" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')"></textarea>
         <button type="submit" id="gb-submit" aria-label="등록">→</button>
       </div>
       <div class="gb-form-bottom">
@@ -267,11 +268,13 @@ permalink: /board/
       padding-bottom: calc(230px + env(safe-area-inset-bottom, 0px));
     }
 
-    /* 진단용으로 잠깐 꺼둠: 하단 페이드 레이어(fixed + 매 키보드 이벤트마다
-       재합성)가 흰 화면의 원인인지 분리해서 확인하는 중. 원인 못 찾으면
-       다시 켤 것. */
+    /* default.html의 페이드 그라데이션은 코너 네비 기준(90px)으로 잡혀 있는데,
+       방명록은 관리자가 아닐 땐 그 위에 입력창까지 떠 있어서 가릴 영역이 더 크다.
+       이 페이지에서만 더 큰 값으로 덮어쓴다.
+       (진단 결과 이 레이어는 흰 화면의 원인이 아닌 것으로 확인돼서 복원함.) */
     body:has(#gb-app)::after {
-      display: none !important;
+      height: 220px;
+      background: linear-gradient(to bottom, rgba(253,253,253,0) 0%, var(--bg) 45%);
     }
   }
 </style>
@@ -411,38 +414,11 @@ permalink: /board/
   const secretCheckbox = document.getElementById("gb-secret");
   const pwInput = document.getElementById("gb-code");
 
-  // Safari의 유명한 버그: position:fixed 요소 안의 입력칸에 포커스가 가면,
-  // 이미 항상 화면에 보이는데도 사파리가 "보이게 스크롤"하려다가 그 요소의
-  // (fixed가 적용되기 전) 문서 흐름상 위치 - 즉 방명록 글이 잔뜩 쌓인 한참
-  // 아래쪽 - 로 페이지를 확 스크롤시켜버려서 화면이 통째로 빈 배경색만
-  // 보이게 된다.
-  //
-  // focus 이벤트가 뜰 때는 이미 스크롤이 튄 뒤일 수 있어서(같은 틱에 네이티브
-  // 스크롤이 먼저 실행될 수 있다), 그보다 먼저 오는 touchstart/mousedown
-  // 시점에 원래 스크롤 위치를 저장해두고, 그 뒤 약 600ms 동안 계속
-  // 그 자리로 되돌린다 - 사파리가 정확히 언제 스크롤을 튀기는지 알 수
-  // 없어서 한두 프레임이 아니라 여러 번에 걸쳐 밀어붙인다.
-  let lockedScrollY = null;
-  let lockScrollUntil = 0;
-  function rememberScrollBeforeFocus() {
-    lockedScrollY = window.scrollY;
-    lockScrollUntil = Date.now() + 600;
-    requestAnimationFrame(reassertScroll);
-  }
-  function reassertScroll() {
-    if (lockedScrollY === null) return;
-    if (window.scrollY !== lockedScrollY) window.scrollTo(0, lockedScrollY);
-    if (Date.now() < lockScrollUntil) {
-      requestAnimationFrame(reassertScroll);
-    } else {
-      lockedScrollY = null;
-    }
-  }
-  form.querySelectorAll("input, textarea").forEach((el) => {
-    el.addEventListener("touchstart", rememberScrollBeforeFocus, { passive: true });
-    el.addEventListener("mousedown", rememberScrollBeforeFocus);
-    el.addEventListener("focus", rememberScrollBeforeFocus);
-  });
+  // (진단용으로 넣었던 스크롤 강제 고정 코드 - touchstart/focus마다 스크롤
+  // 위치를 저장해뒀다가 600ms 동안 계속 되돌리던 것 - 는 삭제함. 사파리가
+  // 키보드 때문에 화면을 재배치하려는 동안 이 코드가 계속 "아니 원래대로"
+  // 하고 맞서 싸운 게 오히려 흰 화면/깜빡임의 원인이었을 가능성이 있어서,
+  // 원인이 맞는지 확인하는 중.)
 
   // textarea가 늘어나거나 줄어들면 입력창 높이가 바뀌어 페이지가 다시 계산돼야 한다.
   mainTextarea.addEventListener("input", () => {
