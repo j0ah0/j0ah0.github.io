@@ -801,14 +801,12 @@ permalink: /board/
   window.addEventListener("orientationchange", () => {
     scheduleLayoutFlow();
   });
-  // iOS Safari는 주소창/하단 바가 스크롤 중 접혔다 펴지면서 실제 보이는 높이가
-  // 바뀌는데, 이때 window의 resize가 항상 발생하는 건 아니라서 visualViewport
-  // 쪽 resize도 같이 듣는다 - 안 그러면 네비/입력창 여백 계산이 낡은 값으로 남는다.
+  // 모바일 키보드가 열리고 닫힐 때도 visualViewport가 resize를 쏘는데, 그때마다
+  // scheduleLayoutFlow(=paginate, #gb-pages를 통째로 비웠다 다시 채움)까지 같이
+  // 돌리면 키보드 애니메이션 중에 불필요한 리플로우가 겹친다. 모바일은 어차피
+  // .gb-flow가 height:auto라 재배치할 게 없으니, 여기서는 입력창 위치만 옮긴다.
   if (window.visualViewport) {
-    window.visualViewport.addEventListener("resize", () => {
-      scheduleLayoutFlow();
-      positionFormAboveKeyboard();
-    });
+    window.visualViewport.addEventListener("resize", positionFormAboveKeyboard);
     window.visualViewport.addEventListener("scroll", positionFormAboveKeyboard);
   }
 
