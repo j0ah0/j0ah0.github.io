@@ -39,7 +39,7 @@ permalink: /board/
      --gb-size 글자 크기 / --gb-lh 줄 간격 /
      --gb-nav-space, --gb-form-space는 안전한 기본값일 뿐 - JS(measureReservedSpace)가
      실제 코너 네비 높이와 입력창 높이를 매번 측정해서 정확한 값으로 덮어쓴다. */
-  #gb-app { --gb-edge: 28px; --gb-who: 66px; --gb-gap: 10px; --gb-cols: 4; --gb-colgap: 40px; --gb-size: 12px; --gb-lh: 1.35; --gb-item-gap: 1.9em; --gb-nav-space: 60px; --gb-form-space: 90px; --gb-top-space: 40px; }
+  #gb-app { --gb-edge: 28px; --gb-who: 66px; --gb-gap: 10px; --gb-cols: 4; --gb-colgap: 40px; --gb-size: 12px; --gb-lh: 1.35; --gb-item-gap: 1.5em; --gb-nav-space: 60px; --gb-form-space: 90px; --gb-top-space: 40px; }
 
   /* 테마의 가운데 정렬 컨테이너(.wrap, max-width 720px)를 뚫고 화면 양끝까지 채운다.
      margin만으로는 부모가 flex/grid일 때 자식이 shrink-to-fit으로 굳을 수 있어서
