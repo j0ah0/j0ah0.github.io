@@ -78,7 +78,7 @@ permalink: /board/
   /* ---- 대화 목록: 신문/잡지 지면처럼, 화면 높이만큼을 한 "페이지"로 써서
      단을 위→아래로 다 채운 뒤 다음 단으로, 페이지가 다 차면 다음 페이지로 ----
      .gb-flow는 JS(paginate)가 필요한 만큼 여러 개 만들어 #gb-pages 아래에 쌓는다.
-     창을 좁혀도 --gb-cols는 4로 고정 (700px 미만 모바일에서만 1단으로 바뀐다). */
+     창이 1000px 이상일 때만 4단, 그보다 좁으면 2단, 700px 미만 모바일은 1단. */
   .gb-flow {
     column-count: var(--gb-cols);
     column-gap: var(--gb-colgap);
@@ -238,7 +238,14 @@ permalink: /board/
     letter-spacing: var(--gb-ls, normal);
   }
 
-  /* 데스크톱은 창을 좁혀도 4단을 유지한다 (700px 미만 모바일에서만 1단으로 바뀜) */
+  /* 창을 줄인다고 4단을 억지로 유지하면 단이 너무 좁아져서 답답해 보인다.
+     그래서 창이 어느 정도 넓을 때만(1000px 이상) 4단이 되고, 그보다 좁으면
+     일단 2단으로, 700px 미만 모바일에서는 1단으로 줄어든다 - 화면 크기에
+     따라 매끄럽게 늘어나기보다 몇 단계로 뚝뚝 끊어지는 쪽을 택했다. */
+  @media (max-width: 1000px) {
+    #gb-app { --gb-cols: 2; }
+  }
+
   @media (max-width: 700px) {
     #gb-app { --gb-edge: 16px; --gb-who: 64px; --gb-gap: 10px; --gb-size: 13px; --gb-cols: 1; }
 
