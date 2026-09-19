@@ -161,7 +161,9 @@ permalink: /board/
     left: var(--gb-edge);
     right: var(--gb-edge);
     bottom: var(--gb-nav-space);
-    z-index: 200;
+    /* default.html이 모바일에서 코너 네비 위에 깔아주는 페이드 그라데이션(z-index:999)
+       보다 높아야, 그 반투명 배경에 입력창 글씨가 흐려 보이지 않는다. */
+    z-index: 1001;
     display: grid;
     grid-template-columns: var(--gb-who) minmax(0, 1fr);
     align-items: start;
@@ -235,8 +237,18 @@ permalink: /board/
       /* 고정 입력창 + 코너 네비에 마지막 글이 가려지지 않도록 바닥 여백을 확보한다.
          JS가 매번 정확히 재는 --gb-form-space/--gb-nav-space에 기대지 않고, 이 값
          하나는 넉넉한 고정값으로 박아둔다 - 계산이 어떤 이유로든 틀어져도(측정 시점
-         문제, 느린 기기 등) 절대 네비와 안 겹치도록 하는 최후의 안전장치다. */
-      padding-bottom: calc(160px + env(safe-area-inset-bottom, 0px));
+         문제, 느린 기기 등) 절대 네비와 안 겹치도록 하는 최후의 안전장치다.
+         관리자가 아닐 땐 입력창(name/content/secret)까지 화면 하단에 같이 떠
+         있어서 네비만 있을 때보다 훨씬 더 넓게 잡아야 한다. */
+      padding-bottom: calc(230px + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* default.html의 페이드 그라데이션은 코너 네비 기준(90px)으로 잡혀 있는데,
+       방명록은 관리자가 아닐 땐 그 위에 입력창까지 떠 있어서 가릴 영역이 더 크다.
+       이 페이지에서만 더 큰 값으로 덮어쓴다. */
+    body:has(#gb-app)::after {
+      height: 220px;
+      background: linear-gradient(to bottom, rgba(253,253,253,0) 0%, var(--bg) 45%);
     }
   }
 </style>
