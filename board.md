@@ -18,10 +18,14 @@ permalink: /board/
        CSS 변수는 그대로 물려받지만, 실제 화면 위치는 position:fixed로 따로 잡는다.
        관리자로 로그인하면 숨겨진다 - 방문자용 글쓰기라서 본인이 쓸 일이 없다. -->
   <form id="gb-form" class="gb-form" autocomplete="off">
-    <input type="text" id="gb-name" class="gb-form-name" placeholder="name" maxlength="20" required aria-label="닉네임" autocomplete="off">
+    <!-- autocomplete="off" 만으로는 크롬이 "name" 같은 흔한 필드는 계속 무시하고
+         자동완성 후보창을 띄운다. readonly로 시작해서 실제로 포커스가 들어온
+         순간에만 편집 가능하게 풀어주면 - 크롬이 페이지 로드 시점에 읽기전용으로
+         본 필드는 자동완성 대상에서 아예 제외한다. -->
+    <input type="text" id="gb-name" class="gb-form-name" placeholder="name" maxlength="20" required aria-label="닉네임" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')">
     <div class="gb-form-main">
       <div class="gb-form-content-row">
-        <textarea id="gb-content" placeholder="content" maxlength="500" rows="1" required aria-label="내용" autocomplete="off"></textarea>
+        <textarea id="gb-content" placeholder="content" maxlength="500" rows="1" required aria-label="내용" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')"></textarea>
         <button type="submit" id="gb-submit" aria-label="등록">→</button>
       </div>
       <div class="gb-form-bottom">
