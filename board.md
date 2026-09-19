@@ -378,6 +378,20 @@ permalink: /board/
 
   // ---- 관리자 로그인 (구글) ----
   let isOwner = false;
+  // Firebase Auth가 이전 로그인 세션을 복원하는 데는(특히 관리자 본인 기기에서)
+  // 약간 시간이 걸리는데, 그동안 Firestore 글 목록이 먼저 도착해버리면 일단
+  // "방문자 화면"으로 한 번 그렸다가 로그인 확인되는 순간 "관리자 화면"으로
+  // 다시 그리는 이중 렌더링(=깜빡이는 로딩처럼 보임)이 생긴다. 로그인 상태가
+  // 처음 한 번 확정될 때까지는 목록을 그리지 않고 기다렸다가 한 번에 맞는
+  // 화면으로 그린다. 네트워크가 느려서 확정이 안 오는 경우를 대비해 800ms
+  // 넘으면 그냥 방문자로 간주하고 진행한다(무한정 빈 화면으로 두지 않기 위해).
+  let authReady = false;
+  const authReadyTimer = setTimeout(() => {
+    if (authReady) return;
+    authReady = true;
+    if (latestSnapshot) renderList(latestSnapshot);
+    scheduleLayoutFlow();
+  }, 800);
   const authBar = document.getElementById("gb-auth");
 
   function renderAuthBar(user) {
@@ -402,9 +416,11 @@ permalink: /board/
   renderAuthBar(null);
 
   onAuthStateChanged(auth, (user) => {
+    clearTimeout(authReadyTimer);
     isOwner = !!(user && user.email === OWNER_EMAIL);
     document.body.classList.toggle("gb-is-owner", isOwner);
     renderAuthBar(user);
+    authReady = true;
     if (latestSnapshot) renderList(latestSnapshot);
     scheduleLayoutFlow();
   });
@@ -795,6 +811,9 @@ permalink: /board/
   const q = query(gbRef, orderBy("createdAt", "asc"));
   onSnapshot(q, (snapshot) => {
     latestSnapshot = snapshot;
+    // 로그인 상태가 아직 확정 전이면 여기서는 그리지 않는다 - authReady가 될 때
+    // (onAuthStateChanged 또는 800ms 타임아웃) latestSnapshot을 보고 그때 그린다.
+    if (!authReady) return;
     renderList(snapshot);
     scheduleLayoutFlow();
   }, (err) => {
