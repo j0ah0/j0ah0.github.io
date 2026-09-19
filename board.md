@@ -267,12 +267,11 @@ permalink: /board/
       padding-bottom: calc(230px + env(safe-area-inset-bottom, 0px));
     }
 
-    /* default.html의 페이드 그라데이션은 코너 네비 기준(90px)으로 잡혀 있는데,
-       방명록은 관리자가 아닐 땐 그 위에 입력창까지 떠 있어서 가릴 영역이 더 크다.
-       이 페이지에서만 더 큰 값으로 덮어쓴다. */
+    /* 진단용으로 잠깐 꺼둠: 하단 페이드 레이어(fixed + 매 키보드 이벤트마다
+       재합성)가 흰 화면의 원인인지 분리해서 확인하는 중. 원인 못 찾으면
+       다시 켤 것. */
     body:has(#gb-app)::after {
-      height: 220px;
-      background: linear-gradient(to bottom, rgba(253,253,253,0) 0%, var(--bg) 45%);
+      display: none !important;
     }
   }
 </style>
@@ -835,14 +834,12 @@ permalink: /board/
   window.addEventListener("orientationchange", () => {
     scheduleLayoutFlow();
   });
-  // ---- 진단용으로 잠깐 꺼둠: 키보드에 맞춰 입력창을 옮기는 동작(visualViewport
-  // resize/scroll → positionFormAboveKeyboard) 자체가 흰 화면의 원인인지
-  // 분리해서 확인하는 중. 이 동안은 입력창이 키보드 위로 안 따라가고 원래
-  // 자리(코너 네비 위)에 그대로 있는다 - 원인 못 찾으면 다시 켤 것. ----
-  // if (window.visualViewport) {
-  //   window.visualViewport.addEventListener("resize", positionFormAboveKeyboard);
-  //   window.visualViewport.addEventListener("scroll", positionFormAboveKeyboard);
-  // }
+  // 진단 결과 키보드 따라가기 자체는 흰 화면의 원인이 아닌 것으로 확인돼서
+  // 다시 켠다 (모바일은 height:auto라 repaginate는 여전히 안 돌린다).
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", positionFormAboveKeyboard);
+    window.visualViewport.addEventListener("scroll", positionFormAboveKeyboard);
+  }
 
   // ---- 모바일 키보드가 뜨면 고정 입력창이 키보드에 가려지는 문제 ----
   // window.innerHeight(레이아웃 뷰포트)는 키보드가 떠도 안 바뀌지만,
