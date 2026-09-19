@@ -158,20 +158,10 @@ permalink: /i-am/
     line-height: 1.85;
     color: var(--ink);
     margin: 0 0 16px;
-    opacity: 0; transform: translateY(10px);
-    transition: opacity .5s ease, transform .5s ease;
   }
   .archive-detail-text p {
     font-size: 16px; line-height: 1.85; color: var(--ink); margin: 0 0 16px;
-    opacity: 0; transform: translateY(10px);
-    transition: opacity .5s ease, transform .5s ease;
   }
-  .archive-detail.is-visible .archive-detail-text h2,
-  .archive-detail.is-visible .archive-detail-text p {
-    opacity: 1; transform: translateY(0);
-  }
-  .archive-detail-text p:nth-of-type(2) { transition-delay: .08s; }
-  .archive-detail-text p:nth-of-type(3) { transition-delay: .16s; }
 
   @media (max-width: 860px) {
     .archive { padding: 88px 24px calc(160px + env(safe-area-inset-bottom, 0px)); }
