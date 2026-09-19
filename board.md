@@ -232,9 +232,11 @@ permalink: /board/
     .gb-flow {
       height: auto;
       overflow: visible;
-      /* 고정 입력창 + 코너 네비(+ 노치 폰의 하단 안전영역)에 마지막 글이
-         가려지지 않도록 바닥 여백을 넉넉히 확보한다. */
-      padding-bottom: calc(var(--gb-form-space) + var(--gb-nav-space) + env(safe-area-inset-bottom, 0px) + 28px);
+      /* 고정 입력창 + 코너 네비에 마지막 글이 가려지지 않도록 바닥 여백을 확보한다.
+         JS가 매번 정확히 재는 --gb-form-space/--gb-nav-space에 기대지 않고, 이 값
+         하나는 넉넉한 고정값으로 박아둔다 - 계산이 어떤 이유로든 틀어져도(측정 시점
+         문제, 느린 기기 등) 절대 네비와 안 겹치도록 하는 최후의 안전장치다. */
+      padding-bottom: calc(160px + env(safe-area-inset-bottom, 0px));
     }
   }
 </style>
