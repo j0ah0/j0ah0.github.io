@@ -411,16 +411,6 @@ permalink: /board/
   const mainTextarea = document.getElementById("gb-content");
   const secretCheckbox = document.getElementById("gb-secret");
   const pwInput = document.getElementById("gb-code");
-  // 어떤 입력칸에 포커스가 가면(키보드가 뜨기 시작하면) 바로 한 번, 그리고 키보드
-  // 애니메이션이 끝날 시점에 한 번 더 위치를 맞춘다 - visualViewport 이벤트가
-  // 늦게 오는 기기에 대한 보험.
-  form.addEventListener("focusin", () => {
-    positionFormAboveKeyboard();
-    setTimeout(positionFormAboveKeyboard, 350);
-  });
-  form.addEventListener("focusout", () => {
-    setTimeout(positionFormAboveKeyboard, 100);
-  });
   // textarea가 늘어나거나 줄어들면 입력창 높이가 바뀌어 페이지가 다시 계산돼야 한다.
   mainTextarea.addEventListener("input", () => {
     autoGrow(mainTextarea, 240);
