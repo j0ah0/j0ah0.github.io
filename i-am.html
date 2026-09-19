@@ -185,7 +185,7 @@ permalink: /i-am/
     /* Shrink everything so a detail fits in one screen without scrolling
        where possible, rather than just reducing the scroll distance. */
     .archive-detail { flex-direction: column; align-items: flex-start; justify-content: flex-start;
-      padding: 52px 20px 28px; overflow-y: auto; }
+      padding: 52px 20px 64px; overflow-y: auto; }
     /* flex-basis (the "0 0 <n>" part) sets the flex item's size along the
        main axis, which flex-direction: column just switched to vertical —
        so it now sizes height, not width. Width needs its own value or the
@@ -204,6 +204,19 @@ permalink: /i-am/
   .corner-nav a { color: #141414; text-decoration: none; font-size: 14px; margin-left: 18px; }
   .corner-nav a:first-child { margin-left: 0; }
   .corner-nav a:hover { color: #8a8a86; }
+
+  /* 하단 네비게이션으로 내려가는 콘텐츠(그리드 이미지, 상세 텍스트)를
+     자연스럽게 페이드아웃 — 네비(z-index:1000)보다 한 단계 낮게 두어
+     네비 글자는 항상 선명하게, 그 아래로 내려오는 콘텐츠만 흐려짐. */
+  body::after {
+    content: "";
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    height: 90px;
+    z-index: 999;
+    pointer-events: none;
+    background: linear-gradient(to bottom, transparent 0%, var(--bg) 100%);
+  }
 </style>
 </head>
 <body>
