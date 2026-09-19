@@ -114,24 +114,6 @@ permalink: /i-am/
     transform: scale(1.025);
   }
 
-  /* clicked item lifts out of flow into a fixed "ghost" overlay; the grid
-     item underneath just goes invisible so siblings never reflow */
-  .archive-item.is-source { opacity: 0 !important; animation: none; }
-
-  .archive-ghost {
-    position: fixed; z-index: 40; top: 0; left: 0;
-    will-change: transform;
-    pointer-events: none;
-  }
-  .archive-ghost .archive-photo {
-    /* The grid gives every photo a fixed height; the ghost overrides that
-       back to aspect-ratio-driven sizing so the FLIP width animation (see
-       openItem/closeDetail) isn't fighting a fixed height. */
-    height: auto; width: 100%; max-width: none;
-    transition: none; cursor: pointer; pointer-events: auto;
-  }
-  .archive-ghost .archive-num { position: absolute; top: -22px; left: 1px; margin: 0; }
-
   .archive-detail {
     position: fixed; z-index: 30; inset: 0;
     display: flex; align-items: center; justify-content: flex-start;
@@ -160,7 +142,12 @@ permalink: /i-am/
   .archive-detail-close::before { transform: translate(-50%, -50%) rotate(45deg); }
   .archive-detail-close::after { transform: translate(-50%, -50%) rotate(-45deg); }
   .archive-detail.is-visible .archive-detail-close { pointer-events: auto; }
-  .archive-detail-spacer { flex: 0 0 clamp(180px, 24vw, 280px); }
+  .archive-detail-spacer { position: relative; flex: 0 0 clamp(180px, 24vw, 280px); }
+  .archive-detail-spacer .archive-num { position: absolute; top: -22px; left: 1px; margin: 0; }
+  .archive-detail-photo {
+    display: block; width: 100%; height: auto; max-height: 78vh;
+    object-fit: contain;
+  }
   .archive-detail-text {
     max-width: 46ch;
     margin-left: clamp(32px, 6vw, 72px);
@@ -205,7 +192,7 @@ permalink: /i-am/
     /* flex-basis (the "0 0 <n>" part) sets the flex item's size along the
        main axis, which flex-direction: column just switched to vertical —
        so it now sizes height, not width. Width needs its own value or the
-       spacer (and the ghost photo sized from it) collapses to 0 wide. */
+       spacer (and the photo inside it) collapses to 0 wide. */
     .archive-detail-spacer { flex: 0 0 min(34vw, 150px); width: min(34vw, 150px); }
     .archive-detail-text { margin-left: 0; margin-top: 14px; max-width: 100%; }
     .archive-detail-text h2 { font-size: 14px; margin-bottom: 10px; }
@@ -261,7 +248,10 @@ permalink: /i-am/
 
 <div class="archive-detail" id="archiveDetail">
   <button type="button" class="archive-detail-close" id="detailClose" aria-label="닫기"></button>
-  <div class="archive-detail-spacer"></div>
+  <div class="archive-detail-spacer">
+    <span class="archive-num" id="detailNum"></span>
+    <img class="archive-detail-photo" id="detailPhoto" alt="" />
+  </div>
   <div class="archive-detail-text">
     <h2 id="detailTitle"></h2>
     <div id="detailBody"></div>
@@ -317,10 +307,12 @@ const ITEMS = [
 const archiveEl = document.querySelector('.archive');
 const grid = document.getElementById('archiveGrid');
 const detail = document.getElementById('archiveDetail');
+const detailNum = document.getElementById('detailNum');
+const detailPhoto = document.getElementById('detailPhoto');
 const detailTitle = document.getElementById('detailTitle');
 const detailBody = document.getElementById('detailBody');
 
-let openState = null; // { item, sourceEl, ghostEl }
+let openState = null; // the currently open item, or null
 
 const BASE_PHOTO_HEIGHT = 170; // px, matches .archive-photo's default height
 
@@ -338,80 +330,38 @@ ITEMS.forEach((item) => {
   }
   el.querySelector('.archive-photo-btn').addEventListener('click', (e) => {
     e.stopPropagation(); // don't let this same click reach the document-level closer below
-    openItem(item, el);
+    openItem(item);
   });
   grid.appendChild(el);
 });
 
-function openItem(item, sourceEl) {
+// Simple crossfade, no photo-flies-across-the-screen animation: the grid
+// fades out (.is-focused), the detail panel fades in with its own static
+// photo already in place (.archive-detail's opacity transition + the text's
+// own fade-in handle the motion, nothing more elaborate than that).
+function openItem(item) {
   if (openState) return;
-  const photo = sourceEl.querySelector('.archive-photo');
-  const first = photo.getBoundingClientRect();
-
-  sourceEl.classList.add('is-source');
   archiveEl.classList.add('is-focused');
-
-  // Build a fixed-position ghost that starts exactly where the real photo was.
-  const ghost = document.createElement('div');
-  ghost.className = 'archive-ghost';
-  ghost.innerHTML = `
-    <span class="archive-num">${item.idx}</span>
-    <img class="archive-photo" src="${item.img}" alt="${item.alt}" style="aspect-ratio:${first.width}/${first.height};" />
-  `;
-  document.body.appendChild(ghost);
-
-  ghost.style.width = first.width + 'px';
-  ghost.style.transform = `translate(${first.left}px, ${first.top}px)`;
-
-  requestAnimationFrame(() => {
-    // Target: .archive-detail-spacer's column, vertically centered on the
-    // photo's own (post-scale) height — the spacer itself is zero-height,
-    // so its rect.top is already the vertical center point, not a top edge.
-    const spacer = detail.querySelector('.archive-detail-spacer');
-    detail.classList.add('is-visible');
-    const target = spacer.getBoundingClientRect();
-    const maxTargetHeight = window.innerHeight * 0.78;
-    let targetWidth = target.width;
-    let targetHeight = targetWidth * (first.height / first.width);
-    if (targetHeight > maxTargetHeight) {
-      targetHeight = maxTargetHeight;
-      targetWidth = targetHeight * (first.width / first.height);
-    }
-    const targetTop = target.top - targetHeight / 2;
-    ghost.style.transition = 'transform .55s cubic-bezier(.22,.61,.36,1), width .55s cubic-bezier(.22,.61,.36,1)';
-    ghost.style.width = targetWidth + 'px';
-    ghost.style.transform = `translate(${target.left}px, ${targetTop}px)`;
-  });
-
+  detailNum.textContent = item.idx;
+  detailPhoto.src = item.img;
+  detailPhoto.alt = item.alt;
   detailTitle.textContent = item.title;
   detailBody.innerHTML = item.paras.map(p => `<p>${p}</p>`).join('');
-
-  openState = { item, sourceEl, ghost };
+  detail.classList.add('is-visible');
+  openState = item;
 }
 
 function closeDetail() {
   if (!openState) return;
-  const { sourceEl, ghost } = openState;
-  const first = sourceEl.querySelector('.archive-photo').getBoundingClientRect();
-
   detail.classList.remove('is-visible');
   archiveEl.classList.remove('is-focused');
-  ghost.style.transform = `translate(${first.left}px, ${first.top}px)`;
-  ghost.style.width = first.width + 'px';
-
-  const cleanup = () => {
-    sourceEl.classList.remove('is-source');
-    ghost.remove();
-    openState = null;
-  };
-  ghost.addEventListener('transitionend', cleanup, { once: true });
-  setTimeout(cleanup, 650); // safety net if transitionend doesn't fire
+  openState = null;
 }
 
 // Tapping anywhere while a detail is open goes back — including on the
-// ghost photo (which lives outside #archiveDetail, appended to <body>),
-// its number label, the close button, or empty space. Only the corner nav
-// links are exempt so they still navigate normally instead of just closing.
+// photo, its number label, the close button, or empty space. Only the
+// corner nav links are exempt so they still navigate normally instead of
+// just closing.
 //
 // This is pointerdown/pointerup based rather than `click`, because mobile
 // browsers silently suppress `click` whenever the touch moved even a
