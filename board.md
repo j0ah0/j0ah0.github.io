@@ -223,13 +223,18 @@ permalink: /board/
   @media (max-width: 700px) {
     #gb-app { --gb-edge: 16px; --gb-who: 64px; --gb-gap: 10px; --gb-size: 13px; --gb-cols: 1; }
 
+    /* 노치가 있는 폰의 하단 제스처 영역까지 고려해서 입력창을 코너 네비보다
+       조금 더 띄운다 (네비 자체는 건드리지 않고, 방명록 쪽에서만 여유를 둔다). */
+    .gb-form { bottom: calc(var(--gb-nav-space) + env(safe-area-inset-bottom, 0px)); }
+
     /* 모바일에서는 "지면" 개념을 풀어서 그냥 계속 이어지는 세로 스크롤로 만든다.
        height 제한과 overflow:hidden을 없애면 --gb-cols:1이라 자연스럽게 한 흐름이 된다. */
     .gb-flow {
       height: auto;
       overflow: visible;
-      /* 고정 입력창 + 코너 네비에 마지막 글이 가려지지 않도록 바닥 여백 확보 */
-      padding-bottom: calc(var(--gb-form-space) + var(--gb-nav-space) + 20px);
+      /* 고정 입력창 + 코너 네비(+ 노치 폰의 하단 안전영역)에 마지막 글이
+         가려지지 않도록 바닥 여백을 넉넉히 확보한다. */
+      padding-bottom: calc(var(--gb-form-space) + var(--gb-nav-space) + env(safe-area-inset-bottom, 0px) + 28px);
     }
   }
 </style>
@@ -755,4 +760,15 @@ permalink: /board/
   window.addEventListener("resize", () => {
     scheduleLayoutFlow();
   });
+  window.addEventListener("orientationchange", () => {
+    scheduleLayoutFlow();
+  });
+  // iOS Safari는 주소창/하단 바가 스크롤 중 접혔다 펴지면서 실제 보이는 높이가
+  // 바뀌는데, 이때 window의 resize가 항상 발생하는 건 아니라서 visualViewport
+  // 쪽 resize도 같이 듣는다 - 안 그러면 네비/입력창 여백 계산이 낡은 값으로 남는다.
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", () => {
+      scheduleLayoutFlow();
+    });
+  }
 </script>
