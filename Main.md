@@ -24,5 +24,5 @@ permalink: /
   }
 
   .main-page { margin-top: 22vh; font-family: 'Inter', -apple-system, "Helvetica Neue", Arial, sans-serif; }
-  .main-page p { font-size: 12px; line-height: 1.7; margin: 0 0 16px; }
+  .main-page p { font-size: 13px; line-height: 1.7; margin: 0 0 16px; }
 </style>
