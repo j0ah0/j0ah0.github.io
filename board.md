@@ -416,18 +416,33 @@ permalink: /board/
   // 이미 항상 화면에 보이는데도 사파리가 "보이게 스크롤"하려다가 그 요소의
   // (fixed가 적용되기 전) 문서 흐름상 위치 - 즉 방명록 글이 잔뜩 쌓인 한참
   // 아래쪽 - 로 페이지를 확 스크롤시켜버려서 화면이 통째로 빈 배경색만
-  // 보이게 된다. 포커스가 들어오는 순간의 스크롤 위치를 기억해뒀다가,
-  // 사파리가 제멋대로 스크롤한 직후(다음 몇 프레임 안)에 원래 자리로
-  // 강제로 되돌린다.
-  function lockScrollAgainstFixedFocusJump() {
-    const y = window.scrollY;
-    requestAnimationFrame(() => {
-      window.scrollTo(0, y);
-      requestAnimationFrame(() => window.scrollTo(0, y));
-    });
+  // 보이게 된다.
+  //
+  // focus 이벤트가 뜰 때는 이미 스크롤이 튄 뒤일 수 있어서(같은 틱에 네이티브
+  // 스크롤이 먼저 실행될 수 있다), 그보다 먼저 오는 touchstart/mousedown
+  // 시점에 원래 스크롤 위치를 저장해두고, 그 뒤 약 600ms 동안 계속
+  // 그 자리로 되돌린다 - 사파리가 정확히 언제 스크롤을 튀기는지 알 수
+  // 없어서 한두 프레임이 아니라 여러 번에 걸쳐 밀어붙인다.
+  let lockedScrollY = null;
+  let lockScrollUntil = 0;
+  function rememberScrollBeforeFocus() {
+    lockedScrollY = window.scrollY;
+    lockScrollUntil = Date.now() + 600;
+    requestAnimationFrame(reassertScroll);
+  }
+  function reassertScroll() {
+    if (lockedScrollY === null) return;
+    if (window.scrollY !== lockedScrollY) window.scrollTo(0, lockedScrollY);
+    if (Date.now() < lockScrollUntil) {
+      requestAnimationFrame(reassertScroll);
+    } else {
+      lockedScrollY = null;
+    }
   }
   form.querySelectorAll("input, textarea").forEach((el) => {
-    el.addEventListener("focus", lockScrollAgainstFixedFocusJump);
+    el.addEventListener("touchstart", rememberScrollBeforeFocus, { passive: true });
+    el.addEventListener("mousedown", rememberScrollBeforeFocus);
+    el.addEventListener("focus", rememberScrollBeforeFocus);
   });
 
   // textarea가 늘어나거나 줄어들면 입력창 높이가 바뀌어 페이지가 다시 계산돼야 한다.
