@@ -210,7 +210,7 @@ permalink: /board/
   .gb-pin-mask { -webkit-text-security: disc; }
 
   /* 비밀글: 체크박스 대신 자물쇠를 눌러 켜고 끔 (꺼지면 흐리게) */
-  .gb-secret { position: relative; display: inline-flex; align-items: center; gap: 4px; font-size: 12px; cursor: pointer; filter: grayscale(1); opacity: 0.3; transition: opacity 120ms ease; }
+  .gb-secret { position: relative; display: inline-flex; align-items: center; gap: 4px; font-size: 15px; cursor: pointer; filter: grayscale(1); opacity: 0.3; transition: opacity 120ms ease; }
   .gb-secret:hover { opacity: 0.6; }
   .gb-secret:has(input:checked) { filter: none; opacity: 1; }
   .gb-secret input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; }
