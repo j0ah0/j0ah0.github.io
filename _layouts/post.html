@@ -3,7 +3,7 @@ layout: default
 ---
 <style>
   /* 우측 상단 Back / Next — 하단 corner-nav와 같은 활자·간격.
-     Jekyll의 page.next = 더 오래된 글, page.previous = 더 새 글. */
+     Back = 날짜상 더 이전 글(page.previous), Next = 더 이후 글(page.next). */
   .post-nav { position: fixed; top: 24px; right: 28px; z-index: 900;
     font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-size: 14px; }
   .post-nav a, .post-nav span { margin-left: 18px; text-decoration: none; }
@@ -30,8 +30,8 @@ layout: default
   .post-article img { max-width: 100%; height: auto; }
 </style>
 <nav class="post-nav">
-  {% if page.next %}<a href="{{ page.next.url | relative_url }}">Back</a>{% else %}<span>Back</span>{% endif %}
-  {% if page.previous %}<a href="{{ page.previous.url | relative_url }}">Next</a>{% else %}<span>Next</span>{% endif %}
+  {% if page.previous %}<a href="{{ page.previous.url | relative_url }}">Back</a>{% else %}<span>Back</span>{% endif %}
+  {% if page.next %}<a href="{{ page.next.url | relative_url }}">Next</a>{% else %}<span>Next</span>{% endif %}
 </nav>
 <article class="post-article">
   <div class="post-dateline">
