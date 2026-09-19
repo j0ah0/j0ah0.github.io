@@ -39,7 +39,7 @@ permalink: /board/
      --gb-size 글자 크기 / --gb-lh 줄 간격 /
      --gb-nav-space, --gb-form-space는 안전한 기본값일 뿐 - JS(measureReservedSpace)가
      실제 코너 네비 높이와 입력창 높이를 매번 측정해서 정확한 값으로 덮어쓴다. */
-  #gb-app { --gb-edge: 28px; --gb-who: 66px; --gb-gap: 10px; --gb-cols: 4; --gb-colgap: 40px; --gb-size: 12px; --gb-lh: 1.35; --gb-item-gap: 1.5em; --gb-nav-space: 60px; --gb-form-space: 90px; --gb-top-space: 40px; }
+  #gb-app { --gb-edge: 28px; --gb-who: 66px; --gb-gap: 10px; --gb-cols: 4; --gb-colgap: 40px; --gb-size: 12px; --gb-lh: 1.35; --gb-item-gap: 1.2em; --gb-nav-space: 60px; --gb-form-space: 90px; --gb-top-space: 40px; }
 
   /* 테마의 가운데 정렬 컨테이너(.wrap, max-width 720px)를 뚫고 화면 양끝까지 채운다.
      margin만으로는 부모가 flex/grid일 때 자식이 shrink-to-fit으로 굳을 수 있어서
@@ -88,12 +88,11 @@ permalink: /board/
     line-height: var(--gb-lh);
   }
 
-  /* 글과 답글 사이(그리고 답글이 여러 개일 때 답글끼리)를 줄 간격보다 살짝 더 띄운다 */
-  .gb-reply { margin-top: 5px; }
-
-  /* 다른 사람의 글(세트) 사이는 넓게, 같은 세트 안(글+답글)은 좁게 띄워서 구분이 잘 되게.
+  /* 하나의 방명록을 '글 + 내 답글' 하나의 세트로 본다.
+     세트 내부의 글과 답글은 가깝게 붙이고, 세트와 세트 사이에만 확실한 간격을 둔다.
      break-inside: avoid를 안 걸어서 긴 세트는 단 경계에서 자연스럽게 잘려 다음 단으로 이어진다
      (잡지가 실제로 하는 방식) - 그래야 가장 큰 세트 하나 때문에 뒤 단이 통째로 비지 않는다. */
+  .gb-reply { margin-top: 3px; }
   .gb-item { margin: 0 0 var(--gb-item-gap); }
 
   /* 이름은 한 줄 고정. 길면 말줄임, 마우스 올리면 전체 이름 */
