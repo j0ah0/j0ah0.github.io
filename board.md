@@ -241,6 +241,14 @@ permalink: /board/
        조금 더 띄운다 (네비 자체는 건드리지 않고, 방명록 쪽에서만 여유를 둔다). */
     .gb-form { bottom: calc(var(--gb-nav-space) + env(safe-area-inset-bottom, 0px)); }
 
+    /* iOS Safari는 포커스되는 입력칸 글자가 16px보다 작으면 자동으로 화면을
+       확대한다. 데스크톱 크기(11px)는 그대로 두고 모바일 입력칸만 16px로
+       올려서, 확대/축소 자체는 막지 않으면서 자동 확대만 막는다. */
+    .gb-form input,
+    .gb-form textarea {
+      font-size: 16px;
+    }
+
     /* 모바일에서는 "지면" 개념을 풀어서 그냥 계속 이어지는 세로 스크롤로 만든다.
        height 제한과 overflow:hidden을 없애면 --gb-cols:1이라 자연스럽게 한 흐름이 된다. */
     .gb-flow {
