@@ -33,10 +33,12 @@ permalink: /board/
         <!-- type="password"를 쓰면 크롬/사파리가 이 form을 로그인/회원가입 폼으로
              오인해서 이름/내용 칸에도 자동완성·저장된 비밀번호 제안을 띄운다. 실제로는
              4자리 숫자 PIN일 뿐이라 type="text" + -webkit-text-security로 점(dot)
-             마스킹만 흉내내고, autocomplete="off"로 후보에서 뺀다. placeholder/label에
-             "password"/"비밀번호" 같은 단어가 남아있으면 사파리가 문구만 보고도 같은
-             오인을 해서, 문구도 전부 중립적인 표현으로 바꿔뒀다. -->
-        <input type="text" id="gb-pw" class="gb-pin-mask" placeholder="····" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" autocomplete="off" aria-label="4자리 숫자 코드" title="4자리 숫자 코드">
+             마스킹만 흉내낸다. autocomplete="off"는 사파리가 그냥 무시하고 자기
+             나름대로 "이건 비밀번호칸"이라고 추측해버리는 경우가 있어서, 대신 "이건
+             일회성 숫자 코드칸"이라는 뜻의 정식 값인 one-time-code를 준다 - 사파리가
+             비밀번호 자동완성 시트 대신 훨씬 가벼운 문자 코드 제안만 하거나 아예
+             아무것도 안 띄우게 된다. -->
+        <input type="text" id="gb-code" class="gb-pin-mask" placeholder="····" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" autocomplete="one-time-code" aria-label="4자리 숫자 코드" title="4자리 숫자 코드">
       </div>
     </div>
   </form>
@@ -199,9 +201,9 @@ permalink: /board/
 
   .gb-form-bottom { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; margin-top: 6px; font-size: 11px; color: var(--muted); }
   /* secret?가 켜졌을 때만 비밀번호 입력칸이 나타남 (더 이상 type="password"가 아니라
-     #gb-pw로 직접 지정 - 크롬 자동완성 오작동을 피하려고 type="text"로 바꿨다) */
-  #gb-pw { display: none; width: 92px; font-size: 12px; letter-spacing: 0.04em; }
-  .gb-form-main:has(#gb-secret:checked) #gb-pw { display: inline-block; }
+     #gb-code로 직접 지정 - 크롬 자동완성 오작동을 피하려고 type="text"로 바꿨다) */
+  #gb-code { display: none; width: 92px; font-size: 12px; letter-spacing: 0.04em; }
+  .gb-form-main:has(#gb-secret:checked) #gb-code { display: inline-block; }
   /* 실제 계정 비밀번호가 아닌 4자리 PIN이라 type="password" 대신 이걸로 점(dot) 마스킹만
      흉내낸다 - 크롬이 로그인 폼으로 오인해 이름/내용 칸까지 자동완성 뜨게 하던 걸 방지 */
   .gb-pin-mask { -webkit-text-security: disc; }
@@ -408,7 +410,7 @@ permalink: /board/
   const form = document.getElementById("gb-form");
   const mainTextarea = document.getElementById("gb-content");
   const secretCheckbox = document.getElementById("gb-secret");
-  const pwInput = document.getElementById("gb-pw");
+  const pwInput = document.getElementById("gb-code");
   // 어떤 입력칸에 포커스가 가면(키보드가 뜨기 시작하면) 바로 한 번, 그리고 키보드
   // 애니메이션이 끝날 시점에 한 번 더 위치를 맞춘다 - visualViewport 이벤트가
   // 늦게 오는 기기에 대한 보험.
@@ -692,7 +694,7 @@ permalink: /board/
         if (getFailCount(entryId) >= MAX_TRIES) {
           row.textContent = "🔒 비밀번호를 5회 이상 틀려서 더 이상 열람할 수 없습니다.";
         } else {
-          row.innerHTML = '<span title="비밀글">🔒</span><span class="gb-reply-dot" style="display:none;" title="답글이 있어요"></span><input type="text" class="gb-pin-mask" maxlength="4" inputmode="numeric" placeholder="····" autocomplete="off" aria-label="4자리 숫자 코드"><button type="button" aria-label="열기">→</button>';
+          row.innerHTML = '<span title="비밀글">🔒</span><span class="gb-reply-dot" style="display:none;" title="답글이 있어요"></span><input type="text" class="gb-pin-mask" maxlength="4" inputmode="numeric" placeholder="····" autocomplete="one-time-code" aria-label="4자리 숫자 코드"><button type="button" aria-label="열기">→</button>';
           const input = row.querySelector("input");
           const btn = row.querySelector("button");
           const replyDot = row.querySelector(".gb-reply-dot");
