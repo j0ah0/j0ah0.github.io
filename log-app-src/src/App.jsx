@@ -2,11 +2,14 @@ import * as THREE from 'three'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, extend, useFrame } from '@react-three/fiber'
 import { Image, Billboard, Text } from '@react-three/drei'
+import { suspend } from 'suspend-react'
 import { easing, geometry } from 'maath'
 
 extend(geometry)
 
-const FONT_URL = 'https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-400-normal.woff'
+// Same font asset (and loading mechanism) as the reference sandbox this ring
+// is based on — a generic web CDN copy of Inter rendered visibly softer here.
+const inter = import('@pmndrs/assets/fonts/inter_regular.woff')
 
 // Real post data, injected by the Jekyll page before this bundle loads.
 // Shape: { slug, title, date, thumbnail, season, href }[]
@@ -45,7 +48,7 @@ export const App = () => {
   const [hovered, setHovered] = useState(null)
   return (
     <>
-      <Canvas dpr={1} gl={{ antialias: false }} camera={{ position: [0, 4.5, 9], fov: 45 }}>
+      <Canvas dpr={[1, 1.5]} gl={{ antialias: false }} camera={{ position: [0, 4.5, 15], fov: 45 }}>
         <Scene position={[0, 1.5, 0]} onHover={setHovered} />
       </Canvas>
       <HoverPreview item={hovered} />
@@ -183,20 +186,14 @@ function Scene({ children, onHover, ...props }) {
     // still responsive enough for hover-while-rotating and halves that cost.
     frameCount.current++
     if (frameCount.current % 2 === 0) state.events.update()
-    // On a narrow/portrait viewport the same vertical FOV shows a much
-    // narrower horizontal slice, so the wide ring gets clipped on the sides.
-    // The framing was tuned against a typical wide desktop window (~1.3
-    // aspect), so pull the camera back proportionally any time the viewport
-    // is narrower than that reference, not just when it's taller than wide.
-    const REFERENCE_ASPECT = 1.3
-    const aspect = state.size.width / state.size.height
-    const distScale = aspect < REFERENCE_ASPECT ? REFERENCE_ASPECT / aspect : 1
-    // Vertical sensitivity back down near the original demo's (2, not 3.5)
-    // — moving the mouse to the bottom of the screen was dropping the
-    // camera position too low / too close to the ring's underside.
+    // Camera position tracks the pointer only — no viewport-size-based
+    // distance scaling. That responsive "pull back on narrow screens" hack
+    // (see git history) moved the camera itself based on aspect ratio,
+    // which fights the projection matrix that Three.js already recomputes
+    // on resize and made framing more sensitive to window size, not less.
     easing.damp3(
       state.camera.position,
-      [-state.pointer.x * 3.5 * distScale, (state.pointer.y * 2 + 4.5) * distScale, 15 * distScale],
+      [-state.pointer.x * 3.5, state.pointer.y * 2 + 4.5, 15],
       0.15,
       delta
     )
@@ -245,7 +242,7 @@ function Cards({ category, data, from = 0, len = Math.PI * 2, radius = 5.25, onP
   return (
     <group {...props}>
       <Billboard ref={textRef} position={[Math.sin(textPosition) * radius * 1.55, 0.5, Math.cos(textPosition) * radius * 1.55]}>
-        <Text font={FONT_URL} fontSize={0.25} anchorX="center" color="black">
+        <Text font={suspend(inter).default} fontSize={0.25} anchorX="center" color="black">
           {category}
         </Text>
       </Billboard>
