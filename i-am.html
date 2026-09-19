@@ -52,6 +52,12 @@ permalink: /i-am/
        물리적으로 닿지 않도록 넉넉한 고정값 + 노치 안전영역까지 확보한다. */
     padding: 96px 48px calc(160px + env(safe-area-inset-bottom, 0px));
     transition: opacity .25s ease;
+    /* 프로필+그리드를 세로로 가운데 정렬 — 데스크톱/모바일 모두: 콘텐츠가
+       뷰포트보다 짧으면 위쪽 padding에 붙지 않고 (상하 padding 제외) 남는
+       공간 한가운데로 옴. 콘텐츠가 더 길면 평소처럼 자연스럽게 흘러서 차이 없음. */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
   .archive.is-focused { opacity: 0; pointer-events: none; }
 
@@ -182,11 +188,7 @@ permalink: /i-am/
   .archive-detail-text p:nth-of-type(3) { transition-delay: .16s; }
 
   @media (max-width: 860px) {
-    /* 프로필+그리드를 세로로 가운데 정렬 — 콘텐츠가 뷰포트보다 짧으면 위쪽에
-       붙지 않고 (상단 padding/하단 네비 안전영역을 제외한) 남는 공간 한가운데로
-       옴. 콘텐츠가 더 길면 평소처럼 자연스럽게 흘러서 별 차이 없음. */
-    .archive { padding: 88px 24px calc(160px + env(safe-area-inset-bottom, 0px));
-      display: flex; flex-direction: column; justify-content: center; }
+    .archive { padding: 88px 24px calc(160px + env(safe-area-inset-bottom, 0px)); }
     .archive-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 56px 24px; }
   }
   @media (max-width: 560px) {
@@ -428,7 +430,11 @@ document.addEventListener('pointerup', (e) => {
   const { x, y, t } = tapStart;
   tapStart = null;
   const moved = Math.hypot(e.clientX - x, e.clientY - y);
-  if (moved > 10 || Date.now() - t > 500) return; // a scroll/drag, not a tap
+  // 10px는 실제 손가락 탭에서도 흔히 넘는 값이라 (터치는 마우스 클릭처럼
+  // 0px로 안 찍힘) 진짜 탭까지 죄다 "드래그"로 오인해서 뒤로가기가 거의
+  // 안 먹혔다 - 안드로이드/iOS의 통상적인 탭 오차 허용치(20~30px대)에
+  // 맞춰 24px로 완화.
+  if (moved > 24 || Date.now() - t > 500) return; // a scroll/drag, not a tap
   if (e.target.closest('.corner-nav, .corner-brand')) return;
   closeDetail();
 });
