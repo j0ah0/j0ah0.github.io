@@ -12,17 +12,11 @@ GitHub Pages(Jekyll) 기반 개인 블로그. https://j0ah0.github.io
 
 ## 새 글 쓰는 법
 
-1. `_posts/` 폴더에 `YYYY-MM-DD-제목.md` 파일 생성
-2. 맨 위에 아래 형식(front matter) 작성:
-   ```
-   ---
-   layout: post
-   title: "글 제목"
-   date: 2026-09-08 12:00:00 +0900
-   ---
-   ```
-3. 그 아래에 마크다운으로 본문 작성
-4. `git add`, `git commit`, `git push` 하면 몇 분 안에 https://j0ah0.github.io 에 자동 반영됨
+날짜(월/일)는 글을 올린 날 기준(서울 시간, `Asia/Seoul`)으로 파일명 날짜에서 자동으로 표시됨. 글에 날짜를 따로 적지 않음.
+
+1. 터미널에서 `./new-post.sh "글 제목"` 실행 → 오늘(서울) 날짜로 `_posts/YYYY-MM-DD-….md` 가 만들어짐
+2. 그 파일 아래쪽에 마크다운으로 본문 작성
+3. `git add`, `git commit`, `git push` 하면 몇 분 안에 https://j0ah0.github.io 에 자동 반영됨
 
 ## Board(방명록) 최초 설정 (한 번만)
 

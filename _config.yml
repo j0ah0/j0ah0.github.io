@@ -1,6 +1,7 @@
 title: j0ah0
 description: 생각과 기록을 남기는 공간
 url: "https://j0ah0.github.io"
+timezone: Asia/Seoul
 email: hayoungjo.work@gmail.com
 
 permalink: /:year/:month/:day/:title/
