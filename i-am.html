@@ -217,9 +217,10 @@ permalink: /i-am/
   .corner-nav a:first-child { margin-left: -8px; }
   .corner-nav a:hover { color: #8a8a86; }
 
-  /* 하단 네비게이션으로 내려가는 콘텐츠(그리드 이미지, 상세 텍스트)를
-     자연스럽게 페이드아웃 — 네비(z-index:1000)보다 한 단계 낮게 두어
-     네비 글자는 항상 선명하게, 그 아래로 내려오는 콘텐츠만 흐려짐. */
+  /* 하단 네비게이션 구간을 완전히 불투명하게 덮어서, 스크롤되는 콘텐츠(그리드
+     이미지, 상세 텍스트)가 흐려지며 비치는 게 아니라 이 선에서 뚝 끊겨 보이게
+     한다 — 더 스크롤해야 그 아래 이어지는 내용이 위로 올라와 다시 보임.
+     네비(z-index:1000)보다 한 단계 낮게 두어 네비 글자는 항상 그 위에서 선명. */
   body::after {
     content: "";
     position: fixed;
@@ -227,7 +228,7 @@ permalink: /i-am/
     height: 150px;
     z-index: 999;
     pointer-events: none;
-    background: linear-gradient(to bottom, transparent 0%, var(--bg) 100%);
+    background: var(--bg);
   }
 </style>
 </head>
