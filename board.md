@@ -387,6 +387,16 @@ permalink: /board/
   const mainTextarea = document.getElementById("gb-content");
   const secretCheckbox = document.getElementById("gb-secret");
   const pwInput = document.getElementById("gb-pw");
+  // 어떤 입력칸에 포커스가 가면(키보드가 뜨기 시작하면) 바로 한 번, 그리고 키보드
+  // 애니메이션이 끝날 시점에 한 번 더 위치를 맞춘다 - visualViewport 이벤트가
+  // 늦게 오는 기기에 대한 보험.
+  form.addEventListener("focusin", () => {
+    positionFormAboveKeyboard();
+    setTimeout(positionFormAboveKeyboard, 350);
+  });
+  form.addEventListener("focusout", () => {
+    setTimeout(positionFormAboveKeyboard, 100);
+  });
   // textarea가 늘어나거나 줄어들면 입력창 높이가 바뀌어 페이지가 다시 계산돼야 한다.
   mainTextarea.addEventListener("input", () => {
     autoGrow(mainTextarea, 240);
@@ -783,6 +793,25 @@ permalink: /board/
   if (window.visualViewport) {
     window.visualViewport.addEventListener("resize", () => {
       scheduleLayoutFlow();
+      positionFormAboveKeyboard();
     });
+    window.visualViewport.addEventListener("scroll", positionFormAboveKeyboard);
+  }
+
+  // ---- 모바일 키보드가 뜨면 고정 입력창이 키보드에 가려지는 문제 ----
+  // window.innerHeight(레이아웃 뷰포트)는 키보드가 떠도 안 바뀌지만,
+  // visualViewport.height(실제 보이는 영역)는 키보드가 뜬 만큼 줄어든다.
+  // 그 차이(= 키보드 높이)를 입력창의 bottom으로 직접 줘서 키보드 바로 위에
+  // 붙인다. 키보드가 닫히면(차이가 거의 없으면) 원래 CSS 값(코너 네비 위)으로
+  // 되돌린다.
+  function positionFormAboveKeyboard() {
+    if (!window.visualViewport) return;
+    const vv = window.visualViewport;
+    const keyboardInset = window.innerHeight - vv.height - vv.offsetTop;
+    if (keyboardInset > 60) {
+      form.style.bottom = keyboardInset + "px";
+    } else {
+      form.style.bottom = "";
+    }
   }
 </script>
