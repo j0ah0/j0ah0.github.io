@@ -411,6 +411,25 @@ permalink: /board/
   const mainTextarea = document.getElementById("gb-content");
   const secretCheckbox = document.getElementById("gb-secret");
   const pwInput = document.getElementById("gb-code");
+
+  // Safari의 유명한 버그: position:fixed 요소 안의 입력칸에 포커스가 가면,
+  // 이미 항상 화면에 보이는데도 사파리가 "보이게 스크롤"하려다가 그 요소의
+  // (fixed가 적용되기 전) 문서 흐름상 위치 - 즉 방명록 글이 잔뜩 쌓인 한참
+  // 아래쪽 - 로 페이지를 확 스크롤시켜버려서 화면이 통째로 빈 배경색만
+  // 보이게 된다. 포커스가 들어오는 순간의 스크롤 위치를 기억해뒀다가,
+  // 사파리가 제멋대로 스크롤한 직후(다음 몇 프레임 안)에 원래 자리로
+  // 강제로 되돌린다.
+  function lockScrollAgainstFixedFocusJump() {
+    const y = window.scrollY;
+    requestAnimationFrame(() => {
+      window.scrollTo(0, y);
+      requestAnimationFrame(() => window.scrollTo(0, y));
+    });
+  }
+  form.querySelectorAll("input, textarea").forEach((el) => {
+    el.addEventListener("focus", lockScrollAgainstFixedFocusJump);
+  });
+
   // textarea가 늘어나거나 줄어들면 입력창 높이가 바뀌어 페이지가 다시 계산돼야 한다.
   mainTextarea.addEventListener("input", () => {
     autoGrow(mainTextarea, 240);
