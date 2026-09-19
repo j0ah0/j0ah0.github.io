@@ -185,7 +185,7 @@ permalink: /board/
   /* 관리자로 로그인하면 방문자용 글쓰기 폼은 보이지 않는다 (본인은 쓸 일이 없어서) */
   body.gb-is-owner .gb-form { display: none; }
   .gb-form input,
-  .gb-form textarea { padding: 0; border: none; background: transparent; font: inherit; font-size: var(--gb-size); line-height: var(--gb-lh); color: var(--text); outline: none; }
+  .gb-form textarea { padding: 0; border: none; background: transparent; font: inherit; font-size: 11px; line-height: var(--gb-lh); color: var(--text); outline: none; }
   .gb-form input::placeholder,
   .gb-form textarea::placeholder { color: var(--muted); opacity: 0.6; }
   .gb-form-name { width: 100%; font-weight: 400; }
@@ -240,14 +240,6 @@ permalink: /board/
     /* 노치가 있는 폰의 하단 제스처 영역까지 고려해서 입력창을 코너 네비보다
        조금 더 띄운다 (네비 자체는 건드리지 않고, 방명록 쪽에서만 여유를 둔다). */
     .gb-form { bottom: calc(var(--gb-nav-space) + env(safe-area-inset-bottom, 0px)); }
-
-    /* iOS Safari는 포커스되는 입력칸 글자가 16px보다 작으면 자동으로 화면을
-       확대한다. 방명록 본문 읽는 크기(--gb-size, 13px)는 그대로 두고 입력칸
-       글자만 16px로 올려서, 확대/축소 자체는 막지 않으면서 자동 확대만 막는다. */
-    .gb-form input,
-    .gb-form textarea {
-      font-size: 16px;
-    }
 
     /* 모바일에서는 "지면" 개념을 풀어서 그냥 계속 이어지는 세로 스크롤로 만든다.
        height 제한과 overflow:hidden을 없애면 --gb-cols:1이라 자연스럽게 한 흐름이 된다. */
