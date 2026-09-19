@@ -192,7 +192,14 @@ permalink: /i-am/
   @media (max-width: 560px) {
     /* Shrink everything so a detail fits in one screen without scrolling
        where possible, rather than just reducing the scroll distance. */
-    .archive-detail { flex-direction: column; align-items: flex-start; justify-content: flex-start;
+    .archive-detail { flex-direction: column; align-items: flex-start;
+      /* 짧은 글(사진+한두 문단)은 위에 붙지 않고 화면 가운데로 오게.
+         justify-content: flex-start는 safe center를 못 알아듣는 구형
+         브라우저용 폴백 - 지원되면 아래 줄이 덮어써서 가운데 정렬되고,
+         글이 길어서 넘치면 safe 덕분에 위에서부터 정상적으로 스크롤됨
+         (그냥 center만 쓰면 넘칠 때 맨 위가 스크롤로 닿지 않는 버그가 있음). */
+      justify-content: flex-start;
+      justify-content: safe center;
       padding: 52px 20px 64px; overflow-y: auto; }
     /* flex-basis (the "0 0 <n>" part) sets the flex item's size along the
        main axis, which flex-direction: column just switched to vertical —
