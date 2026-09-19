@@ -78,13 +78,6 @@ permalink: /i-am/
     position: relative;
     display: flex;
     flex-direction: column;
-    opacity: 0;
-    transform: translateY(12px);
-    animation: item-in .7s cubic-bezier(.22,.61,.36,1) forwards;
-    animation-delay: calc(var(--i, 0) * 110ms);
-  }
-  @keyframes item-in {
-    to { opacity: 1; transform: translateY(0); }
   }
 
   .archive-num {
@@ -312,10 +305,9 @@ let openState = null; // { item, sourceEl, ghostEl }
 
 const BASE_PHOTO_HEIGHT = 170; // px, matches .archive-photo's default height
 
-ITEMS.forEach((item, i) => {
+ITEMS.forEach((item) => {
   const el = document.createElement('div');
   el.className = 'archive-item';
-  el.style.setProperty('--i', i);
   el.innerHTML = `
     <span class="archive-num">${item.idx}</span>
     <button type="button" class="archive-photo-btn" aria-label="${item.title}">
