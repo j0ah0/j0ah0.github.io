@@ -30,11 +30,13 @@ permalink: /board/
       </div>
       <div class="gb-form-bottom">
         <label class="gb-secret" title="비밀글"><input type="checkbox" id="gb-secret" aria-label="비밀글"><span aria-hidden="true">🔒</span><span class="gb-secret-label">secret?</span></label>
-        <!-- type="password"를 쓰면 크롬이 이 form을 로그인/회원가입 폼으로 오인해서
-             이름/내용 칸에도 자동완성·저장된 비밀번호 제안을 띄운다. 실제로는 4자리
-             숫자 PIN일 뿐이라 type="text" + -webkit-text-security로 점(dot) 마스킹만
-             흉내내고, autocomplete="off"로 저장/자동완성 후보에서 완전히 뺀다. -->
-        <input type="text" id="gb-pw" class="gb-pin-mask" placeholder="password" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" autocomplete="off" aria-label="비밀번호 4자리 숫자" title="비밀번호 4자리 숫자">
+        <!-- type="password"를 쓰면 크롬/사파리가 이 form을 로그인/회원가입 폼으로
+             오인해서 이름/내용 칸에도 자동완성·저장된 비밀번호 제안을 띄운다. 실제로는
+             4자리 숫자 PIN일 뿐이라 type="text" + -webkit-text-security로 점(dot)
+             마스킹만 흉내내고, autocomplete="off"로 후보에서 뺀다. placeholder/label에
+             "password"/"비밀번호" 같은 단어가 남아있으면 사파리가 문구만 보고도 같은
+             오인을 해서, 문구도 전부 중립적인 표현으로 바꿔뒀다. -->
+        <input type="text" id="gb-pw" class="gb-pin-mask" placeholder="····" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" autocomplete="off" aria-label="4자리 숫자 코드" title="4자리 숫자 코드">
       </div>
     </div>
   </form>
@@ -185,7 +187,7 @@ permalink: /board/
   /* 관리자로 로그인하면 방문자용 글쓰기 폼은 보이지 않는다 (본인은 쓸 일이 없어서) */
   body.gb-is-owner .gb-form { display: none; }
   .gb-form input,
-  .gb-form textarea { padding: 0; border: none; background: transparent; font: inherit; font-size: 11px; line-height: var(--gb-lh); color: var(--text); outline: none; }
+  .gb-form textarea { padding: 0; border: none; background: transparent; font: inherit; font-size: 12px; line-height: var(--gb-lh); color: var(--text); outline: none; }
   .gb-form input::placeholder,
   .gb-form textarea::placeholder { color: var(--muted); opacity: 0.6; }
   .gb-form-name { width: 100%; font-weight: 400; }
@@ -690,7 +692,7 @@ permalink: /board/
         if (getFailCount(entryId) >= MAX_TRIES) {
           row.textContent = "🔒 비밀번호를 5회 이상 틀려서 더 이상 열람할 수 없습니다.";
         } else {
-          row.innerHTML = '<span title="비밀글">🔒</span><span class="gb-reply-dot" style="display:none;" title="답글이 있어요"></span><input type="text" class="gb-pin-mask" maxlength="4" inputmode="numeric" placeholder="····" autocomplete="off" aria-label="비밀번호"><button type="button" aria-label="열기">→</button>';
+          row.innerHTML = '<span title="비밀글">🔒</span><span class="gb-reply-dot" style="display:none;" title="답글이 있어요"></span><input type="text" class="gb-pin-mask" maxlength="4" inputmode="numeric" placeholder="····" autocomplete="off" aria-label="4자리 숫자 코드"><button type="button" aria-label="열기">→</button>';
           const input = row.querySelector("input");
           const btn = row.querySelector("button");
           const replyDot = row.querySelector(".gb-reply-dot");
