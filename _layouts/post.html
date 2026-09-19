@@ -7,6 +7,15 @@ layout: default
   .post-nav-arrow:hover { color: #8a8a86; }
   .post-nav-prev { left: 28px; }
   .post-nav-next { right: 28px; }
+
+  /* 편집물(editorial)형 본문: 좌우 30px, 작은 활자, 큰 제목 없음.
+     이 스타일은 post 레이아웃에만 적용되고 다른 페이지에는 영향이 없다. */
+  .wrap { padding-left: 30px; padding-right: 30px; }
+  main.wrap { padding-top: 72px; }
+  .post-article { font-size: 11px; line-height: 1.55; }
+  .post-article h1 { font-size: 11px; font-weight: 400; letter-spacing: 0; line-height: 1.55; margin: 0; }
+  .post-article .post-date { font-size: 11px; line-height: 1.55; margin: 0 0 36px; }
+  .post-article img { max-width: 100%; height: auto; }
 </style>
 {% if page.next %}
   <a class="post-nav-arrow post-nav-prev" href="{{ page.next.url | relative_url }}">
@@ -18,7 +27,7 @@ layout: default
     <svg width="16" height="8" viewBox="0 0 20 10" fill="none"><line x1="0" y1="5" x2="16" y2="5" stroke="currentColor" stroke-width="1.2"/><polyline points="12,1.5 16,5 12,8.5" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
   </a>
 {% endif %}
-<article style="margin-top: 36px;">
+<article class="post-article">
   <h1>{{ page.title }}</h1>
   <p class="post-date">{{ page.date | date: "%Y-%m-%d" }}</p>
   {{ content }}
