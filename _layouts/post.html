@@ -19,6 +19,15 @@ layout: default
   .post-article { font-size: 12px; line-height: 1.55; }
   .post-article h1 { font-size: 12px; font-weight: 400; letter-spacing: 0; line-height: 1.55; margin: 0; }
   .post-article .post-date { font-size: 12px; line-height: 1.55; margin: 0 0 36px; }
+  /* 월/일 editorial navigation: 왼쪽은 콘텐츠 시작점, 오른쪽은 끝점에 맞춘 한 줄 */
+  .post-dateline { display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 12px; font-weight: 500; letter-spacing: 0.04em; line-height: 1.55;
+    text-transform: uppercase; margin: 0 0 84px; }
+  .post-dateline .m-short { display: none; }
+  @media (max-width: 380px) {
+    .post-dateline .m-full { display: none; }
+    .post-dateline .m-short { display: inline; }
+  }
   .post-article img { max-width: 100%; height: auto; }
 </style>
 <nav class="post-nav">
@@ -26,6 +35,10 @@ layout: default
   {% if page.previous %}<a href="{{ page.previous.url | relative_url }}">Next</a>{% else %}<span>Next</span>{% endif %}
 </nav>
 <article class="post-article">
+  <div class="post-dateline">
+    <span>&darr; <span class="m-full">{{ page.date | date: "%B" }}</span><span class="m-short">{{ page.date | date: "%b" }}</span></span>
+    <span>{{ page.date | date: "%-d" }}</span>
+  </div>
   <h1>{{ page.title }}</h1>
   <p class="post-date">{{ page.date | date: "%Y-%m-%d" }}</p>
   {{ content }}
