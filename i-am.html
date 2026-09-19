@@ -47,7 +47,10 @@ permalink: /i-am/
     position: relative;
     width: 100%;
     min-height: 100vh;
-    padding: 96px 48px 120px;
+    /* 바닥 여백은 fade보다 이 값이 진짜 방어선이다 (fade는 pointer-events:none
+       이라 클릭을 막지 못함) — 그리드 마지막 줄이 코너 네비 히트박스 근처에도
+       물리적으로 닿지 않도록 넉넉한 고정값 + 노치 안전영역까지 확보한다. */
+    padding: 96px 48px calc(160px + env(safe-area-inset-bottom, 0px));
     transition: opacity .25s ease;
   }
   .archive.is-focused { opacity: 0; pointer-events: none; }
@@ -178,7 +181,7 @@ permalink: /i-am/
   .archive-detail-text p:nth-of-type(3) { transition-delay: .16s; }
 
   @media (max-width: 860px) {
-    .archive { padding: 88px 24px 100px; }
+    .archive { padding: 88px 24px calc(160px + env(safe-area-inset-bottom, 0px)); }
     .archive-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 56px 24px; }
   }
   @media (max-width: 560px) {
@@ -201,8 +204,17 @@ permalink: /i-am/
     color: #141414; z-index: 1000; font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; }
   .corner-nav { position: fixed; bottom: 24px; right: 28px; z-index: 1000;
     font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; }
-  .corner-nav a { color: #141414; text-decoration: none; font-size: 14px; margin-left: 18px; }
-  .corner-nav a:first-child { margin-left: 0; }
+  /* 히트박스만 키우는 트릭: padding으로 클릭 가능 영역을 늘리고 그만큼
+     음수 margin으로 상쇄해서 눈에 보이는 위치/간격은 그대로 유지한다.
+     "네비 누르려다 살짝 빗나가서" 바로 아래 그리드 사진이 눌리는 걸 막는
+     실질적 방어선 (fade는 시각효과일 뿐 클릭을 막지 못함). */
+  .corner-nav a {
+    display: inline-block;
+    color: #141414; text-decoration: none; font-size: 14px;
+    padding: 14px 8px;
+    margin: -14px -8px -14px 10px;
+  }
+  .corner-nav a:first-child { margin-left: -8px; }
   .corner-nav a:hover { color: #8a8a86; }
 
   /* 하단 네비게이션으로 내려가는 콘텐츠(그리드 이미지, 상세 텍스트)를
