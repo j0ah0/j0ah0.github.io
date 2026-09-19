@@ -58,8 +58,9 @@ permalink: /board/
   .gb-auth { text-align: right; font-size: 12px; color: var(--muted); margin-bottom: 14px; min-height: 20px; }
   .gb-auth button { font: inherit; font-size: 12px; border: none; background: none; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
   .gb-auth button:hover { color: var(--text); }
-  #gb-login { opacity: 0.4; transition: opacity 120ms ease; }
-  #gb-login:hover, #gb-login:focus-visible { opacity: 1; }
+  /* 완전히 안 보이게 - 글씨색을 배경색과 똑같이 만들어서 존재만 하고 안 보인다.
+     opacity:0은 아니라서 클릭(=로그인)은 여전히 된다. */
+  #gb-login { color: var(--bg); text-decoration: none; }
 
   /* ---- 대화 목록: 신문/잡지 지면처럼, 화면 높이만큼을 한 "페이지"로 써서
      단을 위→아래로 다 채운 뒤 다음 단으로, 페이지가 다 차면 다음 페이지로 ----
