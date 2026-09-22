@@ -157,33 +157,18 @@ permalink: /i-am/
     color: #141414; z-index: 1000; font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; }
   .corner-nav { position: fixed; bottom: 24px; right: 28px; line-height: 1.6; z-index: 1000;
     font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; }
-  /* 히트박스만 키우는 트릭: padding으로 클릭 가능 영역을 늘리고 그만큼
-     음수 margin으로 상쇄해서 눈에 보이는 위치/간격은 그대로 유지한다. */
-  .corner-nav a {
-    display: inline-block;
-    color: #141414; text-decoration: none; font-size: 14px;
-    padding: 14px 8px;
-    margin: -14px -8px -14px 10px;
-  }
-  .corner-nav a:first-child { margin-left: -8px; }
-  /* 기본 margin-right(-8px, 위 shorthand)가 마지막 링크에도 그대로 걸리면
-     오른쪽 끝(right:28px)과 실제 "Mail to" 글자 사이 여백이 다른 페이지보다
-     8px 좁아진다 — 0으로 되돌려야 default.html/log.html과 같은 여백이 된다
-     (실측: margin-right -8px→여백 8px, 0px→여백 16px, 두 값이 각각 그대로
-     일치했다). */
-  .corner-nav a:last-child { margin-right: 0; }
+  /* 히트박스를 넓히는 padding/음수-margin 트릭을 쓰고 있었는데, 값이 계속
+     미묘하게 어긋나 default.html/log.html과 간격·여백이 달라 보이는 문제가
+     반복됐다. 계산으로 맞추는 대신 다른 두 페이지와 완전히 같은 규칙을 그대로
+     쓴다 — 코드가 같으면 렌더링도 항상 같다. (탭 히트박스가 글자 크기만큼으로
+     좁아지긴 하지만, 어긋남보다는 이쪽이 낫다.) */
+  .corner-nav a { color: #141414; text-decoration: none; font-size: 14px; margin-left: 18px; }
+  .corner-nav a:first-child { margin-left: 0; }
   .corner-nav a:hover { color: #8a8a86; }
-  /* 모바일에서는 화면이 좁아 네비 5개 항목이 부담스럽다 — 더 압축된 크기로,
-     좌우 끝(28px)에 더 바짝 붙여 가운데 공간을 넓게 확보한다. (히트박스
-     패딩은 손가락 탭 크기를 위해 그대로 두고, 보이는 글자 간격만 줄인다.)
-     이 페이지는 히트박스 트릭 때문에 기본 margin-right가 -8px로 고정돼 있어,
-     두 링크 사이 실제 간격은 (margin-right -8) + (다음 링크 margin-left)로
-     정해진다. default.html/log.html의 모바일 간격(실측 12px)과 맞추려면
-     margin-left를 20px로 둬야 한다 (-8 + 20 = 12). */
   @media (max-width: 700px) {
     .corner-brand { left: 16px; font-size: 12px; }
     .corner-nav { right: 16px; }
-    .corner-nav a { font-size: 12px; margin-left: 20px; }
+    .corner-nav a { font-size: 12px; margin-left: 12px; }
   }
 
   /* 하단 네비게이션 구간을 사실상 불투명하게 덮어서, 스크롤되는 콘텐츠가
