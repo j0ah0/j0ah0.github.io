@@ -25,7 +25,10 @@ permalink: /
 
   .main-page { margin-top: 35vh; margin-left: -10px; font-family: 'Inter', -apple-system, "Helvetica Neue", Arial, sans-serif; }
   @media (max-width: 700px) {
-    .main-page { margin-top: 25vh; }
+    /* 데스크톱용 -10px 왼쪽 이동이 모바일 좁은 화면에서는 그대로 더해져
+       텍스트가 눈에 띄게 왼쪽으로 치우쳐 보였다 — 모바일에서만 원래
+       위치(0)로 되돌리고 살짝 더 오른쪽(6px)으로 준다. */
+    .main-page { margin-top: 25vh; margin-left: 6px; }
   }
   .main-page p { font-size: 12px; line-height: 1.7; margin: 0 0 16px; }
 </style>
