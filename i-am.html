@@ -90,20 +90,9 @@ permalink: /i-am/
     color: var(--num);
     margin: 0 0 6px 1px;
   }
-  /* 기본 숨김 - 사진을 클릭해야(.entry.is-open) 사진 바로 아래에 나타난다 */
-  .entry-text { display: none; padding-top: 10px; max-width: 32ch; }
-  .entry.is-open .entry-text { display: block; }
-  .entry-text h2 {
-    font-size: 13px;
-    font-weight: 500;
-    line-height: 1.6;
-    color: var(--ink);
-    margin: 0 0 8px;
-  }
-  .entry-text p {
-    font-size: 11.5px; line-height: 1.65; color: var(--ink); margin: 0 0 8px;
-  }
-  .entry-text p:last-child { margin-bottom: 0; }
+  /* 이 안의 글은 그리드에 직접 보이지 않는다 - 사진을 클릭하면 아래
+     #detailOverlay가 이 내용을 읽어다가 가운데 뜨는 창으로 보여준다. */
+  .entry-text { display: none; }
 
   /* 12칸 중 각 항목이 차지하는 칸 수로 배치 - 1행: 01(1-6칸)+02(6-10칸),
      2행: 03(1-5칸)+04(5-13칸). 02는 자기 칸 안에서 justify-self:center로
@@ -128,7 +117,36 @@ permalink: /i-am/
     .entry-2 .entry-photo { max-width: 100px; }
     .entry-3 .entry-photo { max-width: 110px; }
     .entry-4 .entry-photo { max-width: 140px; }
-    .entry-text { max-width: none; }
+  }
+
+  /* ---- 사진을 클릭하면 가운데 뜨는 창 - 그리드 안에 바로 펼치는 대신
+     사진+글을 확대해서 화면 중앙에 별도로 보여준다. 애니메이션은 opacity
+     페이드 하나뿐 (예전 FLIP처럼 사진이 날아다니지 않음), 닫기는 아무 데나
+     탭/클릭하면 됨 (X 버튼 없음 - 탭만으로 충분히 잘 작동해서 없앴었다). */
+  .detail-overlay {
+    position: fixed; inset: 0; z-index: 2000;
+    display: flex; align-items: center; justify-content: center;
+    padding: 48px;
+    background: var(--bg);
+    opacity: 0; pointer-events: none;
+    transition: opacity .25s ease;
+  }
+  .detail-overlay.is-visible { opacity: 1; pointer-events: auto; }
+  .detail-panel { display: flex; align-items: flex-start; gap: 32px; max-width: 720px; }
+  .detail-panel .archive-num { margin-bottom: 10px; }
+  .detail-photo { display: block; max-width: min(320px, 42vw); max-height: 60vh; width: auto; height: auto; object-fit: contain; flex: 0 0 auto; }
+  .detail-text { max-width: 36ch; padding-top: 2px; }
+  .detail-text h2 { font-size: 15px; font-weight: 500; line-height: 1.7; color: var(--ink); margin: 0 0 14px; }
+  .detail-text p { font-size: 13px; line-height: 1.75; color: var(--ink); margin: 0 0 14px; }
+  .detail-text p:last-child { margin-bottom: 0; }
+
+  @media (max-width: 640px) {
+    .detail-overlay { padding: 28px 24px; }
+    .detail-panel { flex-direction: column; gap: 18px; }
+    .detail-photo { max-width: min(220px, 60vw); max-height: 34vh; }
+    .detail-text { max-width: none; }
+    .detail-text h2 { font-size: 14px; margin-bottom: 10px; }
+    .detail-text p { font-size: 12.5px; line-height: 1.65; margin-bottom: 10px; }
   }
 
   /* ---- 코너 고정 브랜드/네비게이션 (모든 페이지 공통) ----
@@ -179,7 +197,7 @@ permalink: /i-am/
 
   <div class="scrapbook">
     <div class="entry entry-1">
-      <button type="button" class="entry-photo" aria-expanded="false">
+      <button type="button" class="entry-photo">
         <span class="archive-num">01</span>
         <img src="{{ "/assets/archive-01-site.png" | relative_url }}" alt="맥북">
       </button>
@@ -190,7 +208,7 @@ permalink: /i-am/
     </div>
 
     <div class="entry entry-2">
-      <button type="button" class="entry-photo" aria-expanded="false">
+      <button type="button" class="entry-photo">
         <span class="archive-num">02</span>
         <img src="{{ "/assets/archive-02-coffee.jpg" | relative_url }}" alt="커피">
       </button>
@@ -201,7 +219,7 @@ permalink: /i-am/
     </div>
 
     <div class="entry entry-3">
-      <button type="button" class="entry-photo" aria-expanded="false">
+      <button type="button" class="entry-photo">
         <span class="archive-num">03</span>
         <img src="{{ "/assets/archive-03-olive.png" | relative_url }}" alt="올리브">
       </button>
@@ -213,7 +231,7 @@ permalink: /i-am/
     </div>
 
     <div class="entry entry-4">
-      <button type="button" class="entry-photo" aria-expanded="false">
+      <button type="button" class="entry-photo">
         <span class="archive-num">04</span>
         <img src="{{ "/assets/archive-04-superficial.png" | relative_url }}" alt="피상적 뜻">
       </button>
@@ -226,17 +244,79 @@ permalink: /i-am/
   </div>
 </div>
 
+<div class="detail-overlay" id="detailOverlay">
+  <div class="detail-panel">
+    <div>
+      <span class="archive-num" id="detailNum"></span>
+      <img class="detail-photo" id="detailPhoto" alt="">
+    </div>
+    <div class="detail-text">
+      <h2 id="detailTitle"></h2>
+      <div id="detailBody"></div>
+    </div>
+  </div>
+</div>
+
 {% include corner-nav.html %}
 
 <script>
-// 사진을 클릭하면 그 옆의 글이 나타난다 (다시 누르면 접힘) - 기본은 사진만
-// 보이는 상태라 페이지가 훨씬 짧고, 필요한 글만 펼쳐서 읽는 방식.
+// 사진을 클릭하면 가운데 뜨는 창에 그 사진+글이 확대돼서 뜬다. 텍스트는
+// 각 .entry-text에 이미 있는 걸 그대로 읽어다 쓴다 (별도 데이터 없음).
+const overlay = document.getElementById('detailOverlay');
+const detailNum = document.getElementById('detailNum');
+const detailPhoto = document.getElementById('detailPhoto');
+const detailTitle = document.getElementById('detailTitle');
+const detailBody = document.getElementById('detailBody');
+
+let overlayOpen = false;
+
+function openDetail(entry) {
+  const img = entry.querySelector('.entry-photo img');
+  const text = entry.querySelector('.entry-text');
+  detailNum.textContent = entry.querySelector('.archive-num').textContent;
+  detailPhoto.src = img.src;
+  detailPhoto.alt = img.alt;
+  detailTitle.textContent = text.querySelector('h2').textContent;
+  detailBody.innerHTML = [...text.querySelectorAll('p')].map((p) => p.outerHTML).join('');
+  overlay.classList.add('is-visible');
+  overlayOpen = true;
+}
+
+function closeDetail() {
+  overlay.classList.remove('is-visible');
+  overlayOpen = false;
+}
+
 document.querySelectorAll('.entry-photo').forEach((btn) => {
-  btn.addEventListener('click', () => {
-    const entry = btn.closest('.entry');
-    const open = entry.classList.toggle('is-open');
-    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation(); // don't let this same click reach the document-level closer below
+    openDetail(btn.closest('.entry'));
   });
+});
+
+// 창이 열린 상태에서 아무 데나 탭하면 닫힘 (X 버튼 없음). click 대신
+// pointerdown/pointerup 기반인 이유: 모바일은 터치가 조금만 움직여도
+// click 자체를 안 쏴서 (스크롤 중이면 흔함) "아무 데나 탭"이 잘 안 먹혔다.
+// 탭 판정은 이동거리/시간 기준 - 24px는 실제 손가락 탭의 자연스러운
+// 떨림도 버텨야 해서 (마우스 클릭처럼 0px로 안 찍힘) 안드로이드/iOS 통상
+// 탭 오차 허용치에 맞춘 값.
+let tapStart = null;
+document.addEventListener('pointerdown', (e) => {
+  if (!overlayOpen) return;
+  tapStart = { x: e.clientX, y: e.clientY, t: Date.now() };
+});
+document.addEventListener('pointerup', (e) => {
+  if (!overlayOpen || !tapStart) return;
+  const { x, y, t } = tapStart;
+  tapStart = null;
+  const moved = Math.hypot(e.clientX - x, e.clientY - y);
+  if (moved > 24 || Date.now() - t > 500) return; // a scroll/drag, not a tap
+  if (e.target.closest('.corner-nav, .corner-brand')) return;
+  closeDetail();
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeDetail();
 });
 </script>
 </body>
