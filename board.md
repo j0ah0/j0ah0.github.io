@@ -717,6 +717,12 @@ permalink: /board/
           const reveal = async () => {
             const hash = await sha256(input.value.trim());
             if (hash === d.passwordHash || hash === MASTER_HASH) {
+              // 4자리 입력 직후라 이 input에 아직 포커스가 있는 채로 row를
+              // 지우게 되는데, 모바일에서 포커스된 요소가 갑자기 DOM에서
+              // 사라지면(키보드가 닫히는 시점과 겹쳐) 사파리가 고정된 입력창
+              // 위치를 다시 계산하면서 화면이 출렁이는 것 같다. 지우기 전에
+              // 먼저 blur로 키보드를 얌전히 닫아둔다.
+              input.blur();
               row.remove();
               renderOpen(item, entryId, d.content);
               scheduleLayoutFlow();
