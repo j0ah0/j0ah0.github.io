@@ -735,6 +735,10 @@ permalink: /board/
           };
           btn.addEventListener("click", reveal);
           input.addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); reveal(); } });
+          // 4자리를 다 입력하면 화살표를 누르거나 Enter를 치지 않아도 바로 확인한다.
+          input.addEventListener("input", () => {
+            if (input.value.length === 4) reveal();
+          });
         }
         main.appendChild(row);
       } else {
