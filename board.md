@@ -171,7 +171,12 @@ permalink: /board/
     position: fixed;
     left: var(--gb-edge);
     right: var(--gb-edge);
-    bottom: var(--gb-nav-space);
+    /* 코너 네비(모든 페이지에서 폰트 14px/줄간격 1.6으로 통일됨: bottom 24px +
+       22.4px 줄높이 ≈ 46.4px) 바로 위에 고정. JS로 실시간으로 재던 값 대신
+       고정 px를 쓴다 - 측정 타이밍에 따라 입력창이 계속 밀려 보이는 문제가
+       있어서, 네비 자체가 항상 똑같은 자리에 고정인 것처럼 이것도 그냥
+       고정값으로 못박아버리는 게 훨씬 안정적이다. */
+    bottom: calc(56px + env(safe-area-inset-bottom, 0px));
     /* default.html이 모바일에서 코너 네비 위에 깔아주는 페이드 그라데이션(z-index:999)
        보다 높아야, 그 반투명 배경에 입력창 글씨가 흐려 보이지 않는다. */
     z-index: 1001;
@@ -243,10 +248,6 @@ permalink: /board/
 
   @media (max-width: 700px) {
     #gb-app { --gb-edge: 16px; --gb-who: 64px; --gb-gap: 10px; --gb-size: 13px; --gb-cols: 1; }
-
-    /* 노치가 있는 폰의 하단 제스처 영역까지 고려해서 입력창을 코너 네비보다
-       조금 더 띄운다 (네비 자체는 건드리지 않고, 방명록 쪽에서만 여유를 둔다). */
-    .gb-form { bottom: calc(var(--gb-nav-space) + env(safe-area-inset-bottom, 0px)); }
 
     /* name/content는 이제 화면 크기와 상관없이 항상 16px (데스크톱/모바일
        동일) - iOS Safari의 자동 확대(입력칸 글자가 16px 미만이면 포커스 시
@@ -726,11 +727,6 @@ permalink: /board/
               row.remove();
               renderOpen(item, entryId, d.content);
               scheduleLayoutFlow();
-              // 키보드가 닫히는 애니메이션 도중에 코너 네비 위치를 재면 그
-              // 잘못된(너무 낮은) 값이 그대로 굳어서, 이후 계속 입력창이 밀려
-              // 보이는 상태가 된다. 애니메이션이 끝날 시간(약 350ms)을 준 뒤
-              // 한 번 더 재서 바로잡는다.
-              setTimeout(scheduleLayoutFlow, 350);
             } else {
               const fails = incrementFailCount(entryId);
               if (fails >= MAX_TRIES) {
