@@ -65,15 +65,14 @@ permalink: /i-am/
 
   /* ---- 스크랩북: 사진마다 크기를 다르게 - 한 화면에서 사진들부터 훑어보고,
      글은 사진을 클릭해야 나타난다 (기본은 숨김, 상시 노출 아님).
-     2열짜리 세로 나열이 아니라 진짜 2차원 그리드로 배치해서 - 같은 줄에
-     여러 장이 같이 들어가야 4장이 한 화면 안에 다 들어온다. */
+     정렬된 grid가 아니라 각 항목을 자유롭게 절대 배치해서 (레퍼런스의
+     editorial collage 느낌) - x/y와 크기를 항목마다 다르게 어긋나게 둔다. */
   .scrapbook {
-    display: grid;
-    grid-template-columns: repeat(12, 1fr);
-    gap: 20px 24px;
-    max-width: 1120px;
+    position: relative;
+    max-width: 1040px;
+    height: 620px;
   }
-  .entry { position: relative; }
+  .entry { position: absolute; }
   .entry-photo {
     position: relative;
     display: block; padding: 0; border: none; background: none;
@@ -94,25 +93,26 @@ permalink: /i-am/
      #detailOverlay가 이 내용을 읽어다가 가운데 뜨는 창으로 보여준다. */
   .entry-text { display: none; }
 
-  /* 12칸 중 각 항목이 차지하는 칸 수로 배치 - 1행: 01(1-6칸)+02(6-10칸),
-     2행: 03(1-5칸)+04(5-13칸). 02는 자기 칸 안에서 justify-self:center로
-     가운데로, align-self:end로 01보다 살짝 아래로 - 같은 줄 안에서도
-     안 쏠리고 높이도 어긋나 보이게 (콜라주 느낌). 사진 크기는 01/04가
-     너무 크다는 피드백으로 줄임 - 02/03는 원래 크기 그대로 유지. */
-  .entry-1 { grid-column: 1 / 6; }
-  .entry-1 .entry-photo { max-width: 180px; }
-  .entry-2 { grid-column: 6 / 10; align-self: end; justify-self: center; }
-  .entry-2 .entry-photo { max-width: 130px; }
-  .entry-3 { grid-column: 1 / 5; }
-  .entry-3 .entry-photo { max-width: 160px; }
-  .entry-4 { grid-column: 5 / 13; }
-  .entry-4 .entry-photo { max-width: 220px; } /* 스크린샷이라 너무 작으면 글자가 안 보임 */
+  /* 항목마다 x/y와 크기를 따로 잡아 어긋나게 배치 (정렬된 격자처럼 보이지
+     않게). 01(좌상단, 큼) - 02(우상단, 작음, 살짝 아래로) - 03(좌하단,
+     작음) - 04(우하단, 스크린샷이라 조금 더 크게) 순으로 서로 겹치지 않게
+     여유 있는 간격을 두고 흩어놓는다. */
+  .entry-1 { top: 0; left: 0; }
+  .entry-1 .entry-photo { max-width: 190px; }
+  .entry-2 { top: 90px; left: 680px; }
+  .entry-2 .entry-photo { max-width: 120px; }
+  .entry-3 { top: 380px; left: 140px; }
+  .entry-3 .entry-photo { max-width: 150px; }
+  .entry-4 { top: 230px; left: 520px; }
+  .entry-4 .entry-photo { max-width: 230px; } /* 스크린샷이라 너무 작으면 글자가 안 보임 */
 
   @media (max-width: 640px) {
     .archive { padding: 48px 24px calc(110px + env(safe-area-inset-bottom, 0px)); }
-    .scrapbook { grid-template-columns: repeat(2, 1fr); gap: 20px 16px; }
-    /* 좁은 화면에선 12칸 배치가 의미 없어지니 그냥 2칸에 2장씩 */
-    .entry-1, .entry-2, .entry-3, .entry-4 { grid-column: auto; align-self: start; }
+    /* 좁은 화면에선 절대좌표 콜라주가 겹치거나 화면 밖으로 나가니 그냥
+       2칸짜리 grid로 안전하게 되돌린다. */
+    .scrapbook { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px 16px;
+      position: static; max-width: none; height: auto; }
+    .entry-1, .entry-2, .entry-3, .entry-4 { position: static; top: auto; left: auto; }
     .entry-1 .entry-photo { max-width: 120px; }
     .entry-2 .entry-photo { max-width: 100px; }
     .entry-3 .entry-photo { max-width: 110px; }
