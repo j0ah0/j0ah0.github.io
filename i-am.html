@@ -64,24 +64,23 @@ permalink: /i-am/
   }
 
   /* ---- 스크랩북: 사진마다 크기를 다르게 - 한 화면에서 사진들부터 훑어보고,
-     글은 사진을 클릭해야 옆에 나타난다 (기본은 숨김, 상시 노출 아님). ---- */
+     글은 사진을 클릭해야 나타난다 (기본은 숨김, 상시 노출 아님).
+     2열짜리 세로 나열이 아니라 진짜 2차원 그리드로 배치해서 - 같은 줄에
+     여러 장이 같이 들어가야 4장이 한 화면 안에 다 들어온다. */
   .scrapbook {
-    max-width: 820px;
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 20px 24px;
+    max-width: 1120px;
   }
-
-  .entry {
-    display: flex;
-    align-items: flex-start;
-    gap: 24px;
-    margin-bottom: 36px;
-  }
+  .entry { position: relative; }
   .entry-photo {
-    position: relative; flex: 0 0 auto;
+    position: relative;
     display: block; padding: 0; border: none; background: none;
     font: inherit; text-align: inherit; cursor: pointer;
     -webkit-tap-highlight-color: transparent;
   }
-  .entry-photo img { display: block; width: 100%; height: auto; }
+  .entry-photo img { display: block; width: 100%; max-width: 100%; height: auto; }
   .archive-num {
     display: block;
     font-family: var(--font);
@@ -91,8 +90,8 @@ permalink: /i-am/
     color: var(--num);
     margin: 0 0 6px 1px;
   }
-  /* 기본 숨김 - 사진을 클릭해야(.entry.is-open) 나타난다 */
-  .entry-text { display: none; flex: 1 1 auto; min-width: 0; padding-top: 4px; max-width: 30ch; }
+  /* 기본 숨김 - 사진을 클릭해야(.entry.is-open) 사진 바로 아래에 나타난다 */
+  .entry-text { display: none; padding-top: 10px; max-width: 32ch; }
   .entry.is-open .entry-text { display: block; }
   .entry-text h2 {
     font-size: 13px;
@@ -106,24 +105,27 @@ permalink: /i-am/
   }
   .entry-text p:last-child { margin-bottom: 0; }
 
-  /* 항목마다 사진 크기 + 살짝 어긋난 위치로 스크랩북/콜라주 느낌을 낸다 */
-  .entry-1 .entry-photo { width: 190px; }
-  .entry-2 { margin-left: 130px; }
-  .entry-2 .entry-photo { width: 100px; }
-  .entry-3 { margin-left: 36px; }
-  .entry-3 .entry-photo { width: 120px; }
-  .entry-4 { flex-direction: row-reverse; }
-  .entry-4 .entry-photo { width: 210px; } /* 스크린샷이라 너무 작으면 글자가 안 보임 */
-  .entry-4 .entry-text { text-align: right; }
+  /* 12칸 중 각 항목이 차지하는 칸 수로 크기를 다르게 - 1행: 01(6칸)+02(5칸),
+     2행: 03(4칸)+04(8칸). 02는 align-self:end로 01보다 살짝 아래로 내려서
+     같은 줄 안에서도 높이가 어긋나 보이게 (콜라주 느낌). */
+  .entry-1 { grid-column: 1 / 7; }
+  .entry-1 .entry-photo { max-width: 260px; }
+  .entry-2 { grid-column: 8 / 13; align-self: end; }
+  .entry-2 .entry-photo { max-width: 130px; }
+  .entry-3 { grid-column: 1 / 5; }
+  .entry-3 .entry-photo { max-width: 160px; }
+  .entry-4 { grid-column: 5 / 13; }
+  .entry-4 .entry-photo { max-width: 340px; } /* 스크린샷이라 너무 작으면 글자가 안 보임 */
 
   @media (max-width: 640px) {
     .archive { padding: 48px 24px calc(110px + env(safe-area-inset-bottom, 0px)); }
-    .entry { gap: 16px; margin-bottom: 28px; }
-    .entry-2, .entry-3 { margin-left: 0; }
-    .entry-1 .entry-photo { width: 150px; }
-    .entry-2 .entry-photo { width: 84px; }
-    .entry-3 .entry-photo { width: 96px; }
-    .entry-4 .entry-photo { width: 160px; }
+    .scrapbook { grid-template-columns: repeat(2, 1fr); gap: 20px 16px; }
+    /* 좁은 화면에선 12칸 배치가 의미 없어지니 그냥 2칸에 2장씩 */
+    .entry-1, .entry-2, .entry-3, .entry-4 { grid-column: auto; align-self: start; }
+    .entry-1 .entry-photo { max-width: 150px; }
+    .entry-2 .entry-photo { max-width: 100px; }
+    .entry-3 .entry-photo { max-width: 110px; }
+    .entry-4 .entry-photo { max-width: 170px; }
     .entry-text { max-width: none; }
   }
 
