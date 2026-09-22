@@ -23,7 +23,7 @@ permalink: /
     font-weight: 400; font-display: swap;
   }
 
-  .main-page { margin-top: 40vh; margin-left: -10px; font-family: 'Inter', -apple-system, "Helvetica Neue", Arial, sans-serif; }
+  .main-page { margin-top: 35vh; margin-left: -10px; font-family: 'Inter', -apple-system, "Helvetica Neue", Arial, sans-serif; }
   @media (max-width: 700px) {
     .main-page { margin-top: 25vh; }
   }
