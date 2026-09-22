@@ -140,8 +140,6 @@ permalink: /board/
   .gb-reply-dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
   .gb-secret-row input { width: 64px; padding: 0; border: none; background: transparent; font: inherit; color: var(--text); outline: none; }
   .gb-secret-row input::placeholder { color: var(--muted); opacity: 0.6; }
-  .gb-secret-row button { padding: 0; border: none; background: none; font: inherit; color: var(--text); cursor: pointer; }
-  .gb-secret-row button:hover { text-decoration: underline; text-underline-offset: 3px; }
 
   /* ---- 답글 사진 (이미 올라간 사진을 보여주기만 함) ---- */
   .gb-images { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; max-width: 480px; }
@@ -230,7 +228,6 @@ permalink: /board/
   #gb-app .gb-empty,
   #gb-app .gb-secret-row,
   #gb-app .gb-secret-row input,
-  #gb-app .gb-secret-row button,
   #gb-app .gb-form input,
   #gb-app .gb-form textarea,
   #gb-app .gb-reply-form textarea {
@@ -710,9 +707,8 @@ permalink: /board/
         if (getFailCount(entryId) >= MAX_TRIES) {
           row.textContent = "🔒 비밀번호를 5회 이상 틀려서 더 이상 열람할 수 없습니다.";
         } else {
-          row.innerHTML = '<span title="비밀글">🔒</span><span class="gb-reply-dot" style="display:none;" title="답글이 있어요"></span><input type="text" class="gb-pin-mask" maxlength="4" inputmode="numeric" placeholder="····" autocomplete="one-time-code" aria-label="4자리 숫자 코드"><button type="button" aria-label="열기">→</button>';
+          row.innerHTML = '<span title="비밀글">🔒</span><span class="gb-reply-dot" style="display:none;" title="답글이 있어요"></span><input type="text" class="gb-pin-mask" maxlength="4" inputmode="numeric" placeholder="····" autocomplete="one-time-code" aria-label="4자리 숫자 코드">';
           const input = row.querySelector("input");
-          const btn = row.querySelector("button");
           const replyDot = row.querySelector(".gb-reply-dot");
           onSnapshot(collection(db, "guestbook", entryId, "replies"), (rSnap) => {
             const hasReply = rSnap.docs.some((r) => !r.data().deleted);
@@ -733,9 +729,8 @@ permalink: /board/
               }
             }
           };
-          btn.addEventListener("click", reveal);
           input.addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); reveal(); } });
-          // 4자리를 다 입력하면 화살표를 누르거나 Enter를 치지 않아도 바로 확인한다.
+          // 4자리를 다 입력하면 자동으로 확인한다 - 화살표 버튼은 필요 없어져서 없앴다.
           input.addEventListener("input", () => {
             if (input.value.length === 4) reveal();
           });
