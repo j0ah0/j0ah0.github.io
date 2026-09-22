@@ -46,132 +46,78 @@ permalink: /i-am/
   .archive {
     position: relative;
     width: 100%;
-    min-height: 100vh;
     /* 바닥 여백은 fade보다 이 값이 진짜 방어선이다 (fade는 pointer-events:none
-       이라 클릭을 막지 못함) — 그리드 마지막 줄이 코너 네비 히트박스 근처에도
-       물리적으로 닿지 않도록 넉넉한 고정값 + 노치 안전영역까지 확보한다. */
-    padding: 96px 48px calc(160px + env(safe-area-inset-bottom, 0px));
-    transition: opacity .25s ease;
-    /* 프로필+그리드를 세로로 가운데 정렬 — 데스크톱/모바일 모두: 콘텐츠가
-       뷰포트보다 짧으면 위쪽 padding에 붙지 않고 (상하 padding 제외) 남는
-       공간 한가운데로 옴. 콘텐츠가 더 길면 평소처럼 자연스럽게 흘러서 차이 없음. */
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+       이라 클릭을 막지 못함) — 스크랩북 콘텐츠가 코너 네비 히트박스 근처에도
+       물리적으로 닿지 않도록 안전 여백 + 노치 안전영역까지 확보한다. */
+    padding: 56px 40px calc(110px + env(safe-area-inset-bottom, 0px));
   }
-  .archive.is-focused { opacity: 0; pointer-events: none; }
 
   .profile {
-    max-width: 1120px;
-    margin: 0 0 64px;
+    max-width: 1000px;
+    margin: 0 0 40px;
   }
   .profile p {
-    font-size: 13px;
-    line-height: 1.7;
+    font-size: 12px;
+    line-height: 1.6;
     color: var(--ink);
-    margin: 0 0 16px;
+    margin: 0 0 12px;
   }
 
-  .archive-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 72px 40px;
-    max-width: 1120px;
+  /* ---- 스크랩북: 사진마다 크기를 다르게, 글을 사진 바로 옆에 붙여서
+     한 화면에서 훑어볼 수 있게 - 클릭해서 여는 상세보기는 없음. ---- */
+  .scrapbook {
+    max-width: 820px;
   }
 
-  .archive-item {
-    position: relative;
+  .entry {
     display: flex;
-    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+    margin-bottom: 36px;
   }
-
+  .entry-photo { position: relative; flex: 0 0 auto; }
+  .entry-photo img { display: block; width: 100%; height: auto; }
   .archive-num {
     display: block;
     font-family: var(--font);
     font-weight: 500;
-    font-size: 12px;
+    font-size: 10px;
     letter-spacing: 0.04em;
     color: var(--num);
-    margin: 0 0 8px 1px;
+    margin: 0 0 6px 1px;
   }
-
-  .archive-photo-btn {
-    display: inline-block; width: auto; max-width: 100%; padding: 0; border: none; background: none;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-    margin-top: auto; /* bottom-align photos of differing heights within a row */
-    /* width:auto on a flex item stretches to the full column width by default
-       (align-items:stretch), which left-aligns any photo narrower than that
-       (notably the scaled-down item 02) instead of centering it - align-self
-       here makes the button hug its own content width so it centers instead. */
-    align-self: center;
-  }
-  .archive-photo {
-    /* Match every item's HEIGHT (not width) so the row reads evenly, while
-       each photo still keeps its own aspect ratio rather than being cropped. */
-    height: 170px; width: auto; max-width: 100%; object-fit: contain; display: block;
-    background: transparent;
-    transition: transform .6s cubic-bezier(.22,.61,.36,1);
-    will-change: transform;
-  }
-  .archive-photo-btn:hover .archive-photo,
-  .archive-photo-btn:focus-visible .archive-photo {
-    transform: scale(1.025);
-  }
-
-  .archive-detail {
-    position: fixed; z-index: 30; inset: 0;
-    display: flex; align-items: center; justify-content: flex-start;
-    padding: 0 8vw;
-    opacity: 0; pointer-events: none;
-    transition: opacity .3s ease;
-  }
-  .archive-detail.is-visible { opacity: 1; pointer-events: auto; }
-  .archive-detail-spacer { position: relative; flex: 0 0 clamp(180px, 24vw, 280px); }
-  .archive-detail-spacer .archive-num { position: absolute; top: -22px; left: 1px; margin: 0; }
-  .archive-detail-photo {
-    display: block; width: 100%; height: auto; max-height: 78vh;
-    object-fit: contain;
-  }
-  .archive-detail-text {
-    max-width: 46ch;
-    margin-left: clamp(32px, 6vw, 72px);
-  }
-  .archive-detail-text h2 {
-    font-size: 16px;
-    font-weight: 400;
-    line-height: 1.85;
+  .entry-text { flex: 1 1 auto; min-width: 0; padding-top: 4px; max-width: 30ch; }
+  .entry-text h2 {
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.6;
     color: var(--ink);
-    margin: 0 0 16px;
+    margin: 0 0 8px;
   }
-  .archive-detail-text p {
-    font-size: 16px; line-height: 1.85; color: var(--ink); margin: 0 0 16px;
+  .entry-text p {
+    font-size: 11.5px; line-height: 1.65; color: var(--ink); margin: 0 0 8px;
   }
+  .entry-text p:last-child { margin-bottom: 0; }
 
-  @media (max-width: 860px) {
-    .archive { padding: 88px 24px calc(160px + env(safe-area-inset-bottom, 0px)); }
-    .archive-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 56px 24px; }
-  }
-  @media (max-width: 560px) {
-    /* Shrink everything so a detail fits in one screen without scrolling
-       where possible, rather than just reducing the scroll distance. */
-    .archive-detail { flex-direction: column; align-items: flex-start;
-      /* 짧은 글(사진+한두 문단)은 위에 붙지 않고 화면 가운데로 오게.
-         justify-content: flex-start는 safe center를 못 알아듣는 구형
-         브라우저용 폴백 - 지원되면 아래 줄이 덮어써서 가운데 정렬되고,
-         글이 길어서 넘치면 safe 덕분에 위에서부터 정상적으로 스크롤됨
-         (그냥 center만 쓰면 넘칠 때 맨 위가 스크롤로 닿지 않는 버그가 있음). */
-      justify-content: flex-start;
-      justify-content: safe center;
-      padding: 52px 20px 64px; overflow-y: auto; }
-    /* flex-basis (the "0 0 <n>" part) sets the flex item's size along the
-       main axis, which flex-direction: column just switched to vertical —
-       so it now sizes height, not width. Width needs its own value or the
-       spacer (and the photo inside it) collapses to 0 wide. */
-    .archive-detail-spacer { flex: 0 0 min(34vw, 150px); width: min(34vw, 150px); }
-    .archive-detail-text { margin-left: 0; margin-top: 14px; max-width: 100%; }
-    .archive-detail-text h2 { font-size: 14px; margin-bottom: 10px; }
-    .archive-detail-text p { font-size: 13px; line-height: 1.6; margin-bottom: 10px; }
+  /* 항목마다 사진 크기 + 살짝 어긋난 위치로 스크랩북/콜라주 느낌을 낸다 */
+  .entry-1 .entry-photo { width: 190px; }
+  .entry-2 { margin-left: 130px; }
+  .entry-2 .entry-photo { width: 100px; }
+  .entry-3 { margin-left: 36px; }
+  .entry-3 .entry-photo { width: 120px; }
+  .entry-4 { flex-direction: row-reverse; }
+  .entry-4 .entry-photo { width: 210px; } /* 스크린샷이라 너무 작으면 글자가 안 보임 */
+  .entry-4 .entry-text { text-align: right; }
+
+  @media (max-width: 640px) {
+    .archive { padding: 48px 24px calc(110px + env(safe-area-inset-bottom, 0px)); }
+    .entry { gap: 16px; margin-bottom: 28px; }
+    .entry-2, .entry-3 { margin-left: 0; }
+    .entry-1 .entry-photo { width: 150px; }
+    .entry-2 .entry-photo { width: 84px; }
+    .entry-3 .entry-photo { width: 96px; }
+    .entry-4 .entry-photo { width: 160px; }
+    .entry-text { max-width: none; }
   }
 
   /* ---- 코너 고정 브랜드/네비게이션 (모든 페이지 공통) ----
@@ -183,9 +129,7 @@ permalink: /i-am/
   .corner-nav { position: fixed; bottom: 24px; right: 28px; line-height: 1.6; z-index: 1000;
     font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; }
   /* 히트박스만 키우는 트릭: padding으로 클릭 가능 영역을 늘리고 그만큼
-     음수 margin으로 상쇄해서 눈에 보이는 위치/간격은 그대로 유지한다.
-     "네비 누르려다 살짝 빗나가서" 바로 아래 그리드 사진이 눌리는 걸 막는
-     실질적 방어선 (fade는 시각효과일 뿐 클릭을 막지 못함). */
+     음수 margin으로 상쇄해서 눈에 보이는 위치/간격은 그대로 유지한다. */
   .corner-nav a {
     display: inline-block;
     color: #141414; text-decoration: none; font-size: 14px;
@@ -195,12 +139,12 @@ permalink: /i-am/
   .corner-nav a:first-child { margin-left: -8px; }
   .corner-nav a:hover { color: #8a8a86; }
 
-  /* 하단 네비게이션 구간을 사실상 불투명하게 덮어서, 스크롤되는 콘텐츠(그리드
-     이미지, 상세 텍스트)가 흐려지며 비치는 게 아니라 이 선에서 뚝 끊겨 보이게
-     한다 — 더 스크롤해야 그 아래 이어지는 내용이 위로 올라와 다시 보임.
-     맨 위 30px만 그라데이션을 줘서 경계선이 칼같이 각지지 않고 살짝
-     부드럽게 시작되고, 그 아래부터는 끝까지 완전 불투명.
-     네비(z-index:1000)보다 한 단계 낮게 두어 네비 글자는 항상 그 위에서 선명. */
+  /* 하단 네비게이션 구간을 사실상 불투명하게 덮어서, 스크롤되는 콘텐츠가
+     흐려지며 비치는 게 아니라 이 선에서 뚝 끊겨 보이게 한다 — 더 스크롤해야
+     그 아래 이어지는 내용이 위로 올라와 다시 보임. 맨 위 30px만 그라데이션을
+     줘서 경계선이 칼같이 각지지 않고 살짝 부드럽게 시작되고, 그 아래부터는
+     끝까지 완전 불투명. 네비(z-index:1000)보다 한 단계 낮게 두어 네비 글자는
+     항상 그 위에서 선명. */
   body::after {
     content: "";
     position: fixed;
@@ -221,152 +165,56 @@ permalink: /i-am/
     <p>2023 자연계열 졸업<br>현재 공대생 4학년</p>
     <p>ig: j0ah0</p>
   </div>
-  <div class="archive-grid" id="archiveGrid"></div>
-</div>
 
-<div class="archive-detail" id="archiveDetail">
-  <div class="archive-detail-spacer">
-    <span class="archive-num" id="detailNum"></span>
-    <img class="archive-detail-photo" id="detailPhoto" alt="" />
-  </div>
-  <div class="archive-detail-text">
-    <h2 id="detailTitle"></h2>
-    <div id="detailBody"></div>
+  <div class="scrapbook">
+    <div class="entry entry-1">
+      <div class="entry-photo">
+        <span class="archive-num">01</span>
+        <img src="{{ "/assets/archive-01-site.png" | relative_url }}" alt="맥북">
+      </div>
+      <div class="entry-text">
+        <h2>이 사이트를 만든 이유</h2>
+        <p>누군가에게 영감이 되고 싶었다. 이 사이트를 보고 위로를 받거나, 어떤 긍정적인 부분을 하나라도 가져간다면 좋겠다고 생각했다. 세상에 좋은 영향을 남기고 싶다는 생각도 문득 들었다. 그래서 만들었다. 기억해 달라는 말을 직접 하기보다는 사이트 하나 남겨두는 편이 조금 덜 민망한 것 같다.</p>
+      </div>
+    </div>
+
+    <div class="entry entry-2">
+      <div class="entry-photo">
+        <span class="archive-num">02</span>
+        <img src="{{ "/assets/archive-02-coffee.jpg" | relative_url }}" alt="커피">
+      </div>
+      <div class="entry-text">
+        <h2>행복 공식</h2>
+        <p>커피를 마시거나 술을 마시고 훌륭한 음악을 들으면 충분하다.</p>
+      </div>
+    </div>
+
+    <div class="entry entry-3">
+      <div class="entry-photo">
+        <span class="archive-num">03</span>
+        <img src="{{ "/assets/archive-03-olive.png" | relative_url }}" alt="올리브">
+      </div>
+      <div class="entry-text">
+        <h2>올리브를 싫어하는 이유</h2>
+        <p>블랙 올리브. 피자 위에 올라가는 그 검은 링이다. 원래 초록색이던 걸 화학 처리로 검게 만든 것이다. 색을 고정하려고 철분 시약을 넣는다. 그래서인지 입에 넣으면 피 비린내 같은 금속 냄새가 난다. 거기에 떫고 쓴맛도 남는다. 지방 성분이 입안을 오래 코팅하면서 그 향을 계속 붙잡아둔다.</p>
+        <p>화학 실험을 자주 하다 보니 뇌가 방향족 화합물 냄새와 이 맛을 비슷하게 묶어버린 모양이다. 위험한 것으로 분류해놓고 계속 뱉어내려 하는 것이다. 이유가 많아 보이는데... 그냥 몸이 정직하게 반응하는 편이다. 비슷한 이유로 녹차, 떫은 와인, 카카오 함량이 높은 다크 초콜릿 등도 한동안 못 먹었다.</p>
+      </div>
+    </div>
+
+    <div class="entry entry-4">
+      <div class="entry-photo">
+        <span class="archive-num">04</span>
+        <img src="{{ "/assets/archive-04-superficial.png" | relative_url }}" alt="피상적 뜻">
+      </div>
+      <div class="entry-text">
+        <h2>피상적 뜻</h2>
+        <p>겉으로만 친한 척하는 것, 내용 없는 대화, 유행이라서 좋아하는 척하는 것... 이런 것들 앞에서 마음이 금방 식는다. 말과 행동이 다른 사람도 그렇다. 한다고 해놓고 안 하고, 좋다고 해놓고 반대로 행동하는 것. 한두 번이면 넘어갈 수 있다. 그런데 패턴이 되면 신뢰가 빠르게 사라진다.</p>
+        <p>욕도 비슷하다. 꼭 필요해서 쓰는 말이라기보다 순간의 감정을 대충 덮어버리는 말처럼 느껴질 때가 많다. 정확한 단어를 고르는 편이 더 낫다.</p>
+      </div>
+    </div>
   </div>
 </div>
 
 {% include corner-nav.html %}
-
-<script>
-// Each item is one small personal essay, represented by a photo.
-const ITEMS = [
-  {
-    idx: '01',
-    img: '{{ "/assets/archive-01-site.png" | relative_url }}',
-    alt: '맥북',
-    title: '이 사이트를 만든 이유',
-    paras: [
-      '누군가에게 영감이 되고 싶었다. 이 사이트를 보고 위로를 받거나, 어떤 긍정적인 부분을 하나라도 가져간다면 좋겠다고 생각했다. 세상에 좋은 영향을 남기고 싶다는 생각도 문득 들었다. 그래서 만들었다. 기억해 달라는 말을 직접 하기보다는 사이트 하나 남겨두는 편이 조금 덜 민망한 것 같다.'
-    ]
-  },
-  {
-    idx: '02',
-    img: '{{ "/assets/archive-02-coffee.jpg" | relative_url }}',
-    alt: '커피',
-    scale: 0.72,
-    title: '행복 공식',
-    paras: [
-      '커피를 마시거나 술을 마시고 훌륭한 음악을 들으면 충분하다.'
-    ]
-  },
-  {
-    idx: '03',
-    img: '{{ "/assets/archive-03-olive.png" | relative_url }}',
-    alt: '올리브',
-    title: '올리브를 싫어하는 이유',
-    paras: [
-      '블랙 올리브. 피자 위에 올라가는 그 검은 링이다. 원래 초록색이던 걸 화학 처리로 검게 만든 것이다. 색을 고정하려고 철분 시약을 넣는다. 그래서인지 입에 넣으면 피 비린내 같은 금속 냄새가 난다. 거기에 떫고 쓴맛도 남는다. 지방 성분이 입안을 오래 코팅하면서 그 향을 계속 붙잡아둔다.',
-      '화학 실험을 자주 하다 보니 뇌가 방향족 화합물 냄새와 이 맛을 비슷하게 묶어버린 모양이다. 위험한 것으로 분류해놓고 계속 뱉어내려 하는 것이다. 이유가 많아 보이는데... 그냥 몸이 정직하게 반응하는 편이다. 비슷한 이유로 녹차, 떫은 와인, 카카오 함량이 높은 다크 초콜릿 등도 한동안 못 먹었다.'
-    ]
-  },
-  {
-    idx: '04',
-    img: '{{ "/assets/archive-04-superficial.png" | relative_url }}',
-    alt: '피상적 뜻',
-    title: '피상적 뜻',
-    paras: [
-      '겉으로만 친한 척하는 것, 내용 없는 대화, 유행이라서 좋아하는 척하는 것... 이런 것들 앞에서 마음이 금방 식는다. 말과 행동이 다른 사람도 그렇다. 한다고 해놓고 안 하고, 좋다고 해놓고 반대로 행동하는 것. 한두 번이면 넘어갈 수 있다. 그런데 패턴이 되면 신뢰가 빠르게 사라진다.',
-      '욕도 비슷하다. 꼭 필요해서 쓰는 말이라기보다 순간의 감정을 대충 덮어버리는 말처럼 느껴질 때가 많다. 정확한 단어를 고르는 편이 더 낫다.'
-    ]
-  }
-];
-
-const archiveEl = document.querySelector('.archive');
-const grid = document.getElementById('archiveGrid');
-const detail = document.getElementById('archiveDetail');
-const detailNum = document.getElementById('detailNum');
-const detailPhoto = document.getElementById('detailPhoto');
-const detailTitle = document.getElementById('detailTitle');
-const detailBody = document.getElementById('detailBody');
-
-let openState = null; // the currently open item, or null
-
-const BASE_PHOTO_HEIGHT = 170; // px, matches .archive-photo's default height
-
-ITEMS.forEach((item) => {
-  const el = document.createElement('div');
-  el.className = 'archive-item';
-  el.innerHTML = `
-    <span class="archive-num">${item.idx}</span>
-    <button type="button" class="archive-photo-btn" aria-label="${item.title}">
-      <img class="archive-photo" src="${item.img}" alt="${item.alt}" />
-    </button>
-  `;
-  if (item.scale) {
-    el.querySelector('.archive-photo').style.height = (BASE_PHOTO_HEIGHT * item.scale) + 'px';
-  }
-  el.querySelector('.archive-photo-btn').addEventListener('click', (e) => {
-    e.stopPropagation(); // don't let this same click reach the document-level closer below
-    openItem(item);
-  });
-  grid.appendChild(el);
-});
-
-// Simple crossfade, no photo-flies-across-the-screen animation: the grid
-// fades out (.is-focused), the detail panel fades in with its own static
-// photo already in place (.archive-detail's opacity transition + the text's
-// own fade-in handle the motion, nothing more elaborate than that).
-function openItem(item) {
-  if (openState) return;
-  archiveEl.classList.add('is-focused');
-  detailNum.textContent = item.idx;
-  detailPhoto.src = item.img;
-  detailPhoto.alt = item.alt;
-  detailTitle.textContent = item.title;
-  detailBody.innerHTML = item.paras.map(p => `<p>${p}</p>`).join('');
-  detail.classList.add('is-visible');
-  openState = item;
-}
-
-function closeDetail() {
-  if (!openState) return;
-  detail.classList.remove('is-visible');
-  archiveEl.classList.remove('is-focused');
-  openState = null;
-}
-
-// Tapping anywhere while a detail is open goes back — including on the
-// photo, its number label, or empty space. Only the corner nav links are
-// exempt so they still navigate normally instead of just closing.
-//
-// This is pointerdown/pointerup based rather than `click`, because mobile
-// browsers silently suppress `click` whenever the touch moved even a
-// little (trivially easy once the detail view is scrollable), which made
-// "tap anywhere to close" unreliable. A tap is instead anything where the
-// pointer didn't travel far and didn't take long, regardless of whether
-// `click` ends up firing.
-let tapStart = null;
-document.addEventListener('pointerdown', (e) => {
-  if (!openState) return;
-  tapStart = { x: e.clientX, y: e.clientY, t: Date.now() };
-});
-document.addEventListener('pointerup', (e) => {
-  if (!openState || !tapStart) return;
-  const { x, y, t } = tapStart;
-  tapStart = null;
-  const moved = Math.hypot(e.clientX - x, e.clientY - y);
-  // 10px는 실제 손가락 탭에서도 흔히 넘는 값이라 (터치는 마우스 클릭처럼
-  // 0px로 안 찍힘) 진짜 탭까지 죄다 "드래그"로 오인해서 뒤로가기가 거의
-  // 안 먹혔다 - 안드로이드/iOS의 통상적인 탭 오차 허용치(20~30px대)에
-  // 맞춰 24px로 완화.
-  if (moved > 24 || Date.now() - t > 500) return; // a scroll/drag, not a tap
-  if (e.target.closest('.corner-nav, .corner-brand')) return;
-  closeDetail();
-});
-
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') closeDetail();
-});
-</script>
 </body>
 </html>
