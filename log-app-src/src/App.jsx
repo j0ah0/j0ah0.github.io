@@ -44,11 +44,30 @@ function groupBySeason(items) {
   return buckets
 }
 
+// The resting (pointer-centered) camera position, tuned against a typical
+// wide desktop window (~1.3 aspect). See REFERENCE_ASPECT in Scene's
+// useFrame below for why narrower/portrait viewports need this scaled up.
+const REFERENCE_ASPECT = 1.3
+const BASE_CAMERA_POS = [0, 4.5, 15]
+
+function restingCameraPosition() {
+  if (typeof window === 'undefined') return BASE_CAMERA_POS
+  const aspect = window.innerWidth / window.innerHeight
+  const distScale = aspect < REFERENCE_ASPECT ? REFERENCE_ASPECT / aspect : 1
+  return BASE_CAMERA_POS.map((v) => v * distScale)
+}
+
 export const App = () => {
   const [hovered, setHovered] = useState(null)
+  // Computed once (not on every hovered-triggered re-render) so the initial
+  // camera prop object stays referentially stable across the component's
+  // life — and, more importantly, so it already starts scaled for a narrow/
+  // portrait device instead of animating out to that distance after mount
+  // (which is exactly the zoom-out intro this ring intentionally doesn't do).
+  const initialCamera = useMemo(() => ({ position: restingCameraPosition(), fov: 45 }), [])
   return (
     <>
-      <Canvas dpr={[1, 1.5]} gl={{ antialias: false }} camera={{ position: [0, 4.5, 15], fov: 45 }}>
+      <Canvas dpr={[1, 1.5]} gl={{ antialias: false }} camera={initialCamera}>
         <Scene position={[0, 1.5, 0]} onHover={setHovered} />
       </Canvas>
       <HoverPreview item={hovered} />
@@ -186,14 +205,18 @@ function Scene({ children, onHover, ...props }) {
     // still responsive enough for hover-while-rotating and halves that cost.
     frameCount.current++
     if (frameCount.current % 2 === 0) state.events.update()
-    // Camera position tracks the pointer only — no viewport-size-based
-    // distance scaling. That responsive "pull back on narrow screens" hack
-    // (see git history) moved the camera itself based on aspect ratio,
-    // which fights the projection matrix that Three.js already recomputes
-    // on resize and made framing more sensitive to window size, not less.
+    // On a narrow/portrait viewport the same vertical FOV shows a much
+    // narrower horizontal slice, so the wide ring gets clipped on the sides.
+    // The framing was tuned against a typical wide desktop window (~1.3
+    // aspect), so pull the camera back proportionally any time the viewport
+    // is narrower than that reference, not just when it's taller than wide.
+    // (initialCamera above seeds this same scale at mount so there's no
+    // animated pull-back on load — this just keeps it correct on resize.)
+    const aspect = state.size.width / state.size.height
+    const distScale = aspect < REFERENCE_ASPECT ? REFERENCE_ASPECT / aspect : 1
     easing.damp3(
       state.camera.position,
-      [-state.pointer.x * 3.5, state.pointer.y * 2 + 4.5, 15],
+      [-state.pointer.x * 3.5 * distScale, (state.pointer.y * 2 + 4.5) * distScale, 15 * distScale],
       0.15,
       delta
     )
