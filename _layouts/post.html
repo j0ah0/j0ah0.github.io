@@ -16,6 +16,11 @@ layout: default
      이 스타일은 post 레이아웃에만 적용되고 다른 페이지에는 영향이 없다. */
   .wrap { padding-left: 30px; padding-right: 30px; }
   main.wrap { padding-top: 160px; }
+  /* Back/Next 네비(top:24px, 14px 텍스트, 하단 약 46px)와 날짜 줄 사이 간격을
+     모바일에서 80px로 — 데스크톱 160px는 더 넓은 간격이라 그대로 둔다. */
+  @media (max-width: 700px) {
+    main.wrap { padding-top: 126px; }
+  }
   .post-article { font-size: 13px; line-height: 1.55; }
   .post-article h1 { font-size: 13px; font-weight: 400; letter-spacing: 0; line-height: 1.55; margin: 0 0 36px; }
   /* 월/일 editorial navigation: 두 칸 그리드라 일(day)은 콘텐츠 폭의 정중앙에서 시작 */
