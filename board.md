@@ -138,7 +138,9 @@ permalink: /board/
   /* ---- 비밀글 ---- */
   .gb-secret-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); }
   .gb-reply-dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
-  .gb-secret-row input { width: 64px; padding: 0; border: none; background: transparent; font: inherit; color: var(--text); outline: none; }
+  /* font-size 16px: iOS Safari는 포커스되는 입력칸 글자가 16px보다 작으면
+     자동으로 화면을 확대한다 (name/content 입력창에 적용한 것과 같은 이유). */
+  .gb-secret-row input { width: 64px; padding: 0; border: none; background: transparent; font: inherit; font-size: 16px; color: var(--text); outline: none; }
   .gb-secret-row input::placeholder { color: var(--muted); opacity: 0.6; }
 
   /* ---- 답글 사진 (이미 올라간 사진을 보여주기만 함) ---- */
