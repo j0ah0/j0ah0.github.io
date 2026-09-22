@@ -105,27 +105,29 @@ permalink: /i-am/
   }
   .entry-text p:last-child { margin-bottom: 0; }
 
-  /* 12칸 중 각 항목이 차지하는 칸 수로 크기를 다르게 - 1행: 01(6칸)+02(5칸),
-     2행: 03(4칸)+04(8칸). 02는 align-self:end로 01보다 살짝 아래로 내려서
-     같은 줄 안에서도 높이가 어긋나 보이게 (콜라주 느낌). */
-  .entry-1 { grid-column: 1 / 7; }
-  .entry-1 .entry-photo { max-width: 260px; }
-  .entry-2 { grid-column: 8 / 13; align-self: end; }
+  /* 12칸 중 각 항목이 차지하는 칸 수로 배치 - 1행: 01(1-6칸)+02(6-10칸),
+     2행: 03(1-5칸)+04(5-13칸). 02는 자기 칸 안에서 justify-self:center로
+     가운데로, align-self:end로 01보다 살짝 아래로 - 같은 줄 안에서도
+     안 쏠리고 높이도 어긋나 보이게 (콜라주 느낌). 사진 크기는 01/04가
+     너무 크다는 피드백으로 줄임 - 02/03는 원래 크기 그대로 유지. */
+  .entry-1 { grid-column: 1 / 6; }
+  .entry-1 .entry-photo { max-width: 180px; }
+  .entry-2 { grid-column: 6 / 10; align-self: end; justify-self: center; }
   .entry-2 .entry-photo { max-width: 130px; }
   .entry-3 { grid-column: 1 / 5; }
   .entry-3 .entry-photo { max-width: 160px; }
   .entry-4 { grid-column: 5 / 13; }
-  .entry-4 .entry-photo { max-width: 340px; } /* 스크린샷이라 너무 작으면 글자가 안 보임 */
+  .entry-4 .entry-photo { max-width: 220px; } /* 스크린샷이라 너무 작으면 글자가 안 보임 */
 
   @media (max-width: 640px) {
     .archive { padding: 48px 24px calc(110px + env(safe-area-inset-bottom, 0px)); }
     .scrapbook { grid-template-columns: repeat(2, 1fr); gap: 20px 16px; }
     /* 좁은 화면에선 12칸 배치가 의미 없어지니 그냥 2칸에 2장씩 */
     .entry-1, .entry-2, .entry-3, .entry-4 { grid-column: auto; align-self: start; }
-    .entry-1 .entry-photo { max-width: 150px; }
+    .entry-1 .entry-photo { max-width: 120px; }
     .entry-2 .entry-photo { max-width: 100px; }
     .entry-3 .entry-photo { max-width: 110px; }
-    .entry-4 .entry-photo { max-width: 170px; }
+    .entry-4 .entry-photo { max-width: 140px; }
     .entry-text { max-width: none; }
   }
 
