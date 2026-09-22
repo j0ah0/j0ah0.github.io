@@ -45,6 +45,14 @@
   .corner-nav a:first-child { margin-left: 0; }
   .corner-nav a:hover { color: #8a8a86; }
 
+  /* 모바일에서는 화면이 좁아 네비 5개 항목이 부담스럽다 — 더 압축된 크기로,
+     좌우 끝(28px)에 더 바짝 붙여 가운데 공간을 넓게 확보한다. */
+  @media (max-width: 700px) {
+    .corner-brand { left: 16px; font-size: 12px; }
+    .corner-nav { right: 16px; }
+    .corner-nav a { font-size: 12px; margin-left: 12px; }
+  }
+
   /* 모바일에서는 배경이 없는 텍스트라 스크롤되는 본문 글자가 네비 글자와 그대로
      겹쳐 보인다 (데스크톱은 페이지가 짧아 잘 스크롤 안 해서 덜 두드러졌었다).
      화면 아래쪽에 옅은 그라데이션을 깔아서, 지나가는 글이 네비 근처에서
