@@ -100,6 +100,11 @@ permalink: /i-am/
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
     margin-top: auto; /* bottom-align photos of differing heights within a row */
+    /* width:auto on a flex item stretches to the full column width by default
+       (align-items:stretch), which left-aligns any photo narrower than that
+       (notably the scaled-down item 02) instead of centering it - align-self
+       here makes the button hug its own content width so it centers instead. */
+    align-self: center;
   }
   .archive-photo {
     /* Match every item's HEIGHT (not width) so the row reads evenly, while
