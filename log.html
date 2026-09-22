@@ -9,7 +9,13 @@ permalink: /log/
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Log - {{ site.title }}</title>
   <style>
-    html, body { margin: 0; height: 100%; overflow: hidden; background: #fdfdfc; }
+    /* overflow:hidden만으로는 iOS/Android의 풀다운-새로고침, 고무줄(바운스)
+       스크롤을 못 막는다 — 그건 문서 스크롤이 아니라 브라우저 자체 제스처라서,
+       터치를 다 우리 JS(링 회전용 touchmove)가 가져가더라도 브라우저가 같은
+       터치를 페이지 새로고침/바운스로도 동시에 해석해버린다. overscroll-behavior
+       와 touch-action으로 그 기본 제스처 자체를 꺼야 화면이 안 밀린다. */
+    html, body { margin: 0; height: 100%; overflow: hidden; overscroll-behavior: none;
+      touch-action: none; background: #fdfdfc; }
     /* drei's ScrollControls creates a scrollable div to capture wheel/touch
        input; hide its native scrollbar since scroll-hint already explains it. */
     * { scrollbar-width: none; -ms-overflow-style: none; scroll-snap-type: none !important; }
