@@ -726,6 +726,11 @@ permalink: /board/
               row.remove();
               renderOpen(item, entryId, d.content);
               scheduleLayoutFlow();
+              // 키보드가 닫히는 애니메이션 도중에 코너 네비 위치를 재면 그
+              // 잘못된(너무 낮은) 값이 그대로 굳어서, 이후 계속 입력창이 밀려
+              // 보이는 상태가 된다. 애니메이션이 끝날 시간(약 350ms)을 준 뒤
+              // 한 번 더 재서 바로잡는다.
+              setTimeout(scheduleLayoutFlow, 350);
             } else {
               const fails = incrementFailCount(entryId);
               if (fails >= MAX_TRIES) {
