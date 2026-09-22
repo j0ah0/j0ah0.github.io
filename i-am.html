@@ -63,8 +63,8 @@ permalink: /i-am/
     margin: 0 0 12px;
   }
 
-  /* ---- 스크랩북: 사진마다 크기를 다르게, 글을 사진 바로 옆에 붙여서
-     한 화면에서 훑어볼 수 있게 - 클릭해서 여는 상세보기는 없음. ---- */
+  /* ---- 스크랩북: 사진마다 크기를 다르게 - 한 화면에서 사진들부터 훑어보고,
+     글은 사진을 클릭해야 옆에 나타난다 (기본은 숨김, 상시 노출 아님). ---- */
   .scrapbook {
     max-width: 820px;
   }
@@ -75,7 +75,12 @@ permalink: /i-am/
     gap: 24px;
     margin-bottom: 36px;
   }
-  .entry-photo { position: relative; flex: 0 0 auto; }
+  .entry-photo {
+    position: relative; flex: 0 0 auto;
+    display: block; padding: 0; border: none; background: none;
+    font: inherit; text-align: inherit; cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
   .entry-photo img { display: block; width: 100%; height: auto; }
   .archive-num {
     display: block;
@@ -86,7 +91,9 @@ permalink: /i-am/
     color: var(--num);
     margin: 0 0 6px 1px;
   }
-  .entry-text { flex: 1 1 auto; min-width: 0; padding-top: 4px; max-width: 30ch; }
+  /* 기본 숨김 - 사진을 클릭해야(.entry.is-open) 나타난다 */
+  .entry-text { display: none; flex: 1 1 auto; min-width: 0; padding-top: 4px; max-width: 30ch; }
+  .entry.is-open .entry-text { display: block; }
   .entry-text h2 {
     font-size: 13px;
     font-weight: 500;
@@ -168,10 +175,10 @@ permalink: /i-am/
 
   <div class="scrapbook">
     <div class="entry entry-1">
-      <div class="entry-photo">
+      <button type="button" class="entry-photo" aria-expanded="false">
         <span class="archive-num">01</span>
         <img src="{{ "/assets/archive-01-site.png" | relative_url }}" alt="맥북">
-      </div>
+      </button>
       <div class="entry-text">
         <h2>이 사이트를 만든 이유</h2>
         <p>누군가에게 영감이 되고 싶었다. 이 사이트를 보고 위로를 받거나, 어떤 긍정적인 부분을 하나라도 가져간다면 좋겠다고 생각했다. 세상에 좋은 영향을 남기고 싶다는 생각도 문득 들었다. 그래서 만들었다. 기억해 달라는 말을 직접 하기보다는 사이트 하나 남겨두는 편이 조금 덜 민망한 것 같다.</p>
@@ -179,10 +186,10 @@ permalink: /i-am/
     </div>
 
     <div class="entry entry-2">
-      <div class="entry-photo">
+      <button type="button" class="entry-photo" aria-expanded="false">
         <span class="archive-num">02</span>
         <img src="{{ "/assets/archive-02-coffee.jpg" | relative_url }}" alt="커피">
-      </div>
+      </button>
       <div class="entry-text">
         <h2>행복 공식</h2>
         <p>커피를 마시거나 술을 마시고 훌륭한 음악을 들으면 충분하다.</p>
@@ -190,10 +197,10 @@ permalink: /i-am/
     </div>
 
     <div class="entry entry-3">
-      <div class="entry-photo">
+      <button type="button" class="entry-photo" aria-expanded="false">
         <span class="archive-num">03</span>
         <img src="{{ "/assets/archive-03-olive.png" | relative_url }}" alt="올리브">
-      </div>
+      </button>
       <div class="entry-text">
         <h2>올리브를 싫어하는 이유</h2>
         <p>블랙 올리브. 피자 위에 올라가는 그 검은 링이다. 원래 초록색이던 걸 화학 처리로 검게 만든 것이다. 색을 고정하려고 철분 시약을 넣는다. 그래서인지 입에 넣으면 피 비린내 같은 금속 냄새가 난다. 거기에 떫고 쓴맛도 남는다. 지방 성분이 입안을 오래 코팅하면서 그 향을 계속 붙잡아둔다.</p>
@@ -202,10 +209,10 @@ permalink: /i-am/
     </div>
 
     <div class="entry entry-4">
-      <div class="entry-photo">
+      <button type="button" class="entry-photo" aria-expanded="false">
         <span class="archive-num">04</span>
         <img src="{{ "/assets/archive-04-superficial.png" | relative_url }}" alt="피상적 뜻">
-      </div>
+      </button>
       <div class="entry-text">
         <h2>피상적 뜻</h2>
         <p>겉으로만 친한 척하는 것, 내용 없는 대화, 유행이라서 좋아하는 척하는 것... 이런 것들 앞에서 마음이 금방 식는다. 말과 행동이 다른 사람도 그렇다. 한다고 해놓고 안 하고, 좋다고 해놓고 반대로 행동하는 것. 한두 번이면 넘어갈 수 있다. 그런데 패턴이 되면 신뢰가 빠르게 사라진다.</p>
@@ -216,5 +223,17 @@ permalink: /i-am/
 </div>
 
 {% include corner-nav.html %}
+
+<script>
+// 사진을 클릭하면 그 옆의 글이 나타난다 (다시 누르면 접힘) - 기본은 사진만
+// 보이는 상태라 페이지가 훨씬 짧고, 필요한 글만 펼쳐서 읽는 방식.
+document.querySelectorAll('.entry-photo').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const entry = btn.closest('.entry');
+    const open = entry.classList.toggle('is-open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+});
+</script>
 </body>
 </html>
