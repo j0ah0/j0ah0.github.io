@@ -70,67 +70,54 @@ permalink: /i-am/
   .scrapbook {
     position: relative;
     max-width: 1040px;
-    height: 620px;
+    height: 700px;
+    margin-top: 55px;
   }
   .entry { position: absolute; }
-  /* 번호가 사진 위가 아니라 사진 옆(왼쪽)에 나란히: "01 [사진]" 형태.
-     버튼을 flex row로 만들고, 크기 제한은 버튼이 아니라 img에 직접 줘서
-     번호가 이미지 몫의 너비를 깎아먹지 않게 한다. */
   .entry-photo {
     position: relative;
-    display: flex; align-items: flex-start; gap: 6px;
-    padding: 0; border: none; background: none;
-    font: inherit; text-align: inherit; cursor: pointer;
+    display: block; padding: 0; border: none; background: none;
+    font: inherit; text-align: left; cursor: pointer;
     -webkit-tap-highlight-color: transparent;
   }
-  .entry-photo img { display: block; width: 100%; height: auto; }
+  .entry-photo img { display: block; width: 100%; max-width: 100%; height: auto; }
   .archive-num {
     display: block;
     font-family: var(--font);
     font-weight: 500;
     font-size: 10px;
-    letter-spacing: 0.04em;
+    line-height: 1;
+    letter-spacing: 0;
     color: var(--num);
-    margin: 0 0 6px 1px;
-  }
-  /* 그리드 썸네일에서는 번호가 사진 위가 아니라 사진 왼쪽 옆에 나란히
-     온다 - flex row라 그냥 margin만 지우면 됨 (gap이 간격을 줌). */
-  .entry-photo .archive-num {
-    margin: 0; flex: 0 0 auto;
+    margin: 0 0 7px 0;
   }
   /* 이 안의 글은 그리드에 직접 보이지 않는다 - 사진을 클릭하면 아래
      #detailOverlay가 이 내용을 읽어다가 가운데 뜨는 창으로 보여준다. */
   .entry-text { display: none; }
 
-  /* 항목마다 x/y와 크기를 따로 잡아 어긋나게 배치 (정렬된 격자처럼 보이지
-     않게). 01(좌상단, 큼) - 02(우상단, 작음, 살짝 아래로) - 03(좌하단,
-     작음) - 04(우하단, 스크린샷이라 조금 더 크게) 순으로 서로 겹치지 않게
-     여유 있는 간격을 두고 흩어놓는다. */
-  .entry-1 { top: 0; left: 0; }
-  .entry-1 .entry-photo img { max-width: 120px; }
-  /* 01: 번호를 사진 오른쪽에 (flex 순서만 뒤집음, 둘 다 top 정렬 그대로) */
-  .entry-1 .entry-photo { flex-direction: row-reverse; }
-  .entry-2 { top: 90px; left: 680px; }
-  .entry-2 .entry-photo img { max-width: 120px; }
-  .entry-3 { top: 380px; left: 140px; }
-  .entry-3 .entry-photo img { max-width: 150px; }
-  /* 03: 번호를 사진 옆이 아니라 다시 위로, 오른쪽 정렬로 */
-  .entry-3 .entry-photo { display: block; }
-  .entry-3 .entry-photo .archive-num { display: block; text-align: right; margin: 0 0 6px 0; }
-  .entry-4 { top: 230px; left: 520px; }
-  .entry-4 .entry-photo img { max-width: 190px; } /* 스크린샷이라 너무 작으면 글자가 안 보임 */
+  /* 항목마다 x/y와 크기를 따로 잡아 비대칭으로 배치 (정렬된 격자처럼
+     보이지 않게) - 01/03은 왼쪽, 02/04는 오른쪽 열에 세로로 겹치지 않게
+     어긋나게 둔다. */
+  .entry-1 { top: 10px; left: 15px; }
+  .entry-1 .entry-photo { max-width: 250px; }
+  .entry-2 { top: 55px; left: 510px; }
+  .entry-2 .entry-photo { max-width: 190px; }
+  .entry-3 { top: 350px; left: 110px; }
+  .entry-3 .entry-photo { max-width: 180px; }
+  .entry-4 { top: 220px; left: 510px; }
+  .entry-4 .entry-photo { max-width: 250px; } /* 스크린샷이라 너무 작으면 글자가 안 보임 */
 
   @media (max-width: 640px) {
     .archive { padding: 48px 24px calc(110px + env(safe-area-inset-bottom, 0px)); }
     /* 좁은 화면에선 절대좌표 콜라주가 겹치거나 화면 밖으로 나가니 그냥
        2칸짜리 grid로 안전하게 되돌린다. */
     .scrapbook { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px 16px;
-      position: static; max-width: none; height: auto; }
+      position: static; max-width: none; height: auto; margin-top: 0; }
     .entry-1, .entry-2, .entry-3, .entry-4 { position: static; top: auto; left: auto; }
-    .entry-1 .entry-photo img { max-width: 100px; }
-    .entry-2 .entry-photo img { max-width: 100px; }
-    .entry-3 .entry-photo img { max-width: 110px; }
-    .entry-4 .entry-photo img { max-width: 115px; }
+    .entry-1 .entry-photo { max-width: 120px; }
+    .entry-2 .entry-photo { max-width: 100px; }
+    .entry-3 .entry-photo { max-width: 100px; }
+    .entry-4 .entry-photo { max-width: 120px; }
   }
 
   /* ---- 사진을 클릭하면 가운데 뜨는 창 - 그리드 안에 바로 펼치는 대신
