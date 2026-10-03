@@ -98,13 +98,13 @@ permalink: /i-am/
      작음) - 04(우하단, 스크린샷이라 조금 더 크게) 순으로 서로 겹치지 않게
      여유 있는 간격을 두고 흩어놓는다. */
   .entry-1 { top: 0; left: 0; }
-  .entry-1 .entry-photo { max-width: 190px; }
+  .entry-1 .entry-photo { max-width: 120px; }
   .entry-2 { top: 90px; left: 680px; }
   .entry-2 .entry-photo { max-width: 120px; }
   .entry-3 { top: 380px; left: 140px; }
   .entry-3 .entry-photo { max-width: 150px; }
   .entry-4 { top: 230px; left: 520px; }
-  .entry-4 .entry-photo { max-width: 230px; } /* 스크린샷이라 너무 작으면 글자가 안 보임 */
+  .entry-4 .entry-photo { max-width: 190px; } /* 스크린샷이라 너무 작으면 글자가 안 보임 */
 
   @media (max-width: 640px) {
     .archive { padding: 48px 24px calc(110px + env(safe-area-inset-bottom, 0px)); }
@@ -113,10 +113,10 @@ permalink: /i-am/
     .scrapbook { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px 16px;
       position: static; max-width: none; height: auto; }
     .entry-1, .entry-2, .entry-3, .entry-4 { position: static; top: auto; left: auto; }
-    .entry-1 .entry-photo { max-width: 120px; }
+    .entry-1 .entry-photo { max-width: 100px; }
     .entry-2 .entry-photo { max-width: 100px; }
     .entry-3 .entry-photo { max-width: 110px; }
-    .entry-4 .entry-photo { max-width: 140px; }
+    .entry-4 .entry-photo { max-width: 115px; }
   }
 
   /* ---- 사진을 클릭하면 가운데 뜨는 창 - 그리드 안에 바로 펼치는 대신
