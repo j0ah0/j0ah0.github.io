@@ -96,6 +96,7 @@ permalink: /i-am/
   .entry-photo img { display: block; width: 100%; max-width: 100%; height: auto; }
   .archive-num {
     position: absolute;
+    z-index: 20; /* 사진끼리 겹쳐도 번호가 가려지지 않게 */
     font-family: var(--font);
     font-weight: 500;
     font-size: 10px;
@@ -103,6 +104,7 @@ permalink: /i-am/
     letter-spacing: 0;
     color: var(--num);
     margin: 0;
+    white-space: nowrap;
   }
   /* 이 안의 글은 그리드에 직접 보이지 않는다 - 사진을 클릭하면 아래
      #detailOverlay가 이 내용을 읽어다가 가운데 뜨는 창으로 보여준다. */
@@ -110,19 +112,21 @@ permalink: /i-am/
 
   /* 01 위쪽 중앙 - 02 왼쪽으로 크게 - 03 다시 중앙쪽 - 04 오른쪽 아래로.
      시선이 좌우로 오가며 지면을 타고 내려가게. 크기도 중간/작음/중간-큼/
-     작음으로 다르게 둬서 사진마다 시각적 무게가 다르다. */
+     작음으로 다르게 둬서 사진마다 시각적 무게가 다르다. 사진끼리는 겹쳐도
+     상관없음 - 번호는 사진에 종속된 캡션이 아니라 독립된 편집 요소라서
+     네 모서리를 전부 다르게 줘서 겹침을 피해 빈 공간을 찾아가게 한다. */
   .entry-1 { top: 20px; left: 170px; }
   .entry-1 .entry-photo { width: 180px; }
-  .entry-1 .archive-num { top: -18px; left: -22px; }
+  .entry-1 .archive-num { top: -18px; left: -24px; } /* 왼쪽 위 바깥 */
   .entry-2 { top: 235px; left: 20px; }
   .entry-2 .entry-photo { width: 155px; }
-  .entry-2 .archive-num { top: -18px; right: -22px; }
+  .entry-2 .archive-num { bottom: -18px; right: -24px; } /* 오른쪽 아래 바깥 */
   .entry-3 { top: 420px; left: 335px; }
   .entry-3 .entry-photo { width: 125px; }
-  .entry-3 .archive-num { top: -18px; right: -22px; }
+  .entry-3 .archive-num { top: -18px; right: -24px; } /* 오른쪽 위 바깥 */
   .entry-4 { top: 620px; left: 650px; }
   .entry-4 .entry-photo { width: 190px; }
-  .entry-4 .archive-num { top: -18px; left: -22px; }
+  .entry-4 .archive-num { bottom: -18px; left: -24px; } /* 왼쪽 아래 바깥 */
 
   @media (max-width: 640px) {
     .archive { padding: 48px 24px calc(110px + env(safe-area-inset-bottom, 0px)); }
