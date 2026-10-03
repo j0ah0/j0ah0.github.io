@@ -66,21 +66,23 @@ permalink: /i-am/
   /* ---- 스크랩북: 사진마다 크기를 다르게 - 한 화면에서 사진들부터 훑어보고,
      글은 사진을 클릭해야 나타난다 (기본은 숨김, 상시 노출 아님).
      정렬된 grid가 아니라 각 항목을 자유롭게 절대 배치해서 (레퍼런스의
-     editorial collage 느낌) - x/y와 크기를 항목마다 다르게 어긋나게 둔다.
-     좁은 화면에서 2칸 grid로 재배치하면 이 비대칭이 통째로 사라지니까,
-     그 대신 1040x680 캔버스를 JS(fitScrapbook)가 화면 폭에 맞게 그대로
-     축소(transform:scale)한다 - 모바일에서도 같은 콜라주 구성 유지. */
+     editorial collage 느낌) - 서로 가깝게, 살짝 닿거나 겹쳐도 되는
+     정도로 촘촘하게 묶는다. 640px 이상에서는 캔버스를 JS(fitScrapbook)가
+     창 폭에 맞게 그대로 축소(transform:scale)해서 창을 좁혀도 똑같은
+     배치가 점프 없이 부드럽게 줄어든다. 640px 이하(진짜 모바일)는 숫자가
+     너무 작아지는 걸 막으려고 그 아래 별도의 손으로 잡은 좌표를 쓴다
+     (스케일 축소가 아니라 처음부터 작은 캔버스용 좌표). */
   .scrapbook-wrap {
     position: relative;
     width: 100%;
-    max-width: 1040px;
+    max-width: 700px;
     margin-top: 55px;
     overflow: hidden;
   }
   .scrapbook {
     position: relative;
-    width: 1040px;
-    height: 680px;
+    width: 700px;
+    height: 480px;
     transform-origin: top left;
   }
   .entry { position: absolute; }
@@ -100,31 +102,36 @@ permalink: /i-am/
     letter-spacing: 0;
     color: var(--num);
     margin: 0 0 7px 0;
-    /* 캔버스 전체가 축소돼도 숫자 라벨만은 읽을 수 있는 크기로 남게,
-       JS가 .scrapbook에 매긴 --sb-scale만큼 역으로 다시 확대한다. */
-    transform: scale(calc(1 / var(--sb-scale, 1)));
-    transform-origin: top left;
   }
   /* 이 안의 글은 그리드에 직접 보이지 않는다 - 사진을 클릭하면 아래
      #detailOverlay가 이 내용을 읽어다가 가운데 뜨는 창으로 보여준다. */
   .entry-text { display: none; }
 
-  /* 네 장을 "카드"가 아니라 한 화면에 흩어진 오브제로 - 01/02는 같은
-     155px(01을 02만큼 작게 맞춰달라는 요청), 04가 가장 크고 03이 가장
-     작다. 좌표를 어긋나게 둬서 크기가 같아도 격자처럼 안 읽히게. */
-  .entry-1 { top: 0; left: 25px; }
-  .entry-1 .entry-photo { width: 155px; }
-  .entry-2 { top: 105px; left: 665px; }
-  .entry-2 .entry-photo { width: 155px; }
-  .entry-3 { top: 430px; left: 250px; }
-  .entry-3 .entry-photo { width: 115px; }
-  .entry-4 { top: 275px; left: 510px; }
-  .entry-4 .entry-photo { width: 205px; }
+  /* 네 장을 "카드"가 아니라 한 덩어리로 가깝게 묶는다 - 01/02는 거의
+     붙어있고, 02/03은 살짝 겹친다. 04가 가장 크고 03이 가장 작다. */
+  .entry-1 { top: 0; left: 0; }
+  .entry-1 .entry-photo { width: 190px; }
+  .entry-2 { top: 30px; left: 210px; }
+  .entry-2 .entry-photo { width: 140px; }
+  .entry-3 { top: 160px; left: 330px; }
+  .entry-3 .entry-photo { width: 110px; }
+  .entry-4 { top: 220px; left: 80px; }
+  .entry-4 .entry-photo { width: 210px; }
 
   @media (max-width: 640px) {
     .archive { padding: 48px 24px calc(110px + env(safe-area-inset-bottom, 0px)); }
-    /* 콜라주 배치 자체는 바꾸지 않는다 (fitScrapbook이 scale로 맞춤) -
-       여기선 바닥 여백만 모바일 네비 안전영역에 맞게 조정. */
+    /* 진짜 모바일에서는 스케일 축소 대신 처음부터 작은 캔버스용 좌표를
+       쓴다 - 데스크톱 캔버스를 그대로 줄이면 숫자가 너무 작아지므로. */
+    .scrapbook-wrap { max-width: none; overflow: visible; height: auto !important; }
+    .scrapbook { width: 260px; height: 240px; transform: none !important; }
+    .entry-1 { top: 0; left: 0; }
+    .entry-1 .entry-photo { width: 110px; }
+    .entry-2 { top: 20px; left: 120px; }
+    .entry-2 .entry-photo { width: 85px; }
+    .entry-3 { top: 100px; left: 185px; }
+    .entry-3 .entry-photo { width: 65px; }
+    .entry-4 { top: 120px; left: 50px; }
+    .entry-4 .entry-photo { width: 120px; }
   }
 
   /* ---- 사진을 클릭하면 가운데 뜨는 창 - 그리드 안에 바로 펼치는 대신
@@ -282,7 +289,16 @@ function fitScrapbook() {
   const wrap = document.getElementById('scrapbookWrap');
   const sb = document.getElementById('scrapbook');
   if (!wrap || !sb) return;
-  const DESIGN_W = 1040, DESIGN_H = 680;
+  // 640px 이하는 CSS 미디어쿼리가 별도의 작은 캔버스 좌표를 쓴다 -
+  // 거기서는 scale을 건드리지 않고 inline 스타일만 지워서 그 CSS가
+  // 그대로 적용되게 둔다 (안 지우면 이전 scale 값이 계속 남아있을 수 있음).
+  if (window.innerWidth <= 640) {
+    sb.style.transform = '';
+    sb.style.removeProperty('--sb-scale');
+    wrap.style.height = '';
+    return;
+  }
+  const DESIGN_W = 700, DESIGN_H = 480;
   const scale = Math.min(1, wrap.clientWidth / DESIGN_W);
   sb.style.setProperty('--sb-scale', scale);
   sb.style.transform = `scale(${scale})`;
