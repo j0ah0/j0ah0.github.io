@@ -108,10 +108,15 @@ permalink: /i-am/
      여유 있는 간격을 두고 흩어놓는다. */
   .entry-1 { top: 0; left: 0; }
   .entry-1 .entry-photo img { max-width: 120px; }
+  /* 01: 번호를 사진 오른쪽에 (flex 순서만 뒤집음, 둘 다 top 정렬 그대로) */
+  .entry-1 .entry-photo { flex-direction: row-reverse; }
   .entry-2 { top: 90px; left: 680px; }
   .entry-2 .entry-photo img { max-width: 120px; }
   .entry-3 { top: 380px; left: 140px; }
   .entry-3 .entry-photo img { max-width: 150px; }
+  /* 03: 번호를 사진 옆이 아니라 다시 위로, 오른쪽 정렬로 */
+  .entry-3 .entry-photo { display: block; }
+  .entry-3 .entry-photo .archive-num { display: block; text-align: right; margin: 0 0 6px 0; }
   .entry-4 { top: 230px; left: 520px; }
   .entry-4 .entry-photo img { max-width: 190px; } /* 스크린샷이라 너무 작으면 글자가 안 보임 */
 
