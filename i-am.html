@@ -89,6 +89,12 @@ permalink: /i-am/
     color: var(--num);
     margin: 0 0 6px 1px;
   }
+  /* 그리드 썸네일에서는 번호가 사진 폭 전체 위에 한 줄 차지하는 대신,
+     사진 왼쪽 위 모서리 쪽으로 붙되 사진 "밖"(위로) 떠 있게 - 사진 안으로
+     겹쳐 들어가면 안 됨. */
+  .entry-photo .archive-num {
+    position: absolute; top: -16px; left: 0; margin: 0; z-index: 1;
+  }
   /* 이 안의 글은 그리드에 직접 보이지 않는다 - 사진을 클릭하면 아래
      #detailOverlay가 이 내용을 읽어다가 가운데 뜨는 창으로 보여준다. */
   .entry-text { display: none; }
