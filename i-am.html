@@ -130,17 +130,19 @@ permalink: /i-am/
 
   @media (max-width: 640px) {
     .archive { padding: 48px 24px calc(110px + env(safe-area-inset-bottom, 0px)); }
-    /* 모바일도 축소판이 아니라 같은 지그재그 흐름을 좁은 폭에 맞게 새로
-       잡은 좌표 - 사진 사이 여백은 그대로 넉넉하게 유지. */
+    /* 모바일도 축소판이 아니라 데스크톱과 같은 체인 겹침 구조를 좁은
+       폭에 맞게 새로 잡은 좌표 - 01 아래로 02가, 02 아래로 03이 겹치고
+       04는 따로 분리. 번호 모서리는 데스크톱과 같은 이유로 같은 값을
+       그대로 씀 (이웃 방향이 같으니까). */
     .scrapbook-wrap { max-width: none; margin-top: 48px; overflow: visible; height: auto !important; }
-    .scrapbook { width: 300px; height: 780px; margin: 0 auto; transform: none !important; }
-    .entry-1 { top: 10px; left: 70px; }
+    .scrapbook { width: 300px; height: 400px; margin: 0 auto; transform: none !important; }
+    .entry-1 { top: 10px; left: 90px; }
     .entry-1 .entry-photo { width: 110px; }
-    .entry-2 { top: 220px; left: 10px; }
+    .entry-2 { top: 60px; left: 35px; }
     .entry-2 .entry-photo { width: 95px; }
-    .entry-3 { top: 420px; left: 150px; }
+    .entry-3 { top: 110px; left: 70px; }
     .entry-3 .entry-photo { width: 85px; }
-    .entry-4 { top: 610px; left: 70px; }
+    .entry-4 { top: 260px; left: 95px; }
     .entry-4 .entry-photo { width: 115px; }
   }
 
