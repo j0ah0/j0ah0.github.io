@@ -69,8 +69,9 @@ permalink: /i-am/
      editorial collage 느낌) - x/y와 크기를 항목마다 다르게 어긋나게 둔다. */
   .scrapbook {
     position: relative;
+    width: 100%;
     max-width: 1040px;
-    height: 700px;
+    height: 680px;
     margin-top: 55px;
   }
   .entry { position: absolute; }
@@ -95,29 +96,30 @@ permalink: /i-am/
      #detailOverlay가 이 내용을 읽어다가 가운데 뜨는 창으로 보여준다. */
   .entry-text { display: none; }
 
-  /* 항목마다 x/y와 크기를 따로 잡아 비대칭으로 배치 (정렬된 격자처럼
-     보이지 않게) - 01/03은 왼쪽, 02/04는 오른쪽 열에 세로로 겹치지 않게
-     어긋나게 둔다. */
-  .entry-1 { top: 10px; left: 15px; }
-  .entry-1 .entry-photo { max-width: 250px; }
-  .entry-2 { top: 55px; left: 510px; }
-  .entry-2 .entry-photo { max-width: 190px; }
-  .entry-3 { top: 350px; left: 110px; }
-  .entry-3 .entry-photo { max-width: 180px; }
-  .entry-4 { top: 220px; left: 510px; }
-  .entry-4 .entry-photo { max-width: 250px; } /* 스크린샷이라 너무 작으면 글자가 안 보임 */
+  /* 네 장을 "카드"가 아니라 한 화면에 흩어진 오브제로 - 좌표뿐 아니라
+     크기 차이도 적극적으로 벌려서 (235/155/115/205) 격자처럼 안 읽히게.
+     01 왼쪽 위(제일 큼) - 02 오른쪽 위(작고 살짝 아래) - 04 중앙 오른쪽
+     (02보다 큼) - 03 왼쪽 아래(제일 작음). */
+  .entry-1 { top: 0; left: 25px; }
+  .entry-1 .entry-photo { width: 235px; }
+  .entry-2 { top: 105px; left: 665px; }
+  .entry-2 .entry-photo { width: 155px; }
+  .entry-3 { top: 430px; left: 250px; }
+  .entry-3 .entry-photo { width: 115px; }
+  .entry-4 { top: 275px; left: 510px; }
+  .entry-4 .entry-photo { width: 205px; }
 
   @media (max-width: 640px) {
     .archive { padding: 48px 24px calc(110px + env(safe-area-inset-bottom, 0px)); }
     /* 좁은 화면에선 절대좌표 콜라주가 겹치거나 화면 밖으로 나가니 그냥
        2칸짜리 grid로 안전하게 되돌린다. */
     .scrapbook { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px 16px;
-      position: static; max-width: none; height: auto; margin-top: 0; }
+      position: static; width: auto; max-width: none; height: auto; margin-top: 0; }
     .entry-1, .entry-2, .entry-3, .entry-4 { position: static; top: auto; left: auto; }
-    .entry-1 .entry-photo { max-width: 120px; }
-    .entry-2 .entry-photo { max-width: 100px; }
-    .entry-3 .entry-photo { max-width: 100px; }
-    .entry-4 .entry-photo { max-width: 120px; }
+    .entry-1 .entry-photo { width: 130px; }
+    .entry-2 .entry-photo { width: 95px; }
+    .entry-3 .entry-photo { width: 75px; }
+    .entry-4 .entry-photo { width: 115px; }
   }
 
   /* ---- 사진을 클릭하면 가운데 뜨는 창 - 그리드 안에 바로 펼치는 대신
@@ -133,12 +135,12 @@ permalink: /i-am/
     transition: opacity .25s ease;
   }
   .detail-overlay.is-visible { opacity: 1; pointer-events: auto; }
-  .detail-panel { display: flex; align-items: flex-start; gap: 32px; max-width: 720px; }
+  .detail-panel { display: flex; align-items: flex-start; gap: 48px; width: min(760px, 80vw); }
   .detail-panel .archive-num { margin-bottom: 10px; }
-  .detail-photo { display: block; max-width: min(320px, 42vw); max-height: 60vh; width: auto; height: auto; object-fit: contain; flex: 0 0 auto; }
-  .detail-text { max-width: 36ch; padding-top: 2px; }
-  .detail-text h2 { font-size: 15px; font-weight: 500; line-height: 1.7; color: var(--ink); margin: 0 0 14px; }
-  .detail-text p { font-size: 13px; line-height: 1.75; color: var(--ink); margin: 0 0 14px; }
+  .detail-photo { display: block; max-width: 340px; max-height: 65vh; width: auto; height: auto; object-fit: contain; flex: 0 0 auto; }
+  .detail-text { max-width: 300px; padding-top: 3px; }
+  .detail-text h2 { font-size: 15px; font-weight: 500; line-height: 1.5; color: var(--ink); margin: 0 0 14px; }
+  .detail-text p { font-size: 12px; line-height: 1.65; color: var(--ink); margin: 0 0 14px; }
   .detail-text p:last-child { margin-bottom: 0; }
 
   @media (max-width: 640px) {
