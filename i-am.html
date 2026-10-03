@@ -82,7 +82,7 @@ permalink: /i-am/
   .scrapbook {
     position: relative;
     width: 920px;
-    height: 650px;
+    height: 500px;
     margin: 0 auto;
     transform-origin: top left;
   }
@@ -110,23 +110,27 @@ permalink: /i-am/
      #detailOverlay가 이 내용을 읽어다가 가운데 뜨는 창으로 보여준다. */
   .entry-text { display: none; }
 
-  /* 01 아래로 02가 파고들고, 02 아래로 03이 겹치는 체인 - 04는 따로
-     떨어진 독립 요소. 사진끼리 겹치는 건 적극적으로 활용 (DOM 순서가
-     그대로 쌓임 순서라 뒤에 나온 02/03이 앞의 01/02 위에 자연스럽게
-     얹힌다). 번호는 겹친 이웃 사진과 안 부딪히는 모서리를 각자 골랐다 -
-     이웃이 없는 04는 그냥 다른 모서리로 다양성만 유지. */
+  /* 01 아래로 02가 파고들고, 02 아래로 03이 겹치는 체인 - 04는 그
+     옆으로 바짝 붙되 겹치진 않는 독립 요소 (너무 멀리 혼자 떨어져
+     보이지 않게 04를 03 쪽으로 당겨뒀다). 사진끼리 겹치는 건 적극적으로
+     활용 (DOM 순서가 그대로 쌓임 순서라 뒤에 나온 02/03이 앞의 01/02
+     위에 자연스럽게 얹힌다).
+     번호는 대각선 모서리로 띄우지 않고 사진의 한쪽 변에 딱 붙여
+     나란히 정렬한다 (top/left 동시에 음수로 주면 모서리에서 대각선
+     방향으로 붕 뜬 것처럼 보여서, 100%+margin 방식으로 한쪽 변에만
+     flush하게 고정) - 겹친 이웃이 있는 쪽은 피해서 비어있는 변을 쓴다. */
   .entry-1 { top: 20px; left: 170px; }
   .entry-1 .entry-photo { width: 180px; }
-  .entry-1 .archive-num { top: -18px; left: -24px; } /* 왼쪽 위 바깥 - 02와 안 겹침 */
+  .entry-1 .archive-num { top: 0; left: 100%; margin-left: 8px; } /* 오른쪽 옆 - 02가 아래왼쪽에 있어서 비어있음 */
   .entry-2 { top: 110px; left: 60px; }
   .entry-2 .entry-photo { width: 155px; }
-  .entry-2 .archive-num { top: -18px; left: -24px; } /* 왼쪽 위 바깥 - 01/03 둘 다 피함 */
+  .entry-2 .archive-num { top: 0; right: 100%; margin-right: 8px; } /* 왼쪽 옆 - 01/03이 둘 다 오른쪽에 있어서 비어있음 */
   .entry-3 { top: 190px; left: 160px; }
   .entry-3 .entry-photo { width: 125px; }
-  .entry-3 .archive-num { bottom: -18px; right: -24px; } /* 오른쪽 아래 바깥 - 02와 안 겹침 */
-  .entry-4 { top: 420px; left: 480px; }
+  .entry-3 .archive-num { top: 0; left: 100%; margin-left: 8px; } /* 오른쪽 옆 - 02가 왼쪽에, 04가 아래에 있어서 비어있음 */
+  .entry-4 { top: 300px; left: 300px; }
   .entry-4 .entry-photo { width: 190px; }
-  .entry-4 .archive-num { bottom: -18px; left: -24px; } /* 왼쪽 아래 바깥 - 이웃 없음 */
+  .entry-4 .archive-num { bottom: 100%; margin-bottom: 8px; left: 0; } /* 위쪽 - 이웃 없음, 그냥 다양성 */
 
   @media (max-width: 640px) {
     .archive { padding: 48px 24px calc(110px + env(safe-area-inset-bottom, 0px)); }
@@ -310,7 +314,7 @@ function fitScrapbook() {
     wrap.style.height = '';
     return;
   }
-  const DESIGN_W = 920, DESIGN_H = 650;
+  const DESIGN_W = 920, DESIGN_H = 500;
   const scale = Math.min(1, wrap.clientWidth / DESIGN_W);
   sb.style.setProperty('--sb-scale', scale);
   sb.style.transform = `scale(${scale})`;
